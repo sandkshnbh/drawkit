@@ -9,6 +9,10 @@
   it now rules the top of a 10px footer band spanning the quote's width, with
   the text starting 8px in (the `drawablyDivider` contract). The gallery's
   tooltip and arrow demos mirror in RTL (`PositionedDirectional`).
+- **Fixed** — text decorations (`DrawkitUnderline`, `DrawkitHighlight`,
+  `DrawkitCircle`) keep the `TextPainter`'s width, so the strokes stay aligned
+  with the glyphs when the constraint is wider (single-line text shifted in
+  RTL); `DrawkitKbd` keeps keycap glyph order LTR inside RTL paragraphs.
 
 ## 0.1.0
 

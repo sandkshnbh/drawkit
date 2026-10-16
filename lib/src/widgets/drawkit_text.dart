@@ -185,22 +185,29 @@ class _TextChrome extends StatelessWidget {
               .map((b) => b.toRect())
               .toList();
 
-    return SizedBox(
-      width: painter.width,
-      height: painter.height,
-      child: DrawkitSurface(
-        builder: (size, options) => [
-          for (final box in boxes) layer(box, options, resolved),
-        ],
-        style: resolved,
-        seed: seed,
-        animate: animate,
-        resketchOnPointer: resketchOnPointer,
-        child: Text(
-          text,
-          style: effective,
-          textAlign: textAlign,
-          textDirection: direction,
+    // Selection boxes are line-relative, so the surface must keep the
+    // painter's width; the directional start alignment then places it inside
+    // wider constraints (a stretched quote) without shifting the strokes.
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      widthFactor: 1,
+      child: SizedBox(
+        width: painter.width,
+        height: painter.height,
+        child: DrawkitSurface(
+          builder: (size, options) => [
+            for (final box in boxes) layer(box, options, resolved),
+          ],
+          style: resolved,
+          seed: seed,
+          animate: animate,
+          resketchOnPointer: resketchOnPointer,
+          child: Text(
+            text,
+            style: effective,
+            textAlign: textAlign,
+            textDirection: direction,
+          ),
         ),
       ),
     );

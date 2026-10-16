@@ -281,14 +281,21 @@ class DrawkitKbd extends StatelessWidget {
       seed: seed,
       animate: animate,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      child: DefaultTextStyle(
-        style: DefaultTextStyle.of(context).style.copyWith(
-          fontSize: 13,
-          height: 1.4,
-          fontWeight: FontWeight.w500,
-          fontFamilyFallback: const ['Geist Mono', 'ui-monospace', 'monospace'],
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: DefaultTextStyle(
+          style: DefaultTextStyle.of(context).style.copyWith(
+            fontSize: 13,
+            height: 1.4,
+            fontWeight: FontWeight.w500,
+            fontFamilyFallback: const [
+              'Geist Mono',
+              'ui-monospace',
+              'monospace',
+            ],
+          ),
+          child: child,
         ),
-        child: child,
       ),
     );
   }
