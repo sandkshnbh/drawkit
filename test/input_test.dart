@@ -27,8 +27,12 @@ void main() {
       expect(seen, ['hello']);
     });
 
-    testWidgets('placeholder shows while empty and hides after typing', (tester) async {
-      await tester.pumpWidget(host(const DrawkitInput(placeholder: 'type here')));
+    testWidgets('placeholder shows while empty and hides after typing', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(const DrawkitInput(placeholder: 'type here')),
+      );
       expect(find.text('type here'), findsOneWidget);
       await tester.enterText(find.byType(EditableText), 'x');
       await tester.pump();

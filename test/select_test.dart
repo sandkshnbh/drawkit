@@ -27,7 +27,13 @@ void main() {
 
   testWidgets('shows the placeholder until a value is chosen', (tester) async {
     await tester.pumpWidget(
-      host(const DrawkitSelect<String>(options: fruits, value: null, onChanged: _noop)),
+      host(
+        const DrawkitSelect<String>(
+          options: fruits,
+          value: null,
+          onChanged: _noop,
+        ),
+      ),
     );
     expect(find.text('choose…'), findsOneWidget);
   });
@@ -35,7 +41,11 @@ void main() {
   testWidgets('opens on tap and lists every option', (tester) async {
     await tester.pumpWidget(
       host(
-        DrawkitSelect<String>(options: fruits, value: 'apple', onChanged: _noop),
+        DrawkitSelect<String>(
+          options: fruits,
+          value: 'apple',
+          onChanged: _noop,
+        ),
       ),
     );
     expect(find.text('Apple'), findsOneWidget);
@@ -45,7 +55,9 @@ void main() {
     expect(find.text('Cherry'), findsOneWidget);
   });
 
-  testWidgets('picking an option reports it and closes the menu', (tester) async {
+  testWidgets('picking an option reports it and closes the menu', (
+    tester,
+  ) async {
     final picked = <String>[];
     await tester.pumpWidget(
       host(
@@ -86,7 +98,13 @@ void main() {
 
   testWidgets('disabled select never opens', (tester) async {
     await tester.pumpWidget(
-      host(const DrawkitSelect<String>(options: fruits, value: 'apple', onChanged: null)),
+      host(
+        const DrawkitSelect<String>(
+          options: fruits,
+          value: 'apple',
+          onChanged: null,
+        ),
+      ),
     );
     await tester.tap(find.byType(DrawkitSelect<String>), warnIfMissed: false);
     await tester.pumpAndSettle();
@@ -96,7 +114,11 @@ void main() {
   testWidgets('disposes focus node cleanly', (tester) async {
     await tester.pumpWidget(
       host(
-        DrawkitSelect<String>(options: fruits, value: 'apple', onChanged: _noop),
+        DrawkitSelect<String>(
+          options: fruits,
+          value: 'apple',
+          onChanged: _noop,
+        ),
       ),
     );
     await tester.pumpWidget(const SizedBox());

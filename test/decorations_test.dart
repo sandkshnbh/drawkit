@@ -22,10 +22,10 @@ void main() {
   });
 
   group('DrawkitCard', () {
-    testWidgets('pads its child by 16 and wraps it in a surface', (tester) async {
-      await tester.pumpWidget(
-        host(const DrawkitCard(child: Text('inside'))),
-      );
+    testWidgets('pads its child by 16 and wraps it in a surface', (
+      tester,
+    ) async {
+      await tester.pumpWidget(host(const DrawkitCard(child: Text('inside'))));
       expect(find.text('inside'), findsOneWidget);
       expect(find.byType(DrawkitSurface), findsOneWidget);
       final size = tester.getSize(find.text('inside'));

@@ -17,8 +17,7 @@ void main() {
     await tester.pumpWidget(
       host(
         const DrawkitUnderline(
-          text:
-              'The pen keeps going across a very long sentence that has to wrap onto more than one line to be drawn.',
+          text: 'The pen keeps going across a very long sentence that has to wrap onto more than one line to be drawn.',
         ),
       ),
     );

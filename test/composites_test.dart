@@ -14,7 +14,9 @@ void main() {
   );
 
   group('DrawkitChip', () {
-    testWidgets('tap flips through onChanged and the checkbox follows', (tester) async {
+    testWidgets('tap flips through onChanged and the checkbox follows', (
+      tester,
+    ) async {
       final seen = <bool>[];
       await tester.pumpWidget(
         host(
@@ -156,7 +158,9 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('tooltip wraps a card and points at its target', (tester) async {
+    testWidgets('tooltip wraps a card and points at its target', (
+      tester,
+    ) async {
       final target = GlobalKey();
       await tester.pumpWidget(
         Directionality(
