@@ -1,5 +1,13 @@
 ## Unreleased
 
+- **Feedback** — `showDrawkitDialog` / `showDrawkitSheet` (paper panels over a
+  soft scrim; the modal traces itself in via `DrawkitSketchIn`, the sheet
+  slides in from the bottom or the direction-aware end edge, and its grab
+  handle flings closed), `showDrawkitToast` (tap-through overlay pill with
+  tone ink and auto-dismiss), `DrawkitProgressBar` (leading-edge fill,
+  sweeping indeterminate band), `DrawkitSpinner` (dashed ring on one clock),
+  and `DrawkitSkeleton` + `DrawkitSkeleton.circle` (faint strokes with a
+  per-line shimmer sweep). All reduced-motion aware.
 - **Actions** — `DrawkitSegmentedButton` (rough frame, scribbled wash under
   the pick), `DrawkitSlider` (tap/drag/keyboard, division snapping, fill from
   the leading edge), `DrawkitStepper` (boundary-aware − / +), `DrawkitSearchField`

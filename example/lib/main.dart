@@ -158,6 +158,11 @@ final List<GalleryPage> galleryPages = [
     'Segments, slider, stepper, search, icon buttons, and the floating pen.',
     (context) => const ActionsPage(),
   ),
+  GalleryPage(
+    'Feedback',
+    'Dialogs, sheets, toasts, progress bars, spinners, and loading skeletons.',
+    (context) => const FeedbackPage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -1225,6 +1230,188 @@ class _ActionsPageState extends State<ActionsPage> {
                 : 'you are looking for: $_query',
             style: body.copyWith(color: DrawkitPalette.inkMuted),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class FeedbackPage extends StatefulWidget {
+  const FeedbackPage({super.key});
+
+  @override
+  State<FeedbackPage> createState() => _FeedbackPageState();
+}
+
+class _FeedbackPageState extends State<FeedbackPage> {
+  String _last = 'nothing yet';
+  double _progress = 0.35;
+
+  @override
+  Widget build(BuildContext context) {
+    const body = TextStyle(
+      fontSize: 14,
+      height: 1.5,
+      color: DrawkitPalette.ink,
+      decoration: TextDecoration.none,
+    );
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Modals — the panel traces itself in', style: body),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              DrawkitButton(
+                onPressed: () async {
+                  final answer = await showDrawkitDialog<bool>(
+                    context: context,
+                    child: DrawkitDialog(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Tear this page out?',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              color: DrawkitPalette.ink,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'The ink is still wet — nothing is saved yet.',
+                            style: body,
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              DrawkitButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: const Text('keep'),
+                              ),
+                              const SizedBox(width: 10),
+                              DrawkitButton(
+                                variant: DrawkitButtonVariant.solid,
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                child: const Text('tear it'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                  if (!mounted) return;
+                  setState(() => _last = 'dialog answered: $answer');
+                },
+                child: const Text('open dialog'),
+              ),
+              DrawkitButton(
+                onPressed: () => showDrawkitSheet(
+                  context: context,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Sketchbook options',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: DrawkitPalette.ink,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Drag the handle down or tap the scrim to fold it away.',
+                        style: body,
+                      ),
+                      const SizedBox(height: 14),
+                      DrawkitButton(
+                        variant: DrawkitButtonVariant.solid,
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('done'),
+                      ),
+                    ],
+                  ),
+                ),
+                child: const Text('bottom sheet'),
+              ),
+              DrawkitButton(
+                onPressed: () => showDrawkitSheet(
+                  context: context,
+                  edge: DrawkitSheetEdge.end,
+                  child: const Text('a quiet side drawer', style: body),
+                ),
+                child: const Text('side sheet'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'Toasts — bottom pills that excuse themselves',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              DrawkitButton(
+                onPressed: () => showDrawkitToast(
+                  context,
+                  message: 'saved to the sketchbook',
+                ),
+                child: const Text('toast ok'),
+              ),
+              const SizedBox(width: 10),
+              DrawkitButton(
+                tone: DrawkitTone.danger,
+                onPressed: () => showDrawkitToast(
+                  context,
+                  message: 'the ink ran out',
+                  tone: DrawkitTone.danger,
+                ),
+                child: const Text('toast fail'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Text('Progress — ${(_progress * 100).round()}%', style: body),
+          const SizedBox(height: 10),
+          DrawkitProgressBar(
+            value: _progress,
+            semanticLabel: 'gallery progress',
+          ),
+          const SizedBox(height: 12),
+          DrawkitSlider(
+            value: _progress,
+            divisions: 20,
+            onChanged: (value) => setState(() => _progress = value),
+          ),
+          const SizedBox(height: 12),
+          const DrawkitProgressBar(semanticLabel: 'waiting'),
+          const SizedBox(height: 22),
+          Row(
+            children: [
+              const DrawkitSpinner(),
+              const SizedBox(width: 14),
+              const Expanded(child: DrawkitSkeleton(lines: 2, spacing: 8)),
+              const SizedBox(width: 14),
+              const DrawkitSkeleton.circle(),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Text(_last, style: body.copyWith(color: DrawkitPalette.inkMuted)),
         ],
       ),
     );

@@ -49,6 +49,7 @@ DrawkitButton(
 | Text | `DrawkitUnderline`, `DrawkitHighlight`, `DrawkitCircle` |
 | Composites | `DrawkitArrow`, `DrawkitChip`, `DrawkitTabs`, `DrawkitTooltip`, `DrawkitAlert`, `DrawkitSteps`, `DrawkitKbd`, `DrawkitQuote`, `DrawkitPager` |
 | Actions | `DrawkitSegmentedButton`, `DrawkitSlider`, `DrawkitStepper`, `DrawkitSearchField`, `DrawkitIconButton`, `DrawkitFab` |
+| Feedback | `DrawkitDialog` + `showDrawkitDialog`, `DrawkitSheet` + `showDrawkitSheet`, `DrawkitToast` + `showDrawkitToast`, `DrawkitProgressBar`, `DrawkitSpinner`, `DrawkitSkeleton` |
 | Motion | `DrawkitSketchIn`, `DrawkitStagger`, `DrawkitShake` |
 
 Theming runs through `DrawkitTheme` + `DrawkitStyle` (`seed`, `roughness`,
