@@ -178,6 +178,11 @@ final List<GalleryPage> galleryPages = [
     'Headings, avatars, a captioned figure, stars, doodles, and a ticker.',
     (context) => const ContentPage(),
   ),
+  GalleryPage(
+    'States',
+    'Validation, empty margins, undoable toasts, and a pull-to-refresh.',
+    (context) => const StatesPage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -1858,6 +1863,162 @@ class _ContentPageState extends State<ContentPage> {
             child: Text(
               'all work and no play makes the pen a dull tool',
               style: body,
+            ),
+          ),
+          const SizedBox(height: 22),
+        ],
+      ),
+    );
+  }
+}
+
+class StatesPage extends StatefulWidget {
+  const StatesPage({super.key});
+
+  @override
+  State<StatesPage> createState() => _StatesPageState();
+}
+
+class _StatesPageState extends State<StatesPage> {
+  static const body = TextStyle(
+    fontSize: 14,
+    height: 1.5,
+    color: DrawkitPalette.ink,
+    decoration: TextDecoration.none,
+  );
+
+  final TextEditingController _email = TextEditingController();
+  String? _emailError;
+  List<String> _notes = ['Sharpen the HB', 'Dust the eraser', 'Rinse the nib'];
+  final List<int> _fetched = [3, 2, 1];
+
+  @override
+  void dispose() {
+    _email.dispose();
+    super.dispose();
+  }
+
+  void _validate() {
+    final text = _email.text.trim();
+    setState(() {
+      _emailError = text.contains('@')
+          ? null
+          : text.isEmpty
+          ? 'An address, please — the pen refuses to guess.'
+          : 'That is missing its @ — even the ink knows.';
+    });
+  }
+
+  void _deleteNote(int index) {
+    final removed = _notes[index];
+    setState(() => _notes = [..._notes]..removeAt(index));
+    showDrawkitToast(
+      context,
+      message: '“$removed” torn out',
+      tone: DrawkitTone.neutral,
+      action: DrawkitToastAction(
+        label: 'Undo',
+        onPressed: () =>
+            setState(() => _notes = [..._notes]..insert(index, removed)),
+      ),
+    );
+  }
+
+  Future<void> _refresh() async {
+    await Future<void>.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
+    setState(() => _fetched.insert(0, _fetched.first + 1));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const DrawkitHeading(text: 'The States Kit', underline: true),
+          const SizedBox(height: 8),
+          const DrawkitHeading(
+            text: 'errors, empty margins, undo, and the pull',
+            level: 3,
+            textStyle: TextStyle(color: DrawkitPalette.inkMuted),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Validation — the outline inks red, the message speaks',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: 320,
+            child: DrawkitInput(
+              controller: _email,
+              placeholder: 'you@sketchbook.paper',
+              helper: 'We never share it.',
+              error: _emailError,
+              onSubmitted: (_) => _validate(),
+            ),
+          ),
+          const SizedBox(height: 10),
+          DrawkitButton(onPressed: _validate, child: const Text('Validate')),
+          const SizedBox(height: 26),
+          const Text('Notes — deleting offers an Undo', style: body),
+          const SizedBox(height: 10),
+          if (_notes.isEmpty)
+            SizedBox(
+              height: 220,
+              child: DrawkitEmpty(
+                doodle: DrawkitDoodleKind.burst,
+                title: 'The margin is blank',
+                message: 'Every note was torn out, but the pen remembers.',
+                action: DrawkitButton(
+                  onPressed: () => setState(
+                    () => _notes = ['Sharpen the HB', 'Dust the eraser'],
+                  ),
+                  child: const Text('Write two back'),
+                ),
+              ),
+            )
+          else
+            for (var i = 0; i < _notes.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: DrawkitCard(
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(_notes[i], style: body)),
+                      DrawkitIconButton(
+                        semanticLabel: 'delete ${_notes[i]}',
+                        onPressed: () => _deleteNote(i),
+                        child: const Text('✕'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          const SizedBox(height: 20),
+          const Text(
+            'Pull-to-refresh — drag the list down past the flip',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          DrawkitCard(
+            child: SizedBox(
+              height: 200,
+              child: DrawkitRefresh(
+                onRefresh: _refresh,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    for (final n in _fetched)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text('fetched page $n', style: body),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 22),

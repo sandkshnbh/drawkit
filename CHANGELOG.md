@@ -1,5 +1,22 @@
 ## Unreleased
 
+- **States** — `DrawkitInput` / `DrawkitTextarea` gained `error` and `helper`:
+  an error inks the outline and cursor red, replaces the helper below the
+  field, and announces itself through a live region. `DrawkitEmpty` (faint
+  doodle, header title, quiet message, optional action) for the blank-margin
+  case. Toasts learned actions: `DrawkitToastAction` (Undo/Retry) underlines a
+  verb in the pill re-inked on hover/focus, keyboard- and tap-activatable;
+  running it closes the toast, action toasts linger 5s by default, and only
+  actionless toasts keep letting taps pass through. `DrawkitRefresh` pulls to
+  refresh without Material: a rotating arrow doodle follows the drag, hands
+  off to the spinner while the future settles, works with clamping and
+  bouncing physics, and is reduced-motion aware.
+- **Fixed** — text decorations (`DrawkitUnderline`, `DrawkitHighlight`,
+  `DrawkitCircle`, the quote) no longer swallow a bounded height: the
+  alignment box is shrink-wrapped vertically (`heightFactor: 1`), so a
+  decoration inside a row or card draws around its line box instead of
+  inflating to the available space (a toast action used to stretch its pill
+  to the full height).
 - **Content** — `DrawkitHeading` (three display sizes, optional pen rule),
   `DrawkitAvatar` + `DrawkitAvatarGroup` (drawn discs, overlapping stack with
   a `+n` overflow pocket), `DrawkitFigure` (framed child with a muted plate

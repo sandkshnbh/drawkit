@@ -188,9 +188,13 @@ class _TextChrome extends StatelessWidget {
     // Selection boxes are line-relative, so the surface must keep the
     // painter's width; the directional start alignment then places it inside
     // wider constraints (a stretched quote) without shifting the strokes.
+    // Both factors keep the box shrink-wrapped: without heightFactor the
+    // Align would swallow every bounded height it is given (a row, a card),
+    // drawing the decoration around empty space.
     return Align(
       alignment: AlignmentDirectional.centerStart,
       widthFactor: 1,
+      heightFactor: 1,
       child: SizedBox(
         width: painter.width,
         height: painter.height,

@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
 import 'drawkit_button.dart' show DrawkitTone;
+import 'drawkit_text.dart' show DrawkitUnderline;
 
 /// Handle for a toast shown with [showDrawkitToast].
 ///
@@ -38,36 +40,55 @@ class DrawkitToastHandle {
   }
 }
 
+/// A single choice offered on a toast — typically Undo or Retry.
+class DrawkitToastAction {
+  const DrawkitToastAction({required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+}
+
 /// Toast the sketch pill, slides and fades in above the bottom edge, lingers
-/// for [duration], then lifts away. Taps pass straight through — a toast is
-/// informational; give errors a real [DrawkitAlert] if the user must act.
+/// for [duration], then lifts away.
+///
+/// Without an [action] taps pass straight through — a toast is informational;
+/// give errors a real [DrawkitAlert] if the user must act. With an [action]
+/// the pill becomes interactive: the action is keyboard-focusable, runs its
+/// callback, and the toast closes itself right after (Undo semantics). The
+/// default linger is longer when an action is present so there is time to
+/// reach it.
 ///
 /// The returned [DrawkitToastHandle] can close it early.
 DrawkitToastHandle showDrawkitToast(
   BuildContext context, {
   required String message,
   DrawkitTone tone = DrawkitTone.accent,
-  Duration duration = const Duration(milliseconds: 2400),
+  Duration? duration,
+  DrawkitToastAction? action,
   bool animate = true,
   DrawkitStyle? style,
   int? seed,
 }) {
   final overlay = Overlay.of(context);
+  final linger =
+      duration ?? Duration(milliseconds: action == null ? 2400 : 5000);
   final key = GlobalKey<_DrawkitToastEntryState>();
   late final DrawkitToastHandle handle;
   final entry = OverlayEntry(
-    builder: (context) => IgnorePointer(
-      child: _DrawkitToastEntry(
+    builder: (context) {
+      final toast = _DrawkitToastEntry(
         key: key,
         message: message,
         tone: tone,
-        duration: duration,
+        duration: linger,
+        action: action,
         animate: animate,
         style: style,
         seed: seed,
         onDismissed: () => handle._remove(),
-      ),
-    ),
+      );
+      return action == null ? IgnorePointer(child: toast) : toast;
+    },
   );
   handle = DrawkitToastHandle._(entry, key);
   overlay.insert(entry);
@@ -79,6 +100,7 @@ class DrawkitToast extends StatelessWidget {
   const DrawkitToast({
     required this.message,
     this.tone = DrawkitTone.accent,
+    this.action,
     this.style,
     this.seed,
     this.animate = true,
@@ -87,6 +109,7 @@ class DrawkitToast extends StatelessWidget {
 
   final String message;
   final DrawkitTone tone;
+  final DrawkitToastAction? action;
   final DrawkitStyle? style;
   final int? seed;
   final bool animate;
@@ -99,6 +122,10 @@ class DrawkitToast extends StatelessWidget {
       DrawkitTone.neutral => DrawkitPalette.neutral,
       DrawkitTone.danger => DrawkitPalette.error,
     };
+    final body = Text(
+      message,
+      textAlign: action == null ? TextAlign.center : TextAlign.start,
+    );
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 420),
       child: DrawkitSurface(
@@ -131,7 +158,88 @@ class DrawkitToast extends StatelessWidget {
         animate: animate,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-          child: Text(message, textAlign: TextAlign.center),
+          child: action == null
+              ? body
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(child: body),
+                    const SizedBox(width: 16),
+                    _DrawkitToastActionButton(
+                      action: action!,
+                      animate: animate,
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The underlined verb on the right of the pill: hover or keyboard focus
+/// re-inks it in pen blue, Enter/Space activate, and the label carries the
+/// button semantics.
+class _DrawkitToastActionButton extends StatefulWidget {
+  const _DrawkitToastActionButton({
+    required this.action,
+    required this.animate,
+  });
+
+  final DrawkitToastAction action;
+  final bool animate;
+
+  @override
+  State<_DrawkitToastActionButton> createState() =>
+      _DrawkitToastActionButtonState();
+}
+
+class _DrawkitToastActionButtonState extends State<_DrawkitToastActionButton> {
+  bool _hovered = false;
+  bool _focused = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final base = DefaultTextStyle.of(context).style;
+    final active = _hovered || _focused;
+    return Shortcuts(
+      shortcuts: {
+        const SingleActivator(LogicalKeyboardKey.enter): const ActivateIntent(),
+        const SingleActivator(LogicalKeyboardKey.space): const ActivateIntent(),
+      },
+      child: FocusableActionDetector(
+        onShowFocusHighlight: (value) => setState(() => _focused = value),
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (intent) {
+              widget.action.onPressed();
+              return null;
+            },
+          ),
+        },
+        mouseCursor: SystemMouseCursors.click,
+        child: Semantics(
+          container: true,
+          button: true,
+          label: widget.action.label,
+          child: ExcludeSemantics(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: widget.action.onPressed,
+              child: MouseRegion(
+                onEnter: (_) => setState(() => _hovered = true),
+                onExit: (_) => setState(() => _hovered = false),
+                child: DrawkitUnderline(
+                  text: widget.action.label,
+                  textStyle: base.copyWith(
+                    color: active ? DrawkitPalette.pen : DrawkitPalette.ink,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  animate: widget.animate,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -143,6 +251,7 @@ class _DrawkitToastEntry extends StatefulWidget {
     required this.message,
     required this.tone,
     required this.duration,
+    required this.action,
     required this.animate,
     required this.style,
     required this.seed,
@@ -153,6 +262,7 @@ class _DrawkitToastEntry extends StatefulWidget {
   final String message;
   final DrawkitTone tone;
   final Duration duration;
+  final DrawkitToastAction? action;
   final bool animate;
   final DrawkitStyle? style;
   final int? seed;
@@ -229,6 +339,15 @@ class _DrawkitToastEntryState extends State<_DrawkitToastEntry>
             child: DrawkitToast(
               message: widget.message,
               tone: widget.tone,
+              action: widget.action == null
+                  ? null
+                  : DrawkitToastAction(
+                      label: widget.action!.label,
+                      onPressed: () {
+                        widget.action!.onPressed();
+                        dismiss();
+                      },
+                    ),
               style: widget.style,
               seed: widget.seed,
               animate: widget.animate,

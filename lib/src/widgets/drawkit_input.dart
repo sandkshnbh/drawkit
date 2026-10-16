@@ -11,6 +11,11 @@ const double _inset = 3;
 /// Material anywhere). The field body pads 8x12 like the CSS, text colour
 /// inherits, and focus reveals the 1.5px ring — the same geometry as
 /// `.drawably-inputbox`.
+///
+/// When [error] is non-null the outline (and focus ring) recolour to
+/// [DrawkitPalette.error] and the message below the field shows in the error
+/// tone as a semantic live region, announced when it appears. [helper] is the
+/// quiet counterpart; an error replaces it rather than stacking.
 class DrawkitInput extends StatelessWidget {
   const DrawkitInput({
     this.controller,
@@ -20,6 +25,8 @@ class DrawkitInput extends StatelessWidget {
     this.enabled = true,
     this.autofocus = false,
     this.placeholder,
+    this.error,
+    this.helper,
     this.textStyle,
     this.style,
     this.seed,
@@ -35,6 +42,8 @@ class DrawkitInput extends StatelessWidget {
   final bool enabled;
   final bool autofocus;
   final String? placeholder;
+  final String? error;
+  final String? helper;
   final TextStyle? textStyle;
   final DrawkitStyle? style;
   final int? seed;
@@ -50,6 +59,8 @@ class DrawkitInput extends StatelessWidget {
     enabled: enabled,
     autofocus: autofocus,
     placeholder: placeholder,
+    error: error,
+    helper: helper,
     textStyle: textStyle,
     style: style,
     seed: seed,
@@ -63,7 +74,8 @@ class DrawkitInput extends StatelessWidget {
 
 /// Multi-line field: same chrome, an [EditableText] that grows with its
 /// content (the CSS textarea resizes vertically; here [minLines] sets the
-/// resting height and growth is unbounded).
+/// resting height and growth is unbounded). [error] and [helper] behave
+/// exactly like on [DrawkitInput].
 class DrawkitTextarea extends StatelessWidget {
   const DrawkitTextarea({
     this.controller,
@@ -72,6 +84,8 @@ class DrawkitTextarea extends StatelessWidget {
     this.enabled = true,
     this.autofocus = false,
     this.placeholder,
+    this.error,
+    this.helper,
     this.textStyle,
     this.style,
     this.seed,
@@ -87,6 +101,8 @@ class DrawkitTextarea extends StatelessWidget {
   final bool enabled;
   final bool autofocus;
   final String? placeholder;
+  final String? error;
+  final String? helper;
   final TextStyle? textStyle;
   final DrawkitStyle? style;
   final int? seed;
@@ -102,6 +118,8 @@ class DrawkitTextarea extends StatelessWidget {
     enabled: enabled,
     autofocus: autofocus,
     placeholder: placeholder,
+    error: error,
+    helper: helper,
     textStyle: textStyle,
     style: style,
     seed: seed,
@@ -122,6 +140,8 @@ class _DrawkitField extends StatefulWidget {
     required this.enabled,
     required this.autofocus,
     required this.placeholder,
+    required this.error,
+    required this.helper,
     required this.textStyle,
     required this.style,
     required this.seed,
@@ -139,6 +159,8 @@ class _DrawkitField extends StatefulWidget {
   final bool enabled;
   final bool autofocus;
   final String? placeholder;
+  final String? error;
+  final String? helper;
   final TextStyle? textStyle;
   final DrawkitStyle? style;
   final int? seed;
@@ -214,75 +236,110 @@ class _DrawkitFieldState extends State<_DrawkitField> {
         .merge(const TextStyle(color: DrawkitPalette.ink))
         .merge(widget.textStyle);
     final hint = widget.placeholder;
+    final hasError = widget.error != null;
+    final strokeColor = hasError ? DrawkitPalette.error : style.effectiveStroke;
+    final message = widget.error ?? widget.helper;
 
-    return ConstrainedBox(
-      constraints: BoxConstraints(minWidth: widget.minWidth),
-      child: DrawkitSurface(
-        builder: (size, options) => [
-          DrawkitLayer(
-            roughRoundedRect(
-              _inset,
-              _inset,
-              size.width - 2 * _inset,
-              size.height - 2 * _inset,
-              6,
-              options,
-            ),
-            drawkitStroke(style),
-          ),
-          if (_focused)
-            DrawkitLayer(
-              roughRoundedRect(
-                -1,
-                -1,
-                size.width + 2,
-                size.height + 2,
-                8,
-                options,
-              ),
-              drawkitStroke(style, fallbackWidth: 1.5),
-            ),
-        ],
-        style: style,
-        seed: widget.seed,
-        animate: widget.animate,
-        enabled: widget.enabled,
-        resketchOnPointer: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Stack(
-            children: [
-              if (hint != null && _controller.text.isEmpty)
-                Text(
-                  hint,
-                  style: textStyle.copyWith(color: DrawkitPalette.inkFaint),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ConstrainedBox(
+          constraints: BoxConstraints(minWidth: widget.minWidth),
+          child: DrawkitSurface(
+            builder: (size, options) => [
+              DrawkitLayer(
+                roughRoundedRect(
+                  _inset,
+                  _inset,
+                  size.width - 2 * _inset,
+                  size.height - 2 * _inset,
+                  6,
+                  options,
                 ),
-              EditableText(
-                controller: _controller,
-                focusNode: _focusNode,
-                style: textStyle,
-                cursorColor: style.effectiveStroke,
-                backgroundCursorColor: const Color(0x00000000),
-                cursorWidth: 1.5,
-                selectionColor: style.effectiveStroke.withValues(alpha: 0.20),
-                autofocus: widget.autofocus,
-                readOnly: !widget.enabled,
-                showCursor: widget.enabled,
-                maxLines: widget.maxLines,
-                minLines: widget.minLines,
-                onChanged: widget.onChanged,
-                onSubmitted: widget.onSubmitted,
-                keyboardType: widget.multiline
-                    ? TextInputType.multiline
-                    : TextInputType.text,
-                textInputAction: widget.multiline
-                    ? TextInputAction.newline
-                    : TextInputAction.done,
+                drawkitStroke(style, color: strokeColor),
               ),
+              if (_focused)
+                DrawkitLayer(
+                  roughRoundedRect(
+                    -1,
+                    -1,
+                    size.width + 2,
+                    size.height + 2,
+                    8,
+                    options,
+                  ),
+                  drawkitStroke(style, color: strokeColor, fallbackWidth: 1.5),
+                ),
             ],
+            style: style,
+            seed: widget.seed,
+            animate: widget.animate,
+            enabled: widget.enabled,
+            resketchOnPointer: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Stack(
+                children: [
+                  if (hint != null && _controller.text.isEmpty)
+                    Text(
+                      hint,
+                      style: textStyle.copyWith(color: DrawkitPalette.inkFaint),
+                    ),
+                  EditableText(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    style: textStyle,
+                    cursorColor: strokeColor,
+                    backgroundCursorColor: const Color(0x00000000),
+                    cursorWidth: 1.5,
+                    selectionColor: style.effectiveStroke.withValues(
+                      alpha: 0.20,
+                    ),
+                    autofocus: widget.autofocus,
+                    readOnly: !widget.enabled,
+                    showCursor: widget.enabled,
+                    maxLines: widget.maxLines,
+                    minLines: widget.minLines,
+                    onChanged: widget.onChanged,
+                    onSubmitted: widget.onSubmitted,
+                    keyboardType: widget.multiline
+                        ? TextInputType.multiline
+                        : TextInputType.text,
+                    textInputAction: widget.multiline
+                        ? TextInputAction.newline
+                        : TextInputAction.done,
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
-      ),
+        if (message != null)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(top: 6, start: 2, end: 2),
+            child: hasError
+                ? Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      widget.error!,
+                      style: textStyle.copyWith(
+                        fontSize: 13,
+                        height: 1.4,
+                        color: DrawkitPalette.error,
+                      ),
+                    ),
+                  )
+                : Text(
+                    message,
+                    style: textStyle.copyWith(
+                      fontSize: 13,
+                      height: 1.4,
+                      color: DrawkitPalette.inkMuted,
+                    ),
+                  ),
+          ),
+      ],
     );
   }
 }
