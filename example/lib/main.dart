@@ -35,58 +35,64 @@ class Gallery extends StatefulWidget {
 
 class _GalleryState extends State<Gallery> {
   int _page = 0;
+  bool _rtl = false;
 
   @override
-  Widget build(BuildContext context) => DefaultTextStyle(
-    style: const TextStyle(
-      color: DrawkitPalette.ink,
-      fontSize: 14,
-      height: 1.4,
-      decoration: TextDecoration.none,
-    ),
-    child: ColoredBox(
-      color: DrawkitPalette.paper,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _Sidebar(
-            pages: galleryPages,
-            selected: _page,
-            onSelect: (i) => setState(() => _page = i),
-          ),
-          Expanded(
-            child: ScrollConfiguration(
-              behavior: const _DragScrollBehavior(),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(28),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      galleryPages[_page].title,
-                      style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w600,
-                        color: DrawkitPalette.ink,
-                        decoration: TextDecoration.none,
+  Widget build(BuildContext context) => Directionality(
+    textDirection: _rtl ? TextDirection.rtl : TextDirection.ltr,
+    child: DefaultTextStyle(
+      style: const TextStyle(
+        color: DrawkitPalette.ink,
+        fontSize: 14,
+        height: 1.4,
+        decoration: TextDecoration.none,
+      ),
+      child: ColoredBox(
+        color: DrawkitPalette.paper,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _Sidebar(
+              pages: galleryPages,
+              selected: _page,
+              onSelect: (i) => setState(() => _page = i),
+              rtl: _rtl,
+              onToggleRtl: (v) => setState(() => _rtl = v),
+            ),
+            Expanded(
+              child: ScrollConfiguration(
+                behavior: const _DragScrollBehavior(),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(28),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        galleryPages[_page].title,
+                        style: const TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w600,
+                          color: DrawkitPalette.ink,
+                          decoration: TextDecoration.none,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      galleryPages[_page].subtitle,
-                      style: const TextStyle(
-                        color: DrawkitPalette.inkMuted,
-                        decoration: TextDecoration.none,
+                      const SizedBox(height: 6),
+                      Text(
+                        galleryPages[_page].subtitle,
+                        style: const TextStyle(
+                          color: DrawkitPalette.inkMuted,
+                          decoration: TextDecoration.none,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    galleryPages[_page].builder(context),
-                  ],
+                      const SizedBox(height: 24),
+                      galleryPages[_page].builder(context),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     ),
   );
@@ -149,19 +155,23 @@ class _Sidebar extends StatelessWidget {
     required this.pages,
     required this.selected,
     required this.onSelect,
+    required this.rtl,
+    required this.onToggleRtl,
   });
 
   final List<GalleryPage> pages;
   final int selected;
   final ValueChanged<int> onSelect;
+  final bool rtl;
+  final ValueChanged<bool> onToggleRtl;
 
   @override
   Widget build(BuildContext context) => Container(
     width: _sidebarWidth,
     decoration: const BoxDecoration(
       color: DrawkitPalette.surface,
-      border: Border(
-        right: BorderSide(color: DrawkitPalette.inkFaint, width: 1),
+      border: BorderDirectional(
+        end: BorderSide(color: DrawkitPalette.inkFaint, width: 1),
       ),
     ),
     child: Column(
@@ -205,6 +215,22 @@ class _Sidebar extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
+          child: Row(
+            children: [
+              const Text(
+                'RTL',
+                style: TextStyle(
+                  color: DrawkitPalette.inkMuted,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+              const SizedBox(width: 10),
+              DrawkitToggle(value: rtl, onChanged: onToggleRtl),
+            ],
           ),
         ),
       ],

@@ -34,6 +34,11 @@ DrawkitButton(
 - **Reduced motion respected.** `MediaQuery.disableAnimations` and
   `PlatformDispatcher.accessibilityFeatures.reduceMotion` freeze the boil on
   frame 0 and skip pointer re-sketches.
+- **RTL follows the ambient `Directionality`.** Directional geometry
+  (`start`/`end`) throughout, and painted anchors re-place themselves: the
+  select chevron and menu edge, list gutters and markers, the toggle's
+  resting side. LTR drawings are unchanged, stroke for stroke — the gallery
+  sidebar has an RTL switch to compare.
 
 ## Widgets
 

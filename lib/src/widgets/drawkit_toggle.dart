@@ -102,9 +102,11 @@ class _DrawkitToggleState extends State<DrawkitToggle>
     Size size,
     RoughOptions options,
     DrawkitStyle style,
+    TextDirection direction,
   ) {
     final w = size.width;
     final h = size.height;
+    final rtl = direction == TextDirection.rtl;
     final r = (h - 2 * _inset) / 2;
     final outline = roughRoundedRect(
       _inset,
@@ -124,8 +126,14 @@ class _DrawkitToggleState extends State<DrawkitToggle>
     final knob = roughCircle(h / 2, h / 2, h / 2 - _inset - 3, options);
     final knobInk = style.effectiveFill;
     final travel = w - h;
-    Matrix4 knobTravel() =>
-        Matrix4.identity()..translateByDouble(travel * _knob.value, 0, 0, 1);
+    // RTL rests the knob on the right and travels left when on.
+    Matrix4 knobTravel() => Matrix4.identity()
+      ..translateByDouble(
+        travel * (rtl ? 1 - _knob.value : _knob.value),
+        0,
+        0,
+        1,
+      );
 
     // blob knob: fill and stroke in the one ink, 4px like `.drawably-blob`
     layers.add(
@@ -153,6 +161,7 @@ class _DrawkitToggleState extends State<DrawkitToggle>
   @override
   Widget build(BuildContext context) {
     final style = widget.style ?? DrawkitTheme.of(context);
+    final direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
     _reduceMotion = drawkitReduceMotion(context);
 
     final boil = widget.animate && style.boil > 0 && !_reduceMotion;
@@ -188,7 +197,7 @@ class _DrawkitToggleState extends State<DrawkitToggle>
         label: widget.semanticLabel,
         onTap: widget.enabled ? _toggle : null,
         child: DrawkitSurface(
-          builder: (size, options) => _layers(size, options, style),
+          builder: (size, options) => _layers(size, options, style, direction),
           style: style,
           seed: widget.seed,
           animate: widget.animate,

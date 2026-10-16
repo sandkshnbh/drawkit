@@ -48,7 +48,7 @@ class DrawkitChip extends StatelessWidget {
           style: style,
           seed: base,
           animate: animate,
-          padding: const EdgeInsets.fromLTRB(6, 3, 10, 3),
+          padding: const EdgeInsetsDirectional.fromSTEB(6, 3, 10, 3),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -100,7 +100,9 @@ class DrawkitTabs extends StatelessWidget {
       children: [
         for (var i = 0; i < labels.length; i++)
           Padding(
-            padding: EdgeInsets.only(right: i == labels.length - 1 ? 0 : 18),
+            padding: EdgeInsetsDirectional.only(
+              end: i == labels.length - 1 ? 0 : 18,
+            ),
             child: Semantics(
               selected: i == active,
               button: true,
@@ -390,7 +392,7 @@ class DrawkitPager extends StatelessWidget {
       children: [
         for (var i = 0; i < count; i++)
           Padding(
-            padding: EdgeInsets.only(right: i == count - 1 ? 0 : 6),
+            padding: EdgeInsetsDirectional.only(end: i == count - 1 ? 0 : 6),
             child: Semantics(
               selected: i == page,
               child: ConstrainedBox(

@@ -1,3 +1,11 @@
+## Unreleased
+
+- **RTL** — every widget follows the ambient `Directionality`: layout uses
+  directional geometry (`EdgeInsetsDirectional`), and painted anchors flip
+  with it — the select chevron and menu alignment, the list gutter and
+  markers, the toggle's resting side and travel, chip/tabs/pager spacing.
+  LTR output is unchanged, stroke for stroke.
+
 ## 0.1.0
 
 First release: the complete drawably port.

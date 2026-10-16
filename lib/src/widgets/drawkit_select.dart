@@ -137,6 +137,7 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
     RoughOptions options,
     DrawkitStyle style,
     bool placeholder,
+    TextDirection direction,
   ) {
     final w = size.width;
     final h = size.height;
@@ -159,7 +160,9 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
       roughness: options.roughness * _chevronRoughness,
       boil: options.boil,
     );
-    final x = w - _chevronRight - _chevronW;
+    final x = direction == TextDirection.rtl
+        ? _chevronRight
+        : w - _chevronRight - _chevronW;
     final y = h / 2 - _chevronH / 2;
     layers.add(
       DrawkitLayer(
@@ -203,6 +206,7 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
   @override
   Widget build(BuildContext context) {
     final style = widget.style ?? DrawkitTheme.of(context);
+    final direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
     final textStyle = DefaultTextStyle.of(context).style
         .merge(const TextStyle(color: DrawkitPalette.ink))
         .merge(widget.textStyle);
@@ -213,7 +217,10 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
       consumeOutsideTaps: true,
       childFocusNode: _focusNode,
       overlayBuilder: (context, child) => CustomSingleChildLayout(
-        delegate: _MenuPositionDelegate(anchorRect: _anchorRect),
+        delegate: _MenuPositionDelegate(
+          anchorRect: _anchorRect,
+          textDirection: Directionality.maybeOf(context) ?? direction,
+        ),
         child: _menuPanel(context, style, textStyle),
       ),
       builder: (context, controller, child) => FocusableActionDetector(
@@ -249,17 +256,22 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
               constraints: BoxConstraints(minWidth: widget.minWidth),
               child: DrawkitSurface(
                 key: _fieldKey,
-                builder: (size, options) =>
-                    _fieldLayers(size, options, style, isPlaceholder),
+                builder: (size, options) => _fieldLayers(
+                  size,
+                  options,
+                  style,
+                  isPlaceholder,
+                  direction,
+                ),
                 style: style,
                 seed: widget.seed,
                 animate: widget.animate,
                 enabled: widget.enabled,
                 resketchOnPointer: false,
                 child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: 12,
-                    right: 34,
+                  padding: const EdgeInsetsDirectional.only(
+                    start: 12,
+                    end: 34,
                     top: 8,
                     bottom: 8,
                   ),
@@ -331,10 +343,15 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
 }
 
 /// Positions the panel under the anchor, same width, clamped to the viewport.
+/// The panel's inline-start edge tracks the anchor's: left in LTR, right in RTL.
 class _MenuPositionDelegate extends SingleChildLayoutDelegate {
-  _MenuPositionDelegate({required this.anchorRect});
+  _MenuPositionDelegate({
+    required this.anchorRect,
+    required this.textDirection,
+  });
 
   final Rect anchorRect;
+  final TextDirection textDirection;
 
   @override
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) =>
@@ -349,7 +366,10 @@ class _MenuPositionDelegate extends SingleChildLayoutDelegate {
     final below = anchorRect.bottom + _menuGap;
     final fitsBelow = below + childSize.height <= size.height;
     final y = fitsBelow ? below : anchorRect.top - _menuGap - childSize.height;
-    final x = anchorRect.left.clamp(
+    final rawX = textDirection == TextDirection.rtl
+        ? anchorRect.right - childSize.width
+        : anchorRect.left;
+    final x = rawX.clamp(
       0.0,
       (size.width - childSize.width).clamp(0.0, double.infinity),
     );
@@ -364,7 +384,8 @@ class _MenuPositionDelegate extends SingleChildLayoutDelegate {
 
   @override
   bool shouldRelayout(_MenuPositionDelegate oldDelegate) =>
-      anchorRect != oldDelegate.anchorRect;
+      anchorRect != oldDelegate.anchorRect ||
+      textDirection != oldDelegate.textDirection;
 }
 
 class _SelectRow extends StatefulWidget {

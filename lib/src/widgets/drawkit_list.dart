@@ -53,34 +53,41 @@ class _DrawkitListState extends State<DrawkitList> {
   @override
   Widget build(BuildContext context) {
     final style = widget.style ?? DrawkitTheme.of(context);
+    final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
     return Padding(
-      padding: const EdgeInsets.only(left: 24),
+      padding: const EdgeInsetsDirectional.only(start: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           for (var i = 0; i < widget.children.length; i++)
             DrawkitSurface(
-              builder: (size, options) => [
-                DrawkitLayer(
-                  widget.marker == DrawkitListMarker.check
-                      ? roughCheckmark(
-                          _markerLeft,
-                          widget.lineHeight / 2 - _markerW / 2,
-                          _markerW,
-                          _markerW,
-                          options,
-                        )
-                      : roughLine(
-                          _markerLeft,
-                          widget.lineHeight / 2,
-                          _markerLeft + _markerW,
-                          widget.lineHeight / 2,
-                          options,
-                        ),
-                  drawkitStroke(style),
-                ),
-              ],
+              builder: (size, options) {
+                // Mirrored gutter: -18..-8 in LTR, w+8..w+18 in RTL.
+                final markerX = rtl
+                    ? size.width - _markerLeft - _markerW
+                    : _markerLeft;
+                return [
+                  DrawkitLayer(
+                    widget.marker == DrawkitListMarker.check
+                        ? roughCheckmark(
+                            markerX,
+                            widget.lineHeight / 2 - _markerW / 2,
+                            _markerW,
+                            _markerW,
+                            options,
+                          )
+                        : roughLine(
+                            markerX,
+                            widget.lineHeight / 2,
+                            markerX + _markerW,
+                            widget.lineHeight / 2,
+                            options,
+                          ),
+                    drawkitStroke(style),
+                  ),
+                ];
+              },
               style: style,
               seed: _seed + i,
               animate: widget.animate,
