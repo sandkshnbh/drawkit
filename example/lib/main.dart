@@ -153,6 +153,11 @@ final List<GalleryPage> galleryPages = [
     'Draw-on tracing, staggered lists, and the error shake — one shared pen.',
     (context) => const MotionPage(),
   ),
+  GalleryPage(
+    'Actions',
+    'Segments, slider, stepper, search, icon buttons, and the floating pen.',
+    (context) => const ActionsPage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -1102,6 +1107,123 @@ class _MotionPageState extends State<MotionPage> {
           DrawkitButton(
             onPressed: () => setState(() => _run++),
             child: const Text('replay the drawing'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ActionsPage extends StatefulWidget {
+  const ActionsPage({super.key});
+
+  @override
+  State<ActionsPage> createState() => _ActionsPageState();
+}
+
+class _ActionsPageState extends State<ActionsPage> {
+  String _view = 'grid';
+  double _size = 0.4;
+  int _copies = 1;
+  String _query = '';
+  bool _favourite = false;
+
+  @override
+  Widget build(BuildContext context) {
+    const body = TextStyle(
+      fontSize: 14,
+      height: 1.5,
+      color: DrawkitPalette.ink,
+      decoration: TextDecoration.none,
+    );
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Segmented — one frame, a scribbled wash for the pick',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          DrawkitSegmentedButton<String>(
+            segments: const [
+              DrawkitSegment(value: 'grid', label: 'Grid'),
+              DrawkitSegment(value: 'list', label: 'List'),
+              DrawkitSegment(value: 'kanban', label: 'Kanban'),
+            ],
+            selected: _view,
+            onChanged: (value) => setState(() => _view = value),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Slider — stroke width ${_size.toStringAsFixed(2)}',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          DrawkitSlider(
+            value: _size,
+            divisions: 20,
+            onChanged: (value) => setState(() => _size = value),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Stepper — $_copies ${_copies == 1 ? 'copy' : 'copies'}',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              DrawkitStepper(
+                value: _copies,
+                min: 1,
+                max: 9,
+                onChanged: (value) => setState(() => _copies = value),
+              ),
+              const Spacer(),
+              DrawkitIconButton(
+                semanticLabel: 'Favourite',
+                tone: _favourite ? DrawkitTone.accent : DrawkitTone.neutral,
+                variant: _favourite
+                    ? DrawkitButtonVariant.solid
+                    : DrawkitButtonVariant.outline,
+                onPressed: () => setState(() => _favourite = !_favourite),
+                child: Text(_favourite ? '★' : '☆'),
+              ),
+              const SizedBox(width: 8),
+              DrawkitIconButton(
+                semanticLabel: 'Delete',
+                tone: DrawkitTone.danger,
+                onPressed: () => setState(() => _copies = 1),
+                child: const Text('×'),
+              ),
+              const SizedBox(width: 16),
+              DrawkitFab(
+                semanticLabel: 'Add sketch',
+                size: 44,
+                tone: DrawkitTone.accent,
+                onPressed: () =>
+                    setState(() => _copies = (_copies + 1).clamp(1, 9)),
+                child: const Text('+'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'Search — the magnifier holds the leading gutter',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          DrawkitSearchField(
+            placeholder: 'search the sketchbook…',
+            onChanged: (value) => setState(() => _query = value),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            _query.isEmpty
+                ? 'nothing typed yet'
+                : 'you are looking for: $_query',
+            style: body.copyWith(color: DrawkitPalette.inkMuted),
           ),
         ],
       ),

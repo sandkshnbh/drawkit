@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -236,6 +238,242 @@ class _DrawkitButtonState extends State<DrawkitButton> {
                     heightFactor: 1,
                     child: widget.child,
                   ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A square icon button: [DrawkitButton] with icon padding and a required
+/// accessibility label (there is no text to announce).
+class DrawkitIconButton extends StatelessWidget {
+  const DrawkitIconButton({
+    required this.child,
+    required this.semanticLabel,
+    this.onPressed,
+    this.variant = DrawkitButtonVariant.outline,
+    this.state = DrawkitButtonState.idle,
+    this.tone = DrawkitTone.accent,
+    this.size = 34,
+    this.style,
+    this.seed,
+    this.animate = true,
+    this.focusNode,
+    this.autofocus = false,
+    super.key,
+  });
+
+  final Widget child;
+  final String semanticLabel;
+  final VoidCallback? onPressed;
+  final DrawkitButtonVariant variant;
+  final DrawkitButtonState state;
+  final DrawkitTone tone;
+  final double size;
+  final DrawkitStyle? style;
+  final int? seed;
+  final bool animate;
+  final FocusNode? focusNode;
+  final bool autofocus;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: size,
+    height: size,
+    child: DrawkitButton(
+      onPressed: onPressed,
+      variant: variant,
+      state: state,
+      tone: tone,
+      style: style,
+      seed: seed,
+      animate: animate,
+      padding: EdgeInsets.zero,
+      focusNode: focusNode,
+      autofocus: autofocus,
+      semanticLabel: semanticLabel,
+      child: Center(child: child),
+    ),
+  );
+}
+
+/// The round sibling of [DrawkitButton]: a floating pen circle for the one
+/// action that never scrolls away. Same lift, sink, hover wash, and focus
+/// ring, drawn around a circle instead of a rounded rect.
+class DrawkitFab extends StatefulWidget {
+  const DrawkitFab({
+    required this.child,
+    this.onPressed,
+    this.tone = DrawkitTone.accent,
+    this.style,
+    this.seed,
+    this.animate = true,
+    this.size = 56,
+    this.semanticLabel,
+    this.focusNode,
+    this.autofocus = false,
+    super.key,
+  });
+
+  final Widget child;
+  final VoidCallback? onPressed;
+  final DrawkitTone tone;
+  final DrawkitStyle? style;
+  final int? seed;
+  final bool animate;
+  final double size;
+  final String? semanticLabel;
+  final FocusNode? focusNode;
+  final bool autofocus;
+
+  bool get enabled => onPressed != null;
+
+  @override
+  State<DrawkitFab> createState() => _DrawkitFabState();
+}
+
+class _DrawkitFabState extends State<DrawkitFab> {
+  bool _hovered = false;
+  bool _pressed = false;
+  bool _focused = false;
+  late FocusNode _focusNode;
+  late bool _ownsFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _attachFocusNode();
+  }
+
+  void _attachFocusNode() {
+    _ownsFocusNode = widget.focusNode == null;
+    _focusNode = widget.focusNode ?? FocusNode();
+  }
+
+  @override
+  void didUpdateWidget(DrawkitFab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.focusNode != oldWidget.focusNode) {
+      if (_ownsFocusNode) _focusNode.dispose();
+      _attachFocusNode();
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_ownsFocusNode) _focusNode.dispose();
+    super.dispose();
+  }
+
+  Color _resolvedInk(DrawkitStyle style) => switch (widget.tone) {
+    DrawkitTone.accent => style.ink ?? DrawkitPalette.pen,
+    DrawkitTone.neutral => DrawkitPalette.neutral,
+    DrawkitTone.danger => DrawkitPalette.error,
+  };
+
+  List<DrawkitLayer> _layers(
+    Size size,
+    RoughOptions options,
+    DrawkitStyle style,
+    Color ink,
+  ) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final r = math.min(size.width, size.height) / 2 - _inset;
+    final layers = <DrawkitLayer>[];
+    if (_hovered && widget.enabled) {
+      layers.add(
+        DrawkitLayer(
+          roughCircle(cx, cy, r, options),
+          drawkitFillPaint(ink.withValues(alpha: 0.10)),
+        ),
+      );
+    }
+    final outlinePaint = drawkitStroke(style, color: ink);
+    if (_pressed && widget.enabled) {
+      outlinePaint.strokeWidth = style.strokeWidth(2) * 1.4;
+    }
+    layers.add(DrawkitLayer(roughCircle(cx, cy, r, options), outlinePaint));
+    if (_focused) {
+      layers.add(
+        DrawkitLayer(
+          roughCircle(cx, cy, r + 2, options),
+          drawkitStroke(style, color: ink, fallbackWidth: 1.5),
+        ),
+      );
+    }
+    return layers;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final themeStyle = widget.style ?? DrawkitTheme.of(context);
+    final ink = _resolvedInk(themeStyle);
+    final style = themeStyle.copyWith(strokeColor: ink, fillColor: ink);
+    final reduceMotion = drawkitReduceMotion(context);
+
+    final offsetY = !widget.enabled
+        ? 0.0
+        : _pressed
+        ? 1.0
+        : _hovered
+        ? -1.0
+        : 0.0;
+
+    return AnimatedContainer(
+      duration: reduceMotion
+          ? Duration.zero
+          : const Duration(milliseconds: 120),
+      curve: Curves.easeOut,
+      transform: Matrix4.translationValues(0, offsetY, 0),
+      child: SizedBox(
+        width: widget.size,
+        height: widget.size,
+        child: Shortcuts(
+          shortcuts: {
+            const SingleActivator(LogicalKeyboardKey.enter):
+                const ActivateIntent(),
+            const SingleActivator(LogicalKeyboardKey.space):
+                const ActivateIntent(),
+          },
+          child: FocusableActionDetector(
+            focusNode: _focusNode,
+            autofocus: widget.autofocus,
+            enabled: widget.enabled,
+            onShowFocusHighlight: (value) => setState(() => _focused = value),
+            actions: {
+              ActivateIntent: CallbackAction<ActivateIntent>(
+                onInvoke: (intent) {
+                  widget.onPressed?.call();
+                  return null;
+                },
+              ),
+            },
+            mouseCursor: widget.enabled
+                ? SystemMouseCursors.click
+                : SystemMouseCursors.basic,
+            child: Semantics(
+              button: true,
+              enabled: widget.enabled,
+              label: widget.semanticLabel,
+              child: DrawkitSurface(
+                builder: (size, options) => _layers(size, options, style, ink),
+                style: style,
+                seed: widget.seed,
+                animate: widget.animate,
+                enabled: widget.enabled,
+                resketchOnPointer: true,
+                onHoverChanged: (v) => setState(() => _hovered = v),
+                onPressedChanged: (v) => setState(() => _pressed = v),
+                onTap: widget.enabled ? widget.onPressed : null,
+                child: DefaultTextStyle(
+                  style: DefaultTextStyle.of(context).style
+                      .copyWith(color: ink),
+                  child: Center(child: widget.child),
                 ),
               ),
             ),

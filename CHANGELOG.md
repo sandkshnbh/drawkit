@@ -1,5 +1,11 @@
 ## Unreleased
 
+- **Actions** — `DrawkitSegmentedButton` (rough frame, scribbled wash under
+  the pick), `DrawkitSlider` (tap/drag/keyboard, division snapping, fill from
+  the leading edge), `DrawkitStepper` (boundary-aware − / +), `DrawkitSearchField`
+  (pen magnifier in the leading gutter, × clears and reports `''`), plus
+  `DrawkitIconButton` and `DrawkitFab` in `drawkit_button.dart`. All follow
+  `Directionality` and reuse the existing surface conventions.
 - **Motion** — `DrawkitSketchIn` traces every surface below it on mount (a
   `DrawkitSketchScope` carries the progress; surfaces trim at paint time, no
   per-tick rebuilds), `DrawkitStagger` draws a list in one clock, a step
