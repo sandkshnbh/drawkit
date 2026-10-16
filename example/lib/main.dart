@@ -1,122 +1,393 @@
-import 'package:flutter/material.dart';
+import 'dart:ui' show PointerDeviceKind;
 
-void main() {
-  runApp(const MyApp());
-}
+import 'package:drawkit/drawkit.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/widgets.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+void main() => runApp(const DrawkitGalleryApp());
 
-  // This widget is the root of your application.
+const _sidebarWidth = 210.0;
+
+class DrawkitGalleryApp extends StatelessWidget {
+  const DrawkitGalleryApp({super.key});
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
+  Widget build(BuildContext context) => WidgetsApp(
+    title: 'drawkit gallery',
+    color: DrawkitPalette.paper,
+    debugShowCheckedModeBanner: false,
+    pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) => PageRouteBuilder<T>(
+      settings: settings,
+      pageBuilder: (context, animation, secondaryAnimation) => builder(context),
+    ),
+    home: const Gallery(),
+  );
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class Gallery extends StatefulWidget {
+  const Gallery({super.key});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+  @override
+  State<Gallery> createState() => _GalleryState();
+}
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+class _GalleryState extends State<Gallery> {
+  int _page = 0;
+
+  @override
+  Widget build(BuildContext context) => DefaultTextStyle(
+    style: const TextStyle(
+      color: DrawkitPalette.ink,
+      fontSize: 14,
+      height: 1.4,
+      decoration: TextDecoration.none,
+    ),
+    child: ColoredBox(
+      color: DrawkitPalette.paper,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _Sidebar(
+            pages: galleryPages,
+            selected: _page,
+            onSelect: (i) => setState(() => _page = i),
+          ),
+          Expanded(
+            child: ScrollConfiguration(
+              behavior: const _DragScrollBehavior(),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      galleryPages[_page].title,
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w600,
+                        color: DrawkitPalette.ink,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      galleryPages[_page].subtitle,
+                      style: const TextStyle(color: DrawkitPalette.inkMuted, decoration: TextDecoration.none),
+                    ),
+                    const SizedBox(height: 24),
+                    galleryPages[_page].builder(context),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class GalleryPage {
+  const GalleryPage(this.title, this.subtitle, this.builder);
 
   final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  final String subtitle;
+  final WidgetBuilder builder;
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+/// Filled in per milestone; see the individual page builders below.
+final List<GalleryPage> galleryPages = [
+  GalleryPage(
+    'Surface',
+    'The shared sketch surface: seeded chrome behind any child, one boil clock.',
+    (context) => const SurfacePage(),
+  ),
+  GalleryPage(
+    'Button',
+    'Three variants, four states, three tones — real widget behaviour in front.',
+    (context) => const ButtonPage(),
+  ),
+];
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+class _Sidebar extends StatelessWidget {
+  const _Sidebar({required this.pages, required this.selected, required this.onSelect});
+
+  final List<GalleryPage> pages;
+  final int selected;
+  final ValueChanged<int> onSelect;
 
   @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+  Widget build(BuildContext context) => Container(
+    width: _sidebarWidth,
+    decoration: const BoxDecoration(
+      color: DrawkitPalette.surface,
+      border: Border(right: BorderSide(color: DrawkitPalette.inkFaint, width: 1)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(18, 20, 18, 14),
+          child: Text(
+            'drawkit',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: DrawkitPalette.pen,
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: pages.length,
+            itemBuilder: (context, i) => GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => onSelect(i),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+                color: i == selected ? DrawkitPalette.paper : null,
+                child: Text(
+                  pages[i].title,
+                  style: TextStyle(
+                    color: i == selected ? DrawkitPalette.pen : DrawkitPalette.inkMuted,
+                    fontWeight: i == selected ? FontWeight.w600 : FontWeight.w400,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _DragScrollBehavior extends ScrollBehavior {
+  const _DragScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => const {
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Surface page
+
+class SurfacePage extends StatefulWidget {
+  const SurfacePage({super.key});
+
+  @override
+  State<SurfacePage> createState() => _SurfacePageState();
+}
+
+class _SurfacePageState extends State<SurfacePage> {
+  double roughness = 1;
+  double boil = 0.3;
+  int? seed = 42;
+  bool animate = true;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SizedBox(
+        width: 360,
+        height: 130,
+        child: DrawkitSurface(
+          builder: (size, options) => [
+            DrawkitLayer(
+              roughRoundedRect(3, 3, size.width - 6, size.height - 6, 10, options),
+              Paint()
+                ..color = DrawkitPalette.pen
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 2
+                ..strokeCap = StrokeCap.round
+                ..strokeJoin = StrokeJoin.round,
             ),
           ],
+          style: DrawkitStyle(roughness: roughness, boil: boil, seed: seed),
+          seed: seed,
+          animate: animate,
+          resketchOnPointer: true,
+          child: const Center(child: Text('hover me — I am redrawn')),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      const SizedBox(height: 24),
+      _NumberStepper(
+        label: 'roughness',
+        value: roughness,
+        step: 0.1,
+        min: 0,
+        max: 3,
+        onChanged: (v) => setState(() => roughness = v),
       ),
-    );
-  }
+      _NumberStepper(
+        label: 'boil',
+        value: boil,
+        step: 0.1,
+        min: 0,
+        max: 1.5,
+        onChanged: (v) => setState(() => boil = v),
+      ),
+      _NumberStepper(
+        label: 'seed',
+        value: seed?.toDouble() ?? -1,
+        step: 1,
+        min: -1,
+        max: 1000000,
+        onChanged: (v) => setState(() => seed = v < 0 ? null : v.round()),
+      ),
+      const SizedBox(height: 10),
+      Row(
+        children: [
+          DrawkitButton(
+            onPressed: () => setState(() => animate = !animate),
+            child: Text(animate ? 'boil: on' : 'boil: off'),
+          ),
+        ],
+      ),
+    ],
+  );
 }
+
+class _NumberStepper extends StatelessWidget {
+  const _NumberStepper({
+    required this.label,
+    required this.value,
+    required this.step,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
+
+  final String label;
+  final double value;
+  final double step;
+  final double min;
+  final double max;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 5),
+    child: Row(
+      children: [
+        SizedBox(
+          width: 110,
+          child: Text(label, style: const TextStyle(color: DrawkitPalette.inkMuted, decoration: TextDecoration.none)),
+        ),
+        DrawkitButton(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+          onPressed: value <= min ? null : () => onChanged((value - step).clamp(min, max)),
+          child: const Text('−'),
+        ),
+        SizedBox(
+          width: 90,
+          child: Center(
+            child: Text(
+              value < 0 ? 'random' : value.toStringAsFixed(step < 1 ? 1 : 0),
+              style: const TextStyle(fontFeatures: [FontFeature.tabularFigures()], decoration: TextDecoration.none),
+            ),
+          ),
+        ),
+        DrawkitButton(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+          onPressed: value >= max ? null : () => onChanged((value + step).clamp(min, max)),
+          child: const Text('+'),
+        ),
+      ],
+    ),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Button page
+
+class ButtonPage extends StatefulWidget {
+  const ButtonPage({super.key});
+
+  @override
+  State<ButtonPage> createState() => _ButtonPageState();
+}
+
+class _ButtonPageState extends State<ButtonPage> {
+  DrawkitButtonState state = DrawkitButtonState.idle;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Wrap(
+        spacing: 18,
+        runSpacing: 18,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          for (final variant in DrawkitButtonVariant.values)
+            DrawkitButton(
+              variant: variant,
+              onPressed: () {},
+              child: Text(variant.name),
+            ),
+        ],
+      ),
+      const SizedBox(height: 18),
+      Wrap(
+        spacing: 18,
+        runSpacing: 18,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          for (final tone in DrawkitTone.values)
+            DrawkitButton(tone: tone, onPressed: () {}, child: Text('tone: ${tone.name}')),
+          const DrawkitButton(onPressed: null, child: Text('disabled')),
+        ],
+      ),
+      const SizedBox(height: 26),
+      Row(
+        children: [
+          for (final s in DrawkitButtonState.values)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: DrawkitButton(
+                state: s,
+                onPressed: () {},
+                child: Text('state: ${s.name}'),
+              ),
+            ),
+        ],
+      ),
+      const SizedBox(height: 26),
+      Wrap(
+        spacing: 18,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          DrawkitButton(
+            variant: DrawkitButtonVariant.solid,
+            state: state,
+            onPressed: () {
+              setState(() {
+                state = switch (state) {
+                  DrawkitButtonState.idle => DrawkitButtonState.loading,
+                  DrawkitButtonState.loading => DrawkitButtonState.success,
+                  DrawkitButtonState.success => DrawkitButtonState.error,
+                  DrawkitButtonState.error => DrawkitButtonState.idle,
+                };
+              });
+            },
+            child: Text('cycle state: ${state.name}'),
+          ),
+          const Text(
+            'Tab to me for the focus ring →',
+            style: TextStyle(color: DrawkitPalette.inkMuted, decoration: TextDecoration.none),
+          ),
+          const DrawkitButton(autofocus: false, onPressed: _noop, child: Text('focus me')),
+        ],
+      ),
+    ],
+  );
+}
+
+void _noop() {}

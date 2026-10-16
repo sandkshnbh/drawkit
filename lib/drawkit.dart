@@ -22,3 +22,4 @@ export 'src/engine/rough.dart'
         scribbleFill,
         smooth,
         variants;
+export 'src/widgets/drawkit_button.dart';
