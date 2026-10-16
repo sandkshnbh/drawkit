@@ -1,5 +1,12 @@
 ## Unreleased
 
+- **Structure** — `DrawkitAppBar` (leading/title/actions over a paper surface
+  with the heavier shelf rule, announces itself as a header),
+  `DrawkitNavRail` + `DrawkitBottomNav` (shared `DrawkitNavDestination`;
+  the chosen tile wears a scribble wash and redraws on pick),
+  `DrawkitBreadcrumb` (pen underlines on tappable crumbs, bold current page,
+  muted separators) and `DrawkitTable` (flex-weighted columns, bold header
+  rule, faint row rules). Every piece is direction-aware.
 - **Menus** — `DrawkitMenu` (dropdown on a real anchor; paper panel with
   checked/hint rows and ruled dividers), `DrawkitPopover` (any trigger, any
   panel; width follows the anchor), `DrawkitAccordion` (headers on a sketch

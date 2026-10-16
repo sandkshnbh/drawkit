@@ -24,7 +24,9 @@ export 'src/engine/rough.dart'
         smooth,
         variants;
 export 'src/widgets/drawkit_accordion.dart';
+export 'src/widgets/drawkit_appbar.dart';
 export 'src/widgets/drawkit_arrow.dart';
+export 'src/widgets/drawkit_breadcrumb.dart';
 export 'src/widgets/drawkit_button.dart';
 export 'src/widgets/drawkit_checkbox.dart';
 export 'src/widgets/drawkit_command.dart';
@@ -35,6 +37,7 @@ export 'src/widgets/drawkit_dialog.dart';
 export 'src/widgets/drawkit_input.dart';
 export 'src/widgets/drawkit_list.dart';
 export 'src/widgets/drawkit_menu.dart';
+export 'src/widgets/drawkit_nav.dart';
 export 'src/widgets/drawkit_progress.dart';
 export 'src/widgets/drawkit_radio.dart';
 export 'src/widgets/drawkit_search.dart';
@@ -44,6 +47,7 @@ export 'src/widgets/drawkit_sheet.dart';
 export 'src/widgets/drawkit_skeleton.dart';
 export 'src/widgets/drawkit_slider.dart';
 export 'src/widgets/drawkit_stepper.dart';
+export 'src/widgets/drawkit_table.dart';
 export 'src/widgets/drawkit_text.dart';
 export 'src/widgets/drawkit_toast.dart';
 export 'src/widgets/drawkit_toggle.dart';

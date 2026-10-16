@@ -168,6 +168,11 @@ final List<GalleryPage> galleryPages = [
     'Dropdowns, popovers, an accordion, a command palette, and a date picker.',
     (context) => const MenusPage(),
   ),
+  GalleryPage(
+    'Structure',
+    'App bar, nav rail, bottom bar, breadcrumb, and a ruled table.',
+    (context) => const StructurePage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -1620,6 +1625,139 @@ class _MenusPageState extends State<MenusPage> {
           ),
           const SizedBox(height: 22),
           Text(_last, style: body.copyWith(color: DrawkitPalette.inkMuted)),
+        ],
+      ),
+    );
+  }
+}
+
+class StructurePage extends StatefulWidget {
+  const StructurePage({super.key});
+
+  @override
+  State<StructurePage> createState() => _StructurePageState();
+}
+
+class _StructurePageState extends State<StructurePage> {
+  int _rail = 0;
+  int _bottom = 0;
+
+  static const body = TextStyle(
+    fontSize: 14,
+    height: 1.5,
+    color: DrawkitPalette.ink,
+    decoration: TextDecoration.none,
+  );
+
+  static const destinations = [
+    DrawkitNavDestination(label: 'Inbox', icon: Text('✉')),
+    DrawkitNavDestination(label: 'Drafts', icon: Text('✎')),
+    DrawkitNavDestination(label: 'Archive', icon: Text('▤')),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const DrawkitAppBar(
+            leading: Text(
+              '←',
+              style: TextStyle(fontSize: 18, decoration: TextDecoration.none),
+            ),
+            title: Text('Sketchbook'),
+            actions: [
+              Text(
+                'save',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: DrawkitPalette.inkMuted,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+              Text(
+                '⋯',
+                style: TextStyle(fontSize: 18, decoration: TextDecoration.none),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const Text('Navigation — both bars mirror in RTL', style: body),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DrawkitNavRail(
+                destinations: destinations,
+                selected: _rail,
+                onChanged: (i) => setState(() => _rail = i),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 14),
+                  child: Text(
+                    'rail picked: ${destinations[_rail].label.toLowerCase()}',
+                    style: body.copyWith(color: DrawkitPalette.inkMuted),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          DrawkitBottomNav(
+            destinations: destinations,
+            selected: _bottom,
+            onChanged: (i) => setState(() => _bottom = i),
+          ),
+          const SizedBox(height: 22),
+          DrawkitBreadcrumb(
+            items: [
+              DrawkitBreadcrumbItem(
+                label: 'Sketchbook',
+                onTap: () =>
+                    showDrawkitToast(context, message: 'back to the book'),
+              ),
+              DrawkitBreadcrumbItem(
+                label: 'Pencils',
+                onTap: () =>
+                    showDrawkitToast(context, message: 'pencil drawer'),
+              ),
+              const DrawkitBreadcrumbItem(label: 'HB'),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'A ruled ledger — header line, faint row rules',
+            style: body,
+          ),
+          const SizedBox(height: 6),
+          DrawkitTable(
+            columns: const [
+              DrawkitTableColumn(label: 'Pencil', flex: 2),
+              DrawkitTableColumn(label: 'Qty'),
+              DrawkitTableColumn(label: 'Total'),
+            ],
+            rows: const [
+              [
+                Text('HB', style: body),
+                Text('12', style: body),
+                Text('\$1.20', style: body),
+              ],
+              [
+                Text('2B', style: body),
+                Text('3', style: body),
+                Text('\$0.60', style: body),
+              ],
+              [
+                Text('4H', style: body),
+                Text('1', style: body),
+                Text('\$0.30', style: body),
+              ],
+            ],
+          ),
         ],
       ),
     );
