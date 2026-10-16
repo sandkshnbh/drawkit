@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:drawkit/drawkit.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -210,6 +212,86 @@ void main() {
       expect(find.text('this way!'), findsOneWidget);
       expect(find.byType(DrawkitArrow), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('paints ink between the anchors on the first frames', (
+      tester,
+    ) async {
+      // The anchors sit inside an offset box: the painter's cached frames
+      // used to be built from the pre-layout measurements (origin zero), so
+      // the arrow landed at document coordinates, off this local canvas.
+      final from = GlobalKey();
+      final to = GlobalKey();
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 460, top: 280),
+            child: DrawkitTheme(
+              data: const DrawkitStyle(boil: 0),
+              child: SizedBox(
+                width: 320,
+                height: 220,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned(
+                      top: 20,
+                      left: 20,
+                      child: SizedBox(key: from, width: 60, height: 30),
+                    ),
+                    Positioned(
+                      top: 150,
+                      left: 200,
+                      child: SizedBox(key: to, width: 60, height: 30),
+                    ),
+                    Positioned.fill(
+                      child: DrawkitArrow(from: from, to: to, animate: false),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final arrowFinder = find.byType(DrawkitArrow);
+      final size = tester.getSize(arrowFinder);
+      final painter = tester
+          .widget<CustomPaint>(
+            find.descendant(
+              of: arrowFinder,
+              matching: find.byType(CustomPaint),
+            ),
+          )
+          .painter!;
+      final recorder = ui.PictureRecorder();
+      painter.paint(ui.Canvas(recorder), size);
+      final image = await tester.runAsync(
+        () => recorder.endRecording().toImage(
+          size.width.ceil(),
+          size.height.ceil(),
+        ),
+      );
+      final pixels = (await tester.runAsync(
+        () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
+      ))!.buffer.asUint8List();
+
+      var ink = 0;
+      final width = size.width.ceil();
+      for (var y = 15; y < 185; y++) {
+        for (var x = 30; x < 250; x++) {
+          if (pixels[(y * width + x) * 4 + 3] > 0) ink++;
+        }
+      }
+      expect(
+        ink,
+        greaterThan(0),
+        reason: 'the arrow must paint between the anchors on first load',
+      );
+      image!.dispose();
     });
   });
 }

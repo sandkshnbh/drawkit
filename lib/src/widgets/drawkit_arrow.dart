@@ -16,7 +16,7 @@ const double _arrowGap = 6;
 /// The JS version lives on `<body>` in document coordinates and redraws on
 /// resize; here the widget paints outside its own box (never clipped — put it
 /// in a [Stack] with `clipBehavior: Clip.none`) and a post-frame poll watches
-/// both anchor rects, redrawing when either moves. Same seed, same arrow.
+/// both anchor rects, rebuilding when either moves. Same seed, same arrow.
 class DrawkitArrow extends StatefulWidget {
   const DrawkitArrow({
     required this.from,
@@ -48,7 +48,15 @@ class _DrawkitArrowState extends State<DrawkitArrow> {
   void initState() {
     super.initState();
     _configurePoll();
+    _anchorPoll.addListener(_onAnchorsMoved);
     SchedulerBinding.instance.addPostFrameCallback(_anchorPoll.tick);
+  }
+
+  /// A repaint alone would reuse the frames the painter cached for its size,
+  /// still holding the pre-layout rects. Rebuilding hands the painter a fresh
+  /// cache, so the arrow appears as soon as the anchors land.
+  void _onAnchorsMoved() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -59,6 +67,7 @@ class _DrawkitArrowState extends State<DrawkitArrow> {
 
   @override
   void dispose() {
+    _anchorPoll.removeListener(_onAnchorsMoved);
     _anchorPoll.dispose();
     super.dispose();
   }
@@ -78,7 +87,6 @@ class _DrawkitArrowState extends State<DrawkitArrow> {
       seed: _seed,
       animate: widget.animate,
       resketchOnPointer: false,
-      accent: _anchorPoll,
       child: const SizedBox.expand(),
     );
   }

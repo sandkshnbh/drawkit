@@ -13,6 +13,11 @@
   `DrawkitCircle`) keep the `TextPainter`'s width, so the strokes stay aligned
   with the glyphs when the constraint is wider (single-line text shifted in
   RTL); `DrawkitKbd` keeps keycap glyph order LTR inside RTL paragraphs.
+- **Fixed** — `DrawkitArrow` (and the tooltip's arrow) drew with stale
+  measurements on the first frames: a repaint alone reused the frames cached
+  for the surface's size, so the arrow only appeared after the next rebuild
+  (any tap). The anchor poll now rebuilds, and arrows show as soon as the
+  anchors land.
 
 ## 0.1.0
 
