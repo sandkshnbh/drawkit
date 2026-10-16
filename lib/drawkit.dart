@@ -24,7 +24,9 @@ export 'src/engine/rough.dart'
         variants;
 export 'src/widgets/drawkit_button.dart';
 export 'src/widgets/drawkit_checkbox.dart';
+export 'src/widgets/drawkit_decorations.dart';
 export 'src/widgets/drawkit_radio.dart';
 export 'src/widgets/drawkit_input.dart';
+export 'src/widgets/drawkit_list.dart';
 export 'src/widgets/drawkit_select.dart';
 export 'src/widgets/drawkit_toggle.dart';

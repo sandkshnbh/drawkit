@@ -127,6 +127,11 @@ final List<GalleryPage> galleryPages = [
     'Chevron in the reserved gutter, overlay menu with sketched frame and check.',
     (context) => const SelectPage(),
   ),
+  GalleryPage(
+    'Divider · Card · Badge · List',
+    'Surface decorations: rules, frames, pills, and per-item markers.',
+    (context) => const DecorationsPage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -692,6 +697,99 @@ class _SelectPageState extends State<SelectPage> {
           color: DrawkitPalette.inkMuted,
           decoration: TextDecoration.none,
         ),
+      ),
+    ],
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Decorations page
+
+class DecorationsPage extends StatefulWidget {
+  const DecorationsPage({super.key});
+
+  @override
+  State<DecorationsPage> createState() => _DecorationsPageState();
+}
+
+class _DecorationsPageState extends State<DecorationsPage> {
+  DrawkitListMarker marker = DrawkitListMarker.dash;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'divider',
+        style: TextStyle(
+          color: DrawkitPalette.inkMuted,
+          decoration: TextDecoration.none,
+        ),
+      ),
+      const DrawkitDivider(),
+      const SizedBox(height: 18),
+      SizedBox(
+        width: 360,
+        child: DrawkitCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'A card',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'The frame is one seeded stroke; put anything inside.',
+                style: TextStyle(
+                  color: DrawkitPalette.inkMuted,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: const [
+                  DrawkitBadge(child: Text('outline')),
+                  SizedBox(width: 10),
+                  DrawkitBadge(
+                    variant: DrawkitBadgeVariant.scribble,
+                    child: Text('scribble'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(height: 24),
+      Row(
+        children: [
+          DrawkitButton(
+            onPressed: () => setState(() {
+              marker = marker == DrawkitListMarker.dash
+                  ? DrawkitListMarker.check
+                  : DrawkitListMarker.dash;
+            }),
+            child: Text('marker: ${marker.name}'),
+          ),
+          const SizedBox(width: 18),
+        ],
+      ),
+      const SizedBox(height: 12),
+      DrawkitList(
+        marker: marker,
+        children: const [
+          Text('Seeded randomness makes every mount a fresh sketch.'),
+          Text(
+            'Boil frames come from the variants generator, three per stroke.',
+          ),
+          Text('The marker gutter is 24px of reserved padding.'),
+        ],
       ),
     ],
   );
