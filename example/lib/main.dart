@@ -132,6 +132,11 @@ final List<GalleryPage> galleryPages = [
     'Surface decorations: rules, frames, pills, and per-item markers.',
     (context) => const DecorationsPage(),
   ),
+  GalleryPage(
+    'Underline · Highlight · Circle',
+    'Text decorations drawn per line box, measured with a TextPainter.',
+    (context) => const TextPage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -793,4 +798,48 @@ class _DecorationsPageState extends State<DecorationsPage> {
       ),
     ],
   );
+}
+
+// ---------------------------------------------------------------------------
+// Text decoration page
+
+class TextPage extends StatelessWidget {
+  const TextPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    const body = TextStyle(
+      fontSize: 16,
+      height: 1.5,
+      color: DrawkitPalette.ink,
+      decoration: TextDecoration.none,
+    );
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const DrawkitUnderline(
+            text: 'Every wrapped line gets its own underline stroke, so a sentence that crosses lines stays ruled to the last word.',
+            textStyle: body,
+          ),
+          const SizedBox(height: 22),
+          const DrawkitHighlight(
+            text: 'Important, but not shouting: the marker wash is one 6px scribble at 30% in multiply.',
+            textStyle: body,
+          ),
+          const SizedBox(height: 22),
+          const DrawkitCircle(
+            text: 'circled on arrival',
+            textStyle: TextStyle(
+              fontSize: 20,
+              height: 1.5,
+              color: DrawkitPalette.ink,
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -29,4 +29,5 @@ export 'src/widgets/drawkit_radio.dart';
 export 'src/widgets/drawkit_input.dart';
 export 'src/widgets/drawkit_list.dart';
 export 'src/widgets/drawkit_select.dart';
+export 'src/widgets/drawkit_text.dart';
 export 'src/widgets/drawkit_toggle.dart';
