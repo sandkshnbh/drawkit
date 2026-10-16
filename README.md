@@ -52,6 +52,7 @@ DrawkitButton(
 | Feedback | `DrawkitDialog` + `showDrawkitDialog`, `DrawkitSheet` + `showDrawkitSheet`, `DrawkitToast` + `showDrawkitToast`, `DrawkitProgressBar`, `DrawkitSpinner`, `DrawkitSkeleton` |
 | Menus | `DrawkitMenu`, `DrawkitMenuItem`, `DrawkitPopover`, `DrawkitAccordion`, `showDrawkitCommandPalette`, `DrawkitDatePicker` + `showDrawkitDatePicker` |
 | Structure | `DrawkitAppBar`, `DrawkitNavRail` + `DrawkitNavDestination`, `DrawkitBottomNav`, `DrawkitBreadcrumb`, `DrawkitTable` |
+| Content | `DrawkitHeading`, `DrawkitAvatar` + `DrawkitAvatarGroup`, `DrawkitFigure`, `DrawkitRating`, `DrawkitDoodle`, `DrawkitMarquee` |
 | Motion | `DrawkitSketchIn`, `DrawkitStagger`, `DrawkitShake` |
 
 Theming runs through `DrawkitTheme` + `DrawkitStyle` (`seed`, `roughness`,

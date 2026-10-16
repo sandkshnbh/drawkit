@@ -1,5 +1,13 @@
 ## Unreleased
 
+- **Content** — `DrawkitHeading` (three display sizes, optional pen rule),
+  `DrawkitAvatar` + `DrawkitAvatarGroup` (drawn discs, overlapping stack with
+  a `+n` overflow pocket), `DrawkitFigure` (framed child with a muted plate
+  caption), `DrawkitRating` (inked stars, tap-to-set / tap-again-to-clear,
+  slider semantics with increase/decrease), `DrawkitDoodle` (star, squiggle,
+  spiral, burst, arrow — decorative and excluded from semantics) and
+  `DrawkitMarquee` (seamless ticker flowing start→end, pause on hover,
+  reduced-motion aware).
 - **Structure** — `DrawkitAppBar` (leading/title/actions over a paper surface
   with the heavier shelf rule, announces itself as a header),
   `DrawkitNavRail` + `DrawkitBottomNav` (shared `DrawkitNavDestination`;

@@ -173,6 +173,11 @@ final List<GalleryPage> galleryPages = [
     'App bar, nav rail, bottom bar, breadcrumb, and a ruled table.',
     (context) => const StructurePage(),
   ),
+  GalleryPage(
+    'Content',
+    'Headings, avatars, a captioned figure, stars, doodles, and a ticker.',
+    (context) => const ContentPage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -1758,6 +1763,104 @@ class _StructurePageState extends State<StructurePage> {
               ],
             ],
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class ContentPage extends StatefulWidget {
+  const ContentPage({super.key});
+
+  @override
+  State<ContentPage> createState() => _ContentPageState();
+}
+
+class _ContentPageState extends State<ContentPage> {
+  int _stars = 3;
+
+  static const body = TextStyle(
+    fontSize: 14,
+    height: 1.5,
+    color: DrawkitPalette.ink,
+    decoration: TextDecoration.none,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const DrawkitHeading(text: 'The Content Kit', underline: true),
+          const SizedBox(height: 8),
+          const DrawkitHeading(
+            text: 'display type, faces, plates, ink, and idle hands',
+            level: 3,
+            textStyle: TextStyle(color: DrawkitPalette.inkMuted),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'A crowd — discs overlap, the overflow confesses',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          const DrawkitAvatarGroup(
+            max: 3,
+            overlap: 14,
+            size: 44,
+            children: [
+              Text('HB'),
+              Text('2B'),
+              Text('4H'),
+              Text('6B'),
+              Text('9B'),
+            ],
+          ),
+          const SizedBox(height: 22),
+          DrawkitFigure(
+            caption: 'fig 1 — the idle pen, mid-spiral',
+            child: const Center(
+              child: DrawkitDoodle(kind: DrawkitDoodleKind.spiral, size: 72),
+            ),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Rating — tap a star, tap again to clear one ($_stars/5)',
+            style: body,
+          ),
+          const SizedBox(height: 8),
+          DrawkitRating(
+            value: _stars,
+            onChanged: (v) => setState(() => _stars = v),
+            starSize: 30,
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'Doodles — decorative, silent, never interactive',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              for (final kind in DrawkitDoodleKind.values)
+                Padding(
+                  padding: const EdgeInsets.only(right: 18),
+                  child: DrawkitDoodle(kind: kind, size: 36),
+                ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const Text('A ticker — hover to pause it', style: body),
+          const SizedBox(height: 8),
+          const DrawkitMarquee(
+            child: Text(
+              'all work and no play makes the pen a dull tool',
+              style: body,
+            ),
+          ),
+          const SizedBox(height: 22),
         ],
       ),
     );
