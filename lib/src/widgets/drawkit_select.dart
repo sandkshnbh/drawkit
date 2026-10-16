@@ -216,12 +216,16 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
       controller: _menu,
       consumeOutsideTaps: true,
       childFocusNode: _focusNode,
-      overlayBuilder: (context, child) => CustomSingleChildLayout(
-        delegate: _MenuPositionDelegate(
-          anchorRect: _anchorRect,
-          textDirection: Directionality.maybeOf(context) ?? direction,
+      overlayBuilder: (context, info) => TapRegion(
+        groupId: info.tapRegionGroupId,
+        onTapOutside: (event) => _menu.close(),
+        child: CustomSingleChildLayout(
+          delegate: _MenuPositionDelegate(
+            anchorRect: _anchorRect,
+            textDirection: Directionality.maybeOf(context) ?? direction,
+          ),
+          child: _menuPanel(context, style, textStyle),
         ),
-        child: _menuPanel(context, style, textStyle),
       ),
       builder: (context, controller, child) => FocusableActionDetector(
         focusNode: _focusNode,

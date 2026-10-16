@@ -163,6 +163,11 @@ final List<GalleryPage> galleryPages = [
     'Dialogs, sheets, toasts, progress bars, spinners, and loading skeletons.',
     (context) => const FeedbackPage(),
   ),
+  GalleryPage(
+    'Menus',
+    'Dropdowns, popovers, an accordion, a command palette, and a date picker.',
+    (context) => const MenusPage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -1409,6 +1414,209 @@ class _FeedbackPageState extends State<FeedbackPage> {
               const SizedBox(width: 14),
               const DrawkitSkeleton.circle(),
             ],
+          ),
+          const SizedBox(height: 22),
+          Text(_last, style: body.copyWith(color: DrawkitPalette.inkMuted)),
+        ],
+      ),
+    );
+  }
+}
+
+class MenusPage extends StatefulWidget {
+  const MenusPage({super.key});
+
+  @override
+  State<MenusPage> createState() => _MenusPageState();
+}
+
+class _MenusPageState extends State<MenusPage> {
+  bool _ruled = true;
+  bool _graph = false;
+  DateTime? _date = DateTime(2026, 10, 16);
+  String _last = 'nothing yet';
+
+  static const body = TextStyle(
+    fontSize: 14,
+    height: 1.5,
+    color: DrawkitPalette.ink,
+    decoration: TextDecoration.none,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Menus — panels that fold away', style: body),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              DrawkitMenu(
+                semanticLabel: 'view options',
+                items: [
+                  DrawkitMenuItem(
+                    label: 'Ruled paper',
+                    checked: _ruled,
+                    onSelected: () => setState(() => _ruled = true),
+                  ),
+                  DrawkitMenuItem(
+                    label: 'Graph paper',
+                    checked: _graph,
+                    onSelected: () => setState(() => _graph = true),
+                  ),
+                  const DrawkitMenuItem.divider(),
+                  const DrawkitMenuItem(label: 'Tracing paper', hint: '⌘T'),
+                  DrawkitMenuItem(
+                    label: 'Save sheet',
+                    hint: '⌘S',
+                    onSelected: () =>
+                        showDrawkitToast(context, message: 'sheet saved'),
+                  ),
+                ],
+                child: const Text('view'),
+              ),
+              DrawkitPopover(
+                semanticLabel: 'pen options',
+                trigger: const Text(
+                  'pen options',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: DrawkitPalette.ink,
+                    decoration: TextDecoration.underline,
+                    decorationStyle: TextDecorationStyle.wavy,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Nib', style: body),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        for (final nib in const [
+                          'fine',
+                          'medium',
+                          'broad',
+                        ]) ...[
+                          DrawkitButton(
+                            onPressed: () => showDrawkitToast(
+                              context,
+                              message: '$nib nib loaded',
+                            ),
+                            child: Text(nib),
+                          ),
+                          if (nib != 'broad') const SizedBox(width: 8),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Any widget can open a popover.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: DrawkitPalette.inkMuted,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              DrawkitButton(
+                onPressed: () async {
+                  final result = await showDrawkitCommandPalette<String>(
+                    context: context,
+                    commands: const [
+                      DrawkitCommand(
+                        label: 'Open sheet',
+                        value: 'open',
+                        hint: '⌘O',
+                      ),
+                      DrawkitCommand(
+                        label: 'Save sheet',
+                        value: 'save',
+                        hint: '⌘S',
+                      ),
+                      DrawkitCommand(
+                        label: 'Export as PNG',
+                        value: 'export',
+                        keywords: ['image', 'picture'],
+                      ),
+                      DrawkitCommand(
+                        label: 'Clear page',
+                        value: 'clear',
+                        keywords: ['erase', 'wipe'],
+                      ),
+                    ],
+                  );
+                  if (!mounted || result == null) return;
+                  setState(() => _last = 'command: $result');
+                },
+                child: const Text('command palette'),
+              ),
+              DrawkitButton(
+                onPressed: () async {
+                  final picked = await showDrawkitDatePicker(
+                    context: context,
+                    initialDate: _date,
+                  );
+                  if (!mounted || picked == null) return;
+                  setState(() => _date = picked);
+                },
+                child: const Text('pick a date'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'Accordion — headers unfold on a sketch line',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          const DrawkitAccordion(
+            initiallyExpanded: {1},
+            sections: [
+              DrawkitAccordionSection(
+                title: 'Pencils',
+                child: Text(
+                  'HB, 2B, and one grudging 4H kept for margins.',
+                  style: body,
+                ),
+              ),
+              DrawkitAccordionSection(
+                title: 'Paper',
+                child: Text(
+                  'Ruled, graph, and the good cotton stock.',
+                  style: body,
+                ),
+              ),
+              DrawkitAccordionSection(
+                title: 'Ink',
+                child: Text(
+                  'Waterproof black, and a red for corrections.',
+                  style: body,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Text(
+            _date == null
+                ? 'Date picker — nothing picked'
+                : 'Date picker — ${_date!.year}-${_date!.month}-${_date!.day}',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          DrawkitDatePicker(
+            value: _date,
+            onChanged: (date) => setState(() => _date = date),
+            semanticLabel: 'sheet date',
           ),
           const SizedBox(height: 22),
           Text(_last, style: body.copyWith(color: DrawkitPalette.inkMuted)),

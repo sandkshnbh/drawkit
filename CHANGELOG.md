@@ -1,5 +1,14 @@
 ## Unreleased
 
+- **Menus** — `DrawkitMenu` (dropdown on a real anchor; paper panel with
+  checked/hint rows and ruled dividers), `DrawkitPopover` (any trigger, any
+  panel; width follows the anchor), `DrawkitAccordion` (headers on a sketch
+  line, `AnimatedSize` bodies, single- or multi-open), `DrawkitCommandPalette`
+  via `showDrawkitCommandPalette` (filter + arrow/enter/escape keys), and
+  `DrawkitDatePicker` + `showDrawkitDatePicker` (Monday-first grid, selected
+  ring, today dot, localizable month/weekday names). Panels join the anchor's
+  `TapRegion` group: an outside tap folds them away, row taps stay intact.
+  `DrawkitSelect` gained the same outside-tap dismissal.
 - **Feedback** — `showDrawkitDialog` / `showDrawkitSheet` (paper panels over a
   soft scrim; the modal traces itself in via `DrawkitSketchIn`, the sheet
   slides in from the bottom or the direction-aware end edge, and its grab

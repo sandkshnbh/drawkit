@@ -10,17 +10,20 @@ void main() {
     DrawkitSelectOption(value: 'cherry', label: 'Cherry'),
   ];
 
-  Widget host(Widget child) => Directionality(
-    textDirection: TextDirection.ltr,
-    child: DrawkitTheme(
-      data: const DrawkitStyle(boil: 0),
-      child: Overlay(
-        initialEntries: [
-          OverlayEntry(
-            builder: (context) =>
-                Center(child: SizedBox(width: 260, child: child)),
-          ),
-        ],
+  Widget host(Widget child) => WidgetsApp(
+    color: DrawkitPalette.paper,
+    debugShowCheckedModeBanner: false,
+    pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
+        PageRouteBuilder<T>(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              builder(context),
+        ),
+    home: Directionality(
+      textDirection: TextDirection.ltr,
+      child: DrawkitTheme(
+        data: const DrawkitStyle(boil: 0),
+        child: Center(child: SizedBox(width: 260, child: child)),
       ),
     ),
   );
@@ -74,6 +77,26 @@ void main() {
     await tester.pumpAndSettle();
     expect(picked, ['banana']);
     expect(find.text('Cherry'), findsNothing);
+  });
+
+  testWidgets('an outside tap closes the menu without picking', (tester) async {
+    final picked = <String>[];
+    await tester.pumpWidget(
+      host(
+        DrawkitSelect<String>(
+          options: fruits,
+          value: 'apple',
+          onChanged: picked.add,
+        ),
+      ),
+    );
+    await tester.tap(find.byType(DrawkitSelect<String>));
+    await tester.pumpAndSettle();
+    expect(find.text('Banana'), findsOneWidget);
+    await tester.tapAt(const Offset(60, 60));
+    await tester.pumpAndSettle();
+    expect(find.text('Banana'), findsNothing);
+    expect(picked, isEmpty);
   });
 
   testWidgets('keyboard opens with enter and escape closes', (tester) async {
