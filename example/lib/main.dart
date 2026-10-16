@@ -122,6 +122,11 @@ final List<GalleryPage> galleryPages = [
     'Sketch outline behind a real EditableText; focus ring, placeholder, growth.',
     (context) => const FieldPage(),
   ),
+  GalleryPage(
+    'Select',
+    'Chevron in the reserved gutter, overlay menu with sketched frame and check.',
+    (context) => const SelectPage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -627,6 +632,62 @@ class _FieldPageState extends State<FieldPage> {
       const SizedBox(height: 26),
       Text(
         'name: ${name.text.isEmpty ? '…' : name.text}\nnotes: ${notes.text.isEmpty ? '…' : notes.text.replaceAll('\n', ' ⏎ ')}',
+        style: const TextStyle(
+          color: DrawkitPalette.inkMuted,
+          decoration: TextDecoration.none,
+        ),
+      ),
+    ],
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Select page
+
+class SelectPage extends StatefulWidget {
+  const SelectPage({super.key});
+
+  @override
+  State<SelectPage> createState() => _SelectPageState();
+}
+
+class _SelectPageState extends State<SelectPage> {
+  String? fruit = 'banana';
+
+  static const _fruits = [
+    DrawkitSelectOption(value: 'apple', label: 'Apple'),
+    DrawkitSelectOption(value: 'banana', label: 'Banana'),
+    DrawkitSelectOption(value: 'cherry', label: 'Cherry'),
+    DrawkitSelectOption(value: 'durian', label: 'Durian (probably a mistake)'),
+    DrawkitSelectOption(value: 'elderberry', label: 'Elderberry'),
+    DrawkitSelectOption(value: 'fig', label: 'Fig'),
+  ];
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SizedBox(
+        width: 260,
+        child: DrawkitSelect<String>(
+          options: _fruits,
+          value: fruit,
+          onChanged: (v) => setState(() => fruit = v),
+        ),
+      ),
+      const SizedBox(height: 22),
+      const SizedBox(
+        width: 260,
+        child: DrawkitSelect<String>(
+          options: _fruits,
+          value: null,
+          onChanged: null,
+          semanticLabel: 'disabled select',
+        ),
+      ),
+      const SizedBox(height: 26),
+      Text(
+        'picked: ${fruit ?? '—'}',
         style: const TextStyle(
           color: DrawkitPalette.inkMuted,
           decoration: TextDecoration.none,
