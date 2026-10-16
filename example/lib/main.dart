@@ -913,17 +913,17 @@ class _CompositePageState extends State<CompositePage> {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            Positioned(
+            PositionedDirectional(
               top: 8,
-              left: 8,
+              start: 8,
               child: DrawkitTooltip(
                 target: targetKey,
                 child: const Text('the target is down there'),
               ),
             ),
-            Positioned(
+            PositionedDirectional(
               top: 110,
-              left: 260,
+              start: 260,
               child: SizedBox(
                 key: targetKey,
                 width: 90,
@@ -975,9 +975,9 @@ class _CompositePageState extends State<CompositePage> {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            Positioned(
+            PositionedDirectional(
               top: 0,
-              left: 0,
+              start: 0,
               child: SizedBox(
                 key: fromKey,
                 width: 90,
@@ -988,9 +988,9 @@ class _CompositePageState extends State<CompositePage> {
                 ),
               ),
             ),
-            Positioned(
+            PositionedDirectional(
               top: 60,
-              left: 240,
+              start: 240,
               child: SizedBox(
                 key: _toKey,
                 width: 90,

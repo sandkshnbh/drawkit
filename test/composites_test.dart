@@ -88,6 +88,25 @@ void main() {
       expect(find.text('draw the rest of the owl'), findsOneWidget);
       expect(find.text('— the internet'), findsOneWidget);
     });
+
+    testWidgets('the footer rule sits above the attribution, spanning the '
+        'quote', (tester) async {
+      await tester.pumpWidget(
+        host(
+          const DrawkitQuote(
+            seed: 1,
+            text: 'draw the rest of the owl',
+            footer: Text('— the internet'),
+          ),
+        ),
+      );
+      final band = tester.getRect(find.byType(DrawkitSurface).last);
+      final attribution = tester.getRect(find.text('— the internet'));
+      expect(band.height, 10);
+      expect(band.width, 360);
+      expect(band.bottom, lessThanOrEqualTo(attribution.top + 2));
+      expect(band.top + 5, lessThan(attribution.top));
+    });
   });
 
   group('DrawkitSteps', () {

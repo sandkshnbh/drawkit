@@ -294,7 +294,11 @@ class DrawkitKbd extends StatelessWidget {
   }
 }
 
-/// Highlight on the quote, divider across an optional footer.
+/// Highlight on the quote, rule in a 10px band above an optional footer.
+///
+/// The rule spans the quote's block width (the `drawablyDivider` contract:
+/// a line at the middle of a 10px-tall footer box), with the attribution
+/// starting 8px into that band — `roughLine` at `y=5` clears the text.
 class DrawkitQuote extends StatelessWidget {
   const DrawkitQuote({
     required this.text,
@@ -318,7 +322,7 @@ class DrawkitQuote extends StatelessWidget {
     final base = seed ?? randomSeed();
     final resolved = style ?? DrawkitTheme.of(context);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
         DrawkitHighlight(
@@ -331,31 +335,43 @@ class DrawkitQuote extends StatelessWidget {
         if (footer != null)
           Padding(
             padding: const EdgeInsets.only(top: 10),
-            child: DrawkitSurface(
-              builder: (size, options) => [
-                DrawkitLayer(
-                  roughLine(
-                    3,
-                    size.height / 2,
-                    size.width - 3,
-                    size.height / 2,
-                    options,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  height: 10,
+                  child: DrawkitSurface(
+                    builder: (size, options) => [
+                      DrawkitLayer(
+                        roughLine(
+                          3,
+                          size.height / 2,
+                          size.width - 3,
+                          size.height / 2,
+                          options,
+                        ),
+                        drawkitStroke(resolved),
+                      ),
+                    ],
+                    style: resolved,
+                    seed: base + 1,
+                    animate: animate,
+                    resketchOnPointer: false,
+                    child: const SizedBox(height: 10),
                   ),
-                  drawkitStroke(resolved),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: DefaultTextStyle(
+                    style: DefaultTextStyle.of(context).style
+                        .copyWith(color: DrawkitPalette.inkMuted),
+                    child: footer!,
+                  ),
                 ),
               ],
-              style: resolved,
-              seed: base + 1,
-              animate: animate,
-              resketchOnPointer: false,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: DefaultTextStyle(
-                  style: DefaultTextStyle.of(context).style
-                      .copyWith(color: DrawkitPalette.inkMuted),
-                  child: footer!,
-                ),
-              ),
             ),
           ),
       ],

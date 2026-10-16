@@ -5,6 +5,10 @@
   with it — the select chevron and menu alignment, the list gutter and
   markers, the toggle's resting side and travel, chip/tabs/pager spacing.
   LTR output is unchanged, stroke for stroke.
+- **Fixed** — `DrawkitQuote`'s footer rule drew through the attribution text;
+  it now rules the top of a 10px footer band spanning the quote's width, with
+  the text starting 8px in (the `drawablyDivider` contract). The gallery's
+  tooltip and arrow demos mirror in RTL (`PositionedDirectional`).
 
 ## 0.1.0
 
