@@ -1,5 +1,24 @@
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+/// Animated hand-drawn controls and decorations for Flutter.
+///
+/// A Dart port of drawably (github.com/danielwh2/drawably): real widgets on
+/// top, seeded pen strokes behind, one shared boil clock, zero dependencies
+/// beyond the Flutter SDK itself.
+library;
+
+export 'src/core/style.dart';
+export 'src/core/surface.dart';
+export 'src/engine/prng.dart' show Mulberry32, randomSeed;
+export 'src/engine/rough.dart'
+    show
+        RoughOptions,
+        arrowStrokes,
+        doubleStrokePoints,
+        roughArrow,
+        roughCheckmark,
+        roughCircle,
+        roughEllipse,
+        roughLine,
+        roughRoundedRect,
+        scribbleFill,
+        smooth,
+        variants;

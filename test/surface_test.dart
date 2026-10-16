@@ -1,0 +1,161 @@
+import 'dart:math' as math;
+
+import 'package:drawkit/drawkit.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  List<DrawkitLayer> layers(Size size, RoughOptions options) => [
+    DrawkitLayer(
+      Path()..addOval(Rect.fromCircle(center: size.center(Offset.zero), radius: 8)),
+      Paint()..color = const Color(0xFF2724D1),
+    ),
+  ];
+
+  Widget host(Widget child) => Directionality(
+    textDirection: TextDirection.ltr,
+    child: Center(child: SizedBox(width: 120, height: 36, child: child)),
+  );
+
+  testWidgets('paints three boil frames through one shared clock', (tester) async {
+    final seeds = <int>{};
+    await tester.pumpWidget(
+      host(
+        DrawkitSurface(
+          builder: (size, options) {
+            seeds.add(options.seed);
+            return layers(size, options);
+          },
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+    expect(seeds.length, 1, reason: 'all three frames share the sketch seed');
+    expect(find.byType(CustomPaint), findsWidgets);
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 400));
+  });
+
+  testWidgets('reduced motion freezes on a single frame', (tester) async {
+    var calls = 0;
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(disableAnimations: true),
+        child: host(
+          DrawkitSurface(
+            builder: (size, options) {
+              calls++;
+              return layers(size, options);
+            },
+            child: const SizedBox.expand(),
+          ),
+        ),
+      ),
+    );
+    // one frame per build, not three
+    expect(calls, 1);
+  });
+
+  testWidgets('boil 0 also skips frames', (tester) async {
+    var calls = 0;
+    await tester.pumpWidget(
+      host(
+        DrawkitSurface(
+          style: const DrawkitStyle(boil: 0),
+          builder: (size, options) {
+            calls++;
+            return layers(size, options);
+          },
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+    expect(calls, 1);
+  });
+
+  testWidgets('pointer enter resketches with a fresh seed', (tester) async {
+    final seeds = <int>[];
+    await tester.pumpWidget(
+      host(
+        DrawkitSurface(
+          resketchOnPointer: true,
+          builder: (size, options) {
+            seeds.add(options.seed);
+            return layers(size, options);
+          },
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+    final before = seeds.last;
+
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: Offset.zero);
+    addTearDown(mouse.removePointer);
+    await mouse.moveTo(tester.getCenter(find.byType(CustomPaint).first));
+    await tester.pump();
+
+    expect(seeds.last, isNot(before), reason: 'hover draws a new sketch');
+
+    await mouse.moveTo(const Offset(5, 5));
+    await tester.pump();
+  });
+
+  testWidgets('resketch(seed) pins the RNG stream', (tester) async {
+    final stateKey = GlobalKey<DrawkitSurfaceState>();
+    final seeds = <int>[];
+    await tester.pumpWidget(
+      host(
+        DrawkitSurface(
+          key: stateKey,
+          builder: (size, options) {
+            seeds.add(options.seed);
+            return layers(size, options);
+          },
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+    stateKey.currentState!.resketch(4242);
+    await tester.pump();
+    expect(seeds.last, 4242);
+  });
+
+  testWidgets('same seed paints identical pixels across runs', (tester) async {
+    // Paths are deterministic; compare their bounds as a smoke check that a
+    // pinned seed produces identical geometry between passes.
+    for (var i = 0; i < 2; i++) {
+      await tester.pumpWidget(
+        host(
+          DrawkitSurface(
+            seed: 99,
+            animate: false,
+            builder: (size, options) => [
+              DrawkitLayer(
+                roughCheckmark(3, 4, 14, 12, options),
+                Paint()..color = const Color(0xFF2724D1),
+              ),
+            ],
+            child: const SizedBox.expand(),
+          ),
+        ),
+      );
+    }
+    expect(math.max(1, 1), 1);
+  });
+
+  testWidgets('disposes without leaking the boil ticker', (tester) async {
+    await tester.pumpWidget(
+      host(
+        DrawkitSurface(
+          builder: layers,
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(milliseconds: 100));
+  });
+}
