@@ -1,10 +1,9 @@
-import 'dart:ui' show PlatformDispatcher;
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
 import '../engine/prng.dart';
 import '../engine/rough.dart';
+import 'motion.dart';
 import 'style.dart';
 
 /// One painted path with its paint, the Dart analogue of a `<path>` element.
@@ -34,9 +33,6 @@ typedef DrawkitLayerBuilder = List<DrawkitLayer> Function(
   RoughOptions options,
 );
 
-/// The CSS `--drawably-ease`: cubic-bezier(0.2, 0, 0, 1).
-const Curve drawkitEase = Cubic(0.2, 0, 0, 1);
-
 /// A pen-stroked stroke paint. Controls default to 2px, decorations to 1.5.
 Paint drawkitStroke(
   DrawkitStyle style, {
@@ -52,15 +48,6 @@ Paint drawkitStroke(
 Paint drawkitFillPaint(Color color) => Paint()
   ..color = color
   ..style = PaintingStyle.fill;
-
-/// True when the platform asks for reduced motion. Mirrors the CSS
-/// `prefers-reduced-motion` block: boil freezes on frame 0, transitions and
-/// pointer re-sketches are skipped.
-bool drawkitReduceMotion(BuildContext context) {
-  final media = MediaQuery.maybeOf(context);
-  if (media != null && media.disableAnimations) return true;
-  return PlatformDispatcher.instance.accessibilityFeatures.reduceMotion;
-}
 
 /// Paints a sketch behind its child, exactly like drawably's absolutely
 /// positioned SVG: real content on top, decoration behind, never interactive.
@@ -201,6 +188,7 @@ class DrawkitSurfaceState extends State<DrawkitSurface>
       frameCount: boil ? 3 : 1,
       animation: boil ? widget.boilClock ?? _controller : null,
       accent: widget.accent,
+      sketchTrim: DrawkitSketchScope.maybeOf(context),
     );
 
     Widget painted = RepaintBoundary(
@@ -252,16 +240,11 @@ class _DrawkitSurfacePainter extends CustomPainter {
     required this.frameCount,
     required Animation<double>? animation,
     required Listenable? accent,
+    required Animation<double>? sketchTrim,
   }) : _animation = animation,
        _accent = accent,
-       super(
-         repaint: switch ((animation, accent)) {
-           (null, null) => null,
-           (final a?, null) => a,
-           (null, final b?) => b,
-           (final a?, final b?) => Listenable.merge([a, b]),
-         },
-       );
+       _sketchTrim = sketchTrim,
+       super(repaint: _mergeRepaint([animation, accent, sketchTrim]));
 
   final DrawkitLayerBuilder builder;
   final DrawkitStyle style;
@@ -269,6 +252,10 @@ class _DrawkitSurfacePainter extends CustomPainter {
   final int frameCount;
   final Animation<double>? _animation;
   final Listenable? _accent;
+
+  /// Ambient draw-on progress from a [DrawkitSketchScope]; strokes trim to it
+  /// at paint time, frames never rebuild.
+  final Animation<double>? _sketchTrim;
 
   Size? _cachedSize;
   List<List<DrawkitLayer>> _frames = const [];
@@ -290,15 +277,17 @@ class _DrawkitSurfacePainter extends CustomPainter {
     final index = _animation == null
         ? 0
         : (_animation.value * _frames.length).floor() % _frames.length;
+    final sketch = _sketchTrim?.value.clamp(0.0, 1.0) ?? 1.0;
     for (final layer in _frames[index]) {
+      var trim = sketch;
+      if (layer.trimTo != null) trim *= layer.trimTo!.value.clamp(0.0, 1.0);
+      if (trim <= 0) continue;
       var path = layer.path;
-      if (layer.trimTo != null) {
-        final t = layer.trimTo!.value.clamp(0.0, 1.0);
-        if (t <= 0) continue;
+      if (trim < 1) {
         // PathMetrics caches its iterator: probe once with firstOrNull.
         final metric = path.computeMetrics().firstOrNull;
         if (metric == null) continue;
-        path = metric.extractPath(0, metric.length * t);
+        path = metric.extractPath(0, metric.length * trim);
       }
       canvas.save();
       if (layer.matrix != null) canvas.transform(layer.matrix!.call().storage);
@@ -314,5 +303,11 @@ class _DrawkitSurfacePainter extends CustomPainter {
       style != oldDelegate.style ||
       frameCount != oldDelegate.frameCount ||
       _animation != oldDelegate._animation ||
-      _accent != oldDelegate._accent;
+      _accent != oldDelegate._accent ||
+      _sketchTrim != oldDelegate._sketchTrim;
+}
+
+Listenable? _mergeRepaint(List<Listenable?> drivers) {
+  final active = [for (final driver in drivers) ?driver];
+  return active.isEmpty ? null : Listenable.merge(active);
 }

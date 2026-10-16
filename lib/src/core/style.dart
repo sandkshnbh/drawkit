@@ -1,6 +1,18 @@
-import 'dart:ui' show lerpDouble;
+import 'dart:ui' show PlatformDispatcher, lerpDouble;
 
 import 'package:flutter/widgets.dart';
+
+/// The CSS `--drawably-ease`: cubic-bezier(0.2, 0, 0, 1).
+const Curve drawkitEase = Cubic(0.2, 0, 0, 1);
+
+/// True when the platform asks for reduced motion. Mirrors the CSS
+/// `prefers-reduced-motion` block: boil freezes on frame 0, transitions and
+/// pointer re-sketches are skipped.
+bool drawkitReduceMotion(BuildContext context) {
+  final media = MediaQuery.maybeOf(context);
+  if (media != null && media.disableAnimations) return true;
+  return PlatformDispatcher.instance.accessibilityFeatures.reduceMotion;
+}
 
 /// Brand palette, the Dart side of drawably's CSS custom properties.
 abstract final class DrawkitPalette {

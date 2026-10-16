@@ -5,6 +5,7 @@
 /// beyond the Flutter SDK itself.
 library;
 
+export 'src/core/motion.dart';
 export 'src/core/style.dart';
 export 'src/core/surface.dart';
 export 'src/engine/prng.dart' show Mulberry32, randomSeed;

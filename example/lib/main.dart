@@ -148,6 +148,11 @@ final List<GalleryPage> galleryPages = [
     'Chip, tabs, tooltip, alert, steps, kbd, quote, pager — several strokes, one seed.',
     (context) => const CompositePage(),
   ),
+  GalleryPage(
+    'Motion',
+    'Draw-on tracing, staggered lists, and the error shake — one shared pen.',
+    (context) => const MotionPage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -1009,3 +1014,97 @@ class _CompositePageState extends State<CompositePage> {
 }
 
 final GlobalKey _toKey = GlobalKey();
+
+// ---------------------------------------------------------------------------
+// Motion page
+
+class MotionPage extends StatefulWidget {
+  const MotionPage({super.key});
+
+  @override
+  State<MotionPage> createState() => _MotionPageState();
+}
+
+class _MotionPageState extends State<MotionPage> {
+  final DrawkitShakeController _shake = DrawkitShakeController();
+  int _run = 0;
+
+  @override
+  void dispose() {
+    _shake.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const body = TextStyle(
+      fontSize: 14,
+      height: 1.5,
+      color: DrawkitPalette.ink,
+      decoration: TextDecoration.none,
+    );
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Sketch-in — every stroke below traces itself on mount',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          DrawkitSketchIn(
+            key: ValueKey('sketch$_run'),
+            child: DrawkitCard(
+              child: const Text(
+                'The frame draws first, the words were already written.',
+                style: body,
+              ),
+            ),
+          ),
+          const SizedBox(height: 22),
+          const Text('Stagger — one clock, a step apart', style: body),
+          const SizedBox(height: 10),
+          DrawkitStagger(
+            key: ValueKey('stagger$_run'),
+            step: const Duration(milliseconds: 120),
+            spacing: 8,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final task in const [
+                'sketch the outline',
+                'boil for three frames',
+                'mirror for RTL',
+                'ship it',
+              ])
+                DrawkitCard(child: Text(task, style: body)),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const Text('Shake — the wrong! wiggle', style: body),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: DrawkitShake(
+                  controller: _shake,
+                  child: DrawkitInput(placeholder: 'not an email'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              DrawkitButton(
+                onPressed: _shake.shake,
+                child: const Text('shake it'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          DrawkitButton(
+            onPressed: () => setState(() => _run++),
+            child: const Text('replay the drawing'),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -48,6 +48,7 @@ DrawkitButton(
 | Surfaces | `DrawkitDivider`, `DrawkitCard`, `DrawkitBadge`, `DrawkitList` |
 | Text | `DrawkitUnderline`, `DrawkitHighlight`, `DrawkitCircle` |
 | Composites | `DrawkitArrow`, `DrawkitChip`, `DrawkitTabs`, `DrawkitTooltip`, `DrawkitAlert`, `DrawkitSteps`, `DrawkitKbd`, `DrawkitQuote`, `DrawkitPager` |
+| Motion | `DrawkitSketchIn`, `DrawkitStagger`, `DrawkitShake` |
 
 Theming runs through `DrawkitTheme` + `DrawkitStyle` (`seed`, `roughness`,
 `boil`, `strokeColor`, `fillColor`, `width`, `ink`); brand defaults match the

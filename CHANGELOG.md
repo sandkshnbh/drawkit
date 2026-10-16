@@ -1,5 +1,11 @@
 ## Unreleased
 
+- **Motion** — `DrawkitSketchIn` traces every surface below it on mount (a
+  `DrawkitSketchScope` carries the progress; surfaces trim at paint time, no
+  per-tick rebuilds), `DrawkitStagger` draws a list in one clock, a step
+  apart, and `DrawkitShake` / `DrawkitShakeController` play the damped
+  "wrong!" wiggle. All three honor reduced motion. `drawkitEase` and
+  `drawkitReduceMotion` moved to `style.dart` (same public API).
 - **RTL** — every widget follows the ambient `Directionality`: layout uses
   directional geometry (`EdgeInsetsDirectional`), and painted anchors flip
   with it — the select chevron and menu alignment, the list gutter and
