@@ -117,6 +117,11 @@ final List<GalleryPage> galleryPages = [
     'The choice controls: check draws on, dot scales in, knob travels.',
     (context) => const ChoicePage(),
   ),
+  GalleryPage(
+    'Input · Textarea',
+    'Sketch outline behind a real EditableText; focus ring, placeholder, growth.',
+    (context) => const FieldPage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -550,5 +555,83 @@ class _ChoiceRow extends StatelessWidget {
         ],
       ),
     ),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Field page
+
+class FieldPage extends StatefulWidget {
+  const FieldPage({super.key});
+
+  @override
+  State<FieldPage> createState() => _FieldPageState();
+}
+
+class _FieldPageState extends State<FieldPage> {
+  final name = TextEditingController();
+  final notes = TextEditingController();
+
+  @override
+  void dispose() {
+    name.dispose();
+    notes.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Name',
+        style: TextStyle(
+          color: DrawkitPalette.inkMuted,
+          decoration: TextDecoration.none,
+        ),
+      ),
+      const SizedBox(height: 6),
+      SizedBox(
+        width: 300,
+        child: DrawkitInput(
+          controller: name,
+          placeholder: 'e.g. Scribbly McPenface',
+          onChanged: (_) => setState(() {}),
+        ),
+      ),
+      const SizedBox(height: 22),
+      const Text(
+        'Notes',
+        style: TextStyle(
+          color: DrawkitPalette.inkMuted,
+          decoration: TextDecoration.none,
+        ),
+      ),
+      const SizedBox(height: 6),
+      SizedBox(
+        width: 420,
+        child: DrawkitTextarea(
+          controller: notes,
+          placeholder: 'What should the pen remember?',
+          onChanged: (_) => setState(() {}),
+        ),
+      ),
+      const SizedBox(height: 22),
+      const SizedBox(
+        width: 300,
+        child: DrawkitInput(
+          placeholder: 'disabled — no cursor, no edits',
+          enabled: false,
+        ),
+      ),
+      const SizedBox(height: 26),
+      Text(
+        'name: ${name.text.isEmpty ? '…' : name.text}\nnotes: ${notes.text.isEmpty ? '…' : notes.text.replaceAll('\n', ' ⏎ ')}',
+        style: const TextStyle(
+          color: DrawkitPalette.inkMuted,
+          decoration: TextDecoration.none,
+        ),
+      ),
+    ],
   );
 }
