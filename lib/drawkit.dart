@@ -22,8 +22,10 @@ export 'src/engine/rough.dart'
         scribbleFill,
         smooth,
         variants;
+export 'src/widgets/drawkit_arrow.dart';
 export 'src/widgets/drawkit_button.dart';
 export 'src/widgets/drawkit_checkbox.dart';
+export 'src/widgets/drawkit_composites.dart';
 export 'src/widgets/drawkit_decorations.dart';
 export 'src/widgets/drawkit_radio.dart';
 export 'src/widgets/drawkit_input.dart';

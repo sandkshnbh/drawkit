@@ -137,6 +137,11 @@ final List<GalleryPage> galleryPages = [
     'Text decorations drawn per line box, measured with a TextPainter.',
     (context) => const TextPage(),
   ),
+  GalleryPage(
+    'Arrow · Composites',
+    'Chip, tabs, tooltip, alert, steps, kbd, quote, pager — several strokes, one seed.',
+    (context) => const CompositePage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -843,3 +848,138 @@ class TextPage extends StatelessWidget {
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Composite page
+
+class CompositePage extends StatefulWidget {
+  const CompositePage({super.key});
+
+  @override
+  State<CompositePage> createState() => _CompositePageState();
+}
+
+class _CompositePageState extends State<CompositePage> {
+  bool chip = true;
+  int tab = 0;
+  int page = 0;
+  final targetKey = GlobalKey();
+  final fromKey = GlobalKey();
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      DrawkitChip(
+        selected: chip,
+        onChanged: (v) => setState(() => chip = v),
+        child: const Text('dashed'),
+      ),
+      const SizedBox(height: 24),
+      DrawkitTabs(
+        labels: const ['overview', 'details', 'notes'],
+        active: tab,
+        onChanged: (i) => setState(() => tab = i),
+      ),
+      const SizedBox(height: 24),
+      SizedBox(
+        height: 160,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              top: 8,
+              left: 8,
+              child: DrawkitTooltip(
+                target: targetKey,
+                child: const Text('the target is down there'),
+              ),
+            ),
+            Positioned(
+              top: 110,
+              left: 260,
+              child: SizedBox(
+                key: targetKey,
+                width: 90,
+                height: 36,
+                child: const DrawkitButton(
+                  onPressed: _noop,
+                  child: Text('target'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 16),
+      const DrawkitAlert(
+        tag: Text('rant'),
+        child: Text('The sketch layer never lies, the browser sometimes does.'),
+      ),
+      const SizedBox(height: 24),
+      const DrawkitSteps(
+        children: [
+          Text('Pick a seed'),
+          Text('Watch the strokes boil'),
+          Text('Ship the sketch'),
+        ],
+      ),
+      const SizedBox(height: 24),
+      const Row(
+        children: [
+          DrawkitKbd(child: Text('⌘K')),
+          SizedBox(width: 10),
+          DrawkitKbd(child: Text('⇧⏎')),
+        ],
+      ),
+      const SizedBox(height: 24),
+      const DrawkitQuote(
+        text: 'Any sufficiently advanced CSS is indistinguishable from a canvas library.',
+        footer: Text('— the internet, paraphrased'),
+      ),
+      const SizedBox(height: 24),
+      DrawkitPager(
+        count: 5,
+        page: page,
+        onPage: (i) => setState(() => page = i),
+      ),
+      const SizedBox(height: 26),
+      SizedBox(
+        height: 110,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              child: SizedBox(
+                key: fromKey,
+                width: 90,
+                height: 36,
+                child: const DrawkitButton(
+                  onPressed: _noop,
+                  child: Text('from'),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 60,
+              left: 240,
+              child: SizedBox(
+                key: _toKey,
+                width: 90,
+                height: 36,
+                child: const DrawkitButton(onPressed: _noop, child: Text('to')),
+              ),
+            ),
+            Positioned.fill(
+              child: DrawkitArrow(from: fromKey, to: _toKey),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+final GlobalKey _toKey = GlobalKey();

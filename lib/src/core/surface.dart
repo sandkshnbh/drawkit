@@ -114,7 +114,7 @@ class DrawkitSurface extends StatefulWidget {
   /// Secondary repaint driver for trim/matrix layers (the check draw-on, the
   /// radio dot, the toggle knob). Frames stay cached; only the paint pass
   /// re-runs while this animates.
-  final Animation<double>? accent;
+  final Listenable? accent;
 
   /// Required when there is no child: CustomPaint sizes itself from one.
   final Size? size;
@@ -251,7 +251,7 @@ class _DrawkitSurfacePainter extends CustomPainter {
     required this.seed,
     required this.frameCount,
     required Animation<double>? animation,
-    required Animation<double>? accent,
+    required Listenable? accent,
   }) : _animation = animation,
        _accent = accent,
        super(
@@ -268,7 +268,7 @@ class _DrawkitSurfacePainter extends CustomPainter {
   final int seed;
   final int frameCount;
   final Animation<double>? _animation;
-  final Animation<double>? _accent;
+  final Listenable? _accent;
 
   Size? _cachedSize;
   List<List<DrawkitLayer>> _frames = const [];

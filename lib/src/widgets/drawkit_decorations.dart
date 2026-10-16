@@ -83,6 +83,7 @@ class DrawkitBadge extends StatelessWidget {
   const DrawkitBadge({
     required this.child,
     this.variant = DrawkitBadgeVariant.outline,
+    this.padding = const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
     this.style,
     this.seed,
     this.animate = true,
@@ -91,6 +92,7 @@ class DrawkitBadge extends StatelessWidget {
 
   final Widget child;
   final DrawkitBadgeVariant variant;
+  final EdgeInsetsGeometry padding;
   final DrawkitStyle? style;
   final int? seed;
   final bool animate;
@@ -122,7 +124,7 @@ class DrawkitBadge extends StatelessWidget {
       animate: animate,
       resketchOnPointer: false,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
+        padding: padding,
         child: DefaultTextStyle(
           style: DefaultTextStyle.of(context).style.copyWith(
             fontSize: 12,
