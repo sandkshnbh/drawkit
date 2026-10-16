@@ -16,10 +16,12 @@ class DrawkitGalleryApp extends StatelessWidget {
     title: 'drawkit gallery',
     color: DrawkitPalette.paper,
     debugShowCheckedModeBanner: false,
-    pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) => PageRouteBuilder<T>(
-      settings: settings,
-      pageBuilder: (context, animation, secondaryAnimation) => builder(context),
-    ),
+    pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
+        PageRouteBuilder<T>(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              builder(context),
+        ),
     home: const Gallery(),
   );
 }
@@ -72,7 +74,10 @@ class _GalleryState extends State<Gallery> {
                     const SizedBox(height: 6),
                     Text(
                       galleryPages[_page].subtitle,
-                      style: const TextStyle(color: DrawkitPalette.inkMuted, decoration: TextDecoration.none),
+                      style: const TextStyle(
+                        color: DrawkitPalette.inkMuted,
+                        decoration: TextDecoration.none,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     galleryPages[_page].builder(context),
@@ -107,10 +112,19 @@ final List<GalleryPage> galleryPages = [
     'Three variants, four states, three tones — real widget behaviour in front.',
     (context) => const ButtonPage(),
   ),
+  GalleryPage(
+    'Checkbox · Radio · Toggle',
+    'The choice controls: check draws on, dot scales in, knob travels.',
+    (context) => const ChoicePage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
-  const _Sidebar({required this.pages, required this.selected, required this.onSelect});
+  const _Sidebar({
+    required this.pages,
+    required this.selected,
+    required this.onSelect,
+  });
 
   final List<GalleryPage> pages;
   final int selected;
@@ -121,7 +135,9 @@ class _Sidebar extends StatelessWidget {
     width: _sidebarWidth,
     decoration: const BoxDecoration(
       color: DrawkitPalette.surface,
-      border: Border(right: BorderSide(color: DrawkitPalette.inkFaint, width: 1)),
+      border: Border(
+        right: BorderSide(color: DrawkitPalette.inkFaint, width: 1),
+      ),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,13 +161,20 @@ class _Sidebar extends StatelessWidget {
               behavior: HitTestBehavior.opaque,
               onTap: () => onSelect(i),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 9,
+                ),
                 color: i == selected ? DrawkitPalette.paper : null,
                 child: Text(
                   pages[i].title,
                   style: TextStyle(
-                    color: i == selected ? DrawkitPalette.pen : DrawkitPalette.inkMuted,
-                    fontWeight: i == selected ? FontWeight.w600 : FontWeight.w400,
+                    color: i == selected
+                        ? DrawkitPalette.pen
+                        : DrawkitPalette.inkMuted,
+                    fontWeight: i == selected
+                        ? FontWeight.w600
+                        : FontWeight.w400,
                     decoration: TextDecoration.none,
                   ),
                 ),
@@ -200,7 +223,14 @@ class _SurfacePageState extends State<SurfacePage> {
         child: DrawkitSurface(
           builder: (size, options) => [
             DrawkitLayer(
-              roughRoundedRect(3, 3, size.width - 6, size.height - 6, 10, options),
+              roughRoundedRect(
+                3,
+                3,
+                size.width - 6,
+                size.height - 6,
+                10,
+                options,
+              ),
               Paint()
                 ..color = DrawkitPalette.pen
                 ..style = PaintingStyle.stroke
@@ -278,11 +308,19 @@ class _NumberStepper extends StatelessWidget {
       children: [
         SizedBox(
           width: 110,
-          child: Text(label, style: const TextStyle(color: DrawkitPalette.inkMuted, decoration: TextDecoration.none)),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: DrawkitPalette.inkMuted,
+              decoration: TextDecoration.none,
+            ),
+          ),
         ),
         DrawkitButton(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-          onPressed: value <= min ? null : () => onChanged((value - step).clamp(min, max)),
+          onPressed: value <= min
+              ? null
+              : () => onChanged((value - step).clamp(min, max)),
           child: const Text('−'),
         ),
         SizedBox(
@@ -290,13 +328,18 @@ class _NumberStepper extends StatelessWidget {
           child: Center(
             child: Text(
               value < 0 ? 'random' : value.toStringAsFixed(step < 1 ? 1 : 0),
-              style: const TextStyle(fontFeatures: [FontFeature.tabularFigures()], decoration: TextDecoration.none),
+              style: const TextStyle(
+                fontFeatures: [FontFeature.tabularFigures()],
+                decoration: TextDecoration.none,
+              ),
             ),
           ),
         ),
         DrawkitButton(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-          onPressed: value >= max ? null : () => onChanged((value + step).clamp(min, max)),
+          onPressed: value >= max
+              ? null
+              : () => onChanged((value + step).clamp(min, max)),
           child: const Text('+'),
         ),
       ],
@@ -341,7 +384,11 @@ class _ButtonPageState extends State<ButtonPage> {
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           for (final tone in DrawkitTone.values)
-            DrawkitButton(tone: tone, onPressed: () {}, child: Text('tone: ${tone.name}')),
+            DrawkitButton(
+              tone: tone,
+              onPressed: () {},
+              child: Text('tone: ${tone.name}'),
+            ),
           const DrawkitButton(onPressed: null, child: Text('disabled')),
         ],
       ),
@@ -381,9 +428,16 @@ class _ButtonPageState extends State<ButtonPage> {
           ),
           const Text(
             'Tab to me for the focus ring →',
-            style: TextStyle(color: DrawkitPalette.inkMuted, decoration: TextDecoration.none),
+            style: TextStyle(
+              color: DrawkitPalette.inkMuted,
+              decoration: TextDecoration.none,
+            ),
           ),
-          const DrawkitButton(autofocus: false, onPressed: _noop, child: Text('focus me')),
+          const DrawkitButton(
+            autofocus: false,
+            onPressed: _noop,
+            child: Text('focus me'),
+          ),
         ],
       ),
     ],
@@ -391,3 +445,110 @@ class _ButtonPageState extends State<ButtonPage> {
 }
 
 void _noop() {}
+
+// ---------------------------------------------------------------------------
+// Choice page
+
+class ChoicePage extends StatefulWidget {
+  const ChoicePage({super.key});
+
+  @override
+  State<ChoicePage> createState() => _ChoicePageState();
+}
+
+class _ChoicePageState extends State<ChoicePage> {
+  bool terms = true;
+  bool newsletter = false;
+  bool darkInk = false;
+  String? fruit = 'apple';
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _ChoiceRow(
+        control: DrawkitCheckbox(
+          value: terms,
+          onChanged: (v) => setState(() => terms = v),
+        ),
+        text: 'I accept the scribbles (checked, with the check drawn on)',
+        onTap: () => setState(() => terms = !terms),
+      ),
+      _ChoiceRow(
+        control: DrawkitCheckbox(
+          value: newsletter,
+          onChanged: (v) => setState(() => newsletter = v),
+        ),
+        text: 'Send me one doodle a week',
+        onTap: () => setState(() => newsletter = !newsletter),
+      ),
+      _ChoiceRow(
+        control: const DrawkitCheckbox(value: false, onChanged: null),
+        text: 'Disabled checkbox — the ink stays, the hand stops',
+        onTap: null,
+      ),
+      const SizedBox(height: 26),
+      for (final f in const ['apple', 'banana', 'cherry'])
+        _ChoiceRow(
+          control: DrawkitRadio<String>(
+            value: f,
+            groupValue: fruit,
+            onChanged: (v) => setState(() => fruit = v),
+          ),
+          text: 'Radio: $f',
+          onTap: () => setState(() => fruit = f),
+        ),
+      const SizedBox(height: 26),
+      _ChoiceRow(
+        control: DrawkitToggle(
+          value: darkInk,
+          onChanged: (v) => setState(() => darkInk = v),
+        ),
+        text: 'Dark ink (toggle — the knob travels 20px)',
+        onTap: () => setState(() => darkInk = !darkInk),
+      ),
+      _ChoiceRow(
+        control: const DrawkitToggle(value: true, onChanged: null),
+        text: 'Disabled toggle',
+        onTap: null,
+      ),
+      const SizedBox(height: 18),
+      const Text(
+        'Tab moves focus, Space/Enter flips — the focus ring answers.',
+        style: TextStyle(
+          color: DrawkitPalette.inkMuted,
+          decoration: TextDecoration.none,
+        ),
+      ),
+    ],
+  );
+}
+
+class _ChoiceRow extends StatelessWidget {
+  const _ChoiceRow({
+    required this.control,
+    required this.text,
+    required this.onTap,
+  });
+
+  final Widget control;
+  final String text;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 7),
+    child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          control,
+          const SizedBox(width: 10),
+          Text(text, style: const TextStyle(decoration: TextDecoration.none)),
+        ],
+      ),
+    ),
+  );
+}

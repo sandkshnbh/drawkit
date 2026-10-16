@@ -54,16 +54,27 @@ List<Offset> ellipsePoints(
   double a0,
   double a1,
   int n,
-) =>
-    List<Offset>.generate(n + 1, (i) {
-      final a = a0 + (a1 - a0) * i / n;
-      return Offset(cx + rx * math.cos(a), cy + ry * math.sin(a));
-    }, growable: false);
+) => List<Offset>.generate(n + 1, (i) {
+  final a = a0 + (a1 - a0) * i / n;
+  return Offset(cx + rx * math.cos(a), cy + ry * math.sin(a));
+}, growable: false);
 
-List<Offset> arcPoints(double cx, double cy, double r, double a0, double a1, [int n = 4]) =>
-    ellipsePoints(cx, cy, r, r, a0, a1, n);
+List<Offset> arcPoints(
+  double cx,
+  double cy,
+  double r,
+  double a0,
+  double a1, [
+  int n = 4,
+]) => ellipsePoints(cx, cy, r, r, a0, a1, n);
 
-List<Offset> roundedRectPoints(double x, double y, double w, double h, double r) {
+List<Offset> roundedRectPoints(
+  double x,
+  double y,
+  double w,
+  double h,
+  double r,
+) {
   r = math.min(r, math.min(w / 2, h / 2));
   return [
     ...sampleLine(x + r, y, x + w - r, y),
@@ -119,7 +130,12 @@ Path smooth(List<Offset> points, {required bool close}) {
   for (var i = 1; i < points.length - 1; i++) {
     final c = points[i];
     final next = points[i + 1];
-    path.quadraticBezierTo(c.dx, c.dy, (c.dx + next.dx) / 2, (c.dy + next.dy) / 2);
+    path.quadraticBezierTo(
+      c.dx,
+      c.dy,
+      (c.dx + next.dx) / 2,
+      (c.dy + next.dy) / 2,
+    );
   }
   final last = points.last;
   path.lineTo(last.dx, last.dy);
@@ -147,33 +163,47 @@ Path doubleStroke(List<Offset> points, RoughOptions o, {required bool close}) {
 Path roughLine(double x1, double y1, double x2, double y2, RoughOptions o) =>
     doubleStroke(sampleLine(x1, y1, x2, y2), o, close: false);
 
-Path roughCircle(double cx, double cy, double r, RoughOptions o) => roughEllipse(cx, cy, r, r, o);
+Path roughCircle(double cx, double cy, double r, RoughOptions o) =>
+    roughEllipse(cx, cy, r, r, o);
 
 Path roughEllipse(double cx, double cy, double rx, double ry, RoughOptions o) {
   // Ramanujan's perimeter approximation, sampled every 8px like the lines
   final h = math.pow((rx - ry) / (rx + ry), 2).toDouble();
-  final perimeter = math.pi * (rx + ry) * (1 + (3 * h) / (10 + math.sqrt(4 - 3 * h)));
+  final perimeter =
+      math.pi * (rx + ry) * (1 + (3 * h) / (10 + math.sqrt(4 - 3 * h)));
   final n = math.max(8, (perimeter / 8).ceil());
   // the last of n + 1 samples coincides with the first; close() joins them
   final points = ellipsePoints(cx, cy, rx, ry, 0, math.pi * 2, n).sublist(0, n);
   return doubleStroke(points, o, close: true);
 }
 
-Path roughRoundedRect(double x, double y, double w, double h, double r, RoughOptions o) =>
-    doubleStroke(roundedRectPoints(x, y, w, h, r), o, close: true);
+Path roughRoundedRect(
+  double x,
+  double y,
+  double w,
+  double h,
+  double r,
+  RoughOptions o,
+) => doubleStroke(roundedRectPoints(x, y, w, h, r), o, close: true);
 
 /// One stroke, so the ridge of the check stays a single pen line.
 Path roughCheckmark(double x, double y, double w, double h, RoughOptions o) {
   final rand = Mulberry32(o.seed);
   final pts = checkmarkPoints(x, y, w, h);
-  return smooth(boilPass(jitter(pts, rand, 1.2 * o.roughness), o), close: false);
+  return smooth(
+    boilPass(jitter(pts, rand, 1.2 * o.roughness), o),
+    close: false,
+  );
 }
 
 Path scribbleFill(double x, double y, double w, double h, RoughOptions o) {
   final rand = Mulberry32(o.seed);
   final pts = scribblePoints(x, y, w, h);
   if (pts.length < 2) return Path();
-  return smooth(boilPass(jitter(pts, rand, 1.2 * o.roughness), o), close: false);
+  return smooth(
+    boilPass(jitter(pts, rand, 1.2 * o.roughness), o),
+    close: false,
+  );
 }
 
 const double arrowHead = 12;
@@ -181,7 +211,13 @@ const double arrowHeadAngle = math.pi / 6;
 
 /// Line + two head strokes. The heads share one PRNG stream in draw order,
 /// so they diverge like two quick flicks of the same hand.
-List<List<Offset>> arrowStrokes(double x1, double y1, double x2, double y2, RoughOptions o) {
+List<List<Offset>> arrowStrokes(
+  double x1,
+  double y1,
+  double x2,
+  double y2,
+  RoughOptions o,
+) {
   final a = math.atan2(y2 - y1, x2 - x1);
   Offset wing(double da) => Offset(
     x2 - arrowHead * math.cos(a + da),
@@ -193,7 +229,11 @@ List<List<Offset>> arrowStrokes(double x1, double y1, double x2, double y2, Roug
   final amp = 1.2 * o.roughness;
   List<Offset> head(Offset p) =>
       boilPass(jitter(sampleLine(x2, y2, p.dx, p.dy, 4), rand, amp), o);
-  return [...doubleStrokePoints(sampleLine(x1, y1, x2, y2), o), head(left), head(right)];
+  return [
+    ...doubleStrokePoints(sampleLine(x1, y1, x2, y2), o),
+    head(left),
+    head(right),
+  ];
 }
 
 Path roughArrow(double x1, double y1, double x2, double y2, RoughOptions o) {
@@ -207,8 +247,15 @@ Path roughArrow(double x1, double y1, double x2, double y2, RoughOptions o) {
 
 /// Three frames whose boil seeds ride one cycle apart, so a single clock can
 /// step through them (see DrawkitSurface).
-List<T> variants<T>(T Function(RoughOptions o) gen, RoughOptions o, [int n = 3]) =>
-    List<T>.generate(n, (i) => gen(o.copyWith(boilSeed: o.seed + (i + 1) * 7919)), growable: false);
+List<T> variants<T>(
+  T Function(RoughOptions o) gen,
+  RoughOptions o, [
+  int n = 3,
+]) => List<T>.generate(
+  n,
+  (i) => gen(o.copyWith(boilSeed: o.seed + (i + 1) * 7919)),
+  growable: false,
+);
 
 /// Serializes points with the JS pen's `toFixed(2)` formatting. Exists for
 /// fixture tests that prove the port draws exactly what `rough.ts` draws.
@@ -237,27 +284,47 @@ String debugSketchString(String kind, List<double> args, RoughOptions o) {
   String ds(List<Offset> pts, bool close) => pathString(pts, close: close);
   switch (kind) {
     case 'line':
-      return doubleStrokePoints(sampleLine(args[0], args[1], args[2], args[3]), o)
-          .map((p) => ds(p, false))
-          .join();
+      return doubleStrokePoints(
+        sampleLine(args[0], args[1], args[2], args[3]),
+        o,
+      ).map((p) => ds(p, false)).join();
     case 'roundedRect':
-      return doubleStrokePoints(roundedRectPoints(args[0], args[1], args[2], args[3], args[4]), o)
-          .map((p) => ds(p, true))
-          .join();
+      return doubleStrokePoints(
+        roundedRectPoints(args[0], args[1], args[2], args[3], args[4]),
+        o,
+      ).map((p) => ds(p, true)).join();
     case 'circle':
-      return debugSketchString('ellipse', [args[0], args[1], args[2], args[2]], o);
+      return debugSketchString('ellipse', [
+        args[0],
+        args[1],
+        args[2],
+        args[2],
+      ], o);
     case 'ellipse':
       final rx = args[2];
       final ry = args[3];
       final h = math.pow((rx - ry) / (rx + ry), 2).toDouble();
-      final perimeter = math.pi * (rx + ry) * (1 + (3 * h) / (10 + math.sqrt(4 - 3 * h)));
+      final perimeter =
+          math.pi * (rx + ry) * (1 + (3 * h) / (10 + math.sqrt(4 - 3 * h)));
       final n = math.max(8, (perimeter / 8).ceil());
-      final pts = ellipsePoints(args[0], args[1], rx, ry, 0, math.pi * 2, n).sublist(0, n);
+      final pts = ellipsePoints(
+        args[0],
+        args[1],
+        rx,
+        ry,
+        0,
+        math.pi * 2,
+        n,
+      ).sublist(0, n);
       return doubleStrokePoints(pts, o).map((p) => ds(p, true)).join();
     case 'arrow':
-      return arrowStrokes(args[0], args[1], args[2], args[3], o)
-          .map((p) => ds(p, false))
-          .join();
+      return arrowStrokes(
+        args[0],
+        args[1],
+        args[2],
+        args[3],
+        o,
+      ).map((p) => ds(p, false)).join();
     case 'checkmark':
       final rand = Mulberry32(o.seed);
       final pts = checkmarkPoints(args[0], args[1], args[2], args[3]);

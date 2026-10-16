@@ -46,14 +46,26 @@ void main() {
           expect(actual[i].dx, expected[i].dx, reason: '$reason [$i].x');
           expect(actual[i].dy, expected[i].dy, reason: '$reason [$i].y');
         } else {
-          expect(actual[i].dx, closeTo(expected[i].dx, tolerance), reason: '$reason [$i].x');
-          expect(actual[i].dy, closeTo(expected[i].dy, tolerance), reason: '$reason [$i].y');
+          expect(
+            actual[i].dx,
+            closeTo(expected[i].dx, tolerance),
+            reason: '$reason [$i].x',
+          );
+          expect(
+            actual[i].dy,
+            closeTo(expected[i].dy, tolerance),
+            reason: '$reason [$i].y',
+          );
         }
       }
     }
 
     test('sampleLine default step', () {
-      expectPoints(sampleLine(10, 20, 110, 20), offsets('sampleLineDefault'), 'default');
+      expectPoints(
+        sampleLine(10, 20, 110, 20),
+        offsets('sampleLineDefault'),
+        'default',
+      );
     });
 
     test('sampleLine short distance keeps n >= 2', () {
@@ -79,15 +91,28 @@ void main() {
 
   group('path strings match src/rough.ts', () {
     final paths = fixtures['paths'] as Map<String, dynamic>;
-    final o42 = const RoughOptions(seed: 42, roughness: 1, boil: 0.3, boilSeed: 42 + 7919);
+    final o42 = const RoughOptions(
+      seed: 42,
+      roughness: 1,
+      boil: 0.3,
+      boilSeed: 42 + 7919,
+    );
 
     test('roughLine with boil', () {
-      expect(debugSketchString('line', [10, 20, 110, 20], o42), paths['roughLine_42_boil']);
+      expect(
+        debugSketchString('line', [10, 20, 110, 20], o42),
+        paths['roughLine_42_boil'],
+      );
     });
 
     test('roughLine without boil', () {
       expect(
-        debugSketchString('line', [10, 20, 110, 20], const RoughOptions(seed: 42)),
+        debugSketchString('line', [
+          10,
+          20,
+          110,
+          20,
+        ], const RoughOptions(seed: 42)),
         paths['roughLine_42_noboil'],
       );
     });
@@ -104,7 +129,12 @@ void main() {
         debugSketchString(
           'circle',
           [50, 50, 25],
-          const RoughOptions(seed: 7, roughness: 1.2, boil: 0.3, boilSeed: 7 + 7919),
+          const RoughOptions(
+            seed: 7,
+            roughness: 1.2,
+            boil: 0.3,
+            boilSeed: 7 + 7919,
+          ),
         ),
         paths['roughCircle_7_boil'],
       );
@@ -115,7 +145,12 @@ void main() {
         debugSketchString(
           'ellipse',
           [50, 50, 40, 25],
-          const RoughOptions(seed: 99, roughness: 0.8, boil: 0.2, boilSeed: 99 + 7919),
+          const RoughOptions(
+            seed: 99,
+            roughness: 0.8,
+            boil: 0.2,
+            boilSeed: 99 + 7919,
+          ),
         ),
         paths['roughEllipse_99_boil'],
       );
@@ -126,7 +161,12 @@ void main() {
         debugSketchString(
           'arrow',
           [10, 10, 110, 60],
-          const RoughOptions(seed: 5, roughness: 1, boil: 0.3, boilSeed: 5 + 7919),
+          const RoughOptions(
+            seed: 5,
+            roughness: 1,
+            boil: 0.3,
+            boilSeed: 5 + 7919,
+          ),
         ),
         paths['roughArrow_5_boil'],
       );
@@ -137,7 +177,12 @@ void main() {
         debugSketchString(
           'checkmark',
           [3, 3, 16, 16],
-          const RoughOptions(seed: 11, roughness: 1, boil: 0.3, boilSeed: 11 + 7919),
+          const RoughOptions(
+            seed: 11,
+            roughness: 1,
+            boil: 0.3,
+            boilSeed: 11 + 7919,
+          ),
         ),
         paths['roughCheckmark_11_boil'],
       );
@@ -148,7 +193,12 @@ void main() {
         debugSketchString(
           'scribble',
           [0, 0, 60, 24],
-          const RoughOptions(seed: 13, roughness: 1, boil: 0.3, boilSeed: 13 + 7919),
+          const RoughOptions(
+            seed: 13,
+            roughness: 1,
+            boil: 0.3,
+            boilSeed: 13 + 7919,
+          ),
         ),
         paths['scribbleFill_13_boil'],
       );

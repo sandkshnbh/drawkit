@@ -8,19 +8,41 @@ import '../engine/rough.dart';
 import 'style.dart';
 
 /// One painted path with its paint, the Dart analogue of a `<path>` element.
+///
+/// [trimTo] and [matrix] are the two CSS animations that aren't the boil:
+/// `stroke-dashoffset` draw-on (check) and `transform` transitions (dot,
+/// knob). They are read at paint time so frames never need rebuilding.
 class DrawkitLayer {
-  const DrawkitLayer(this.path, this.paint);
+  const DrawkitLayer(this.path, this.paint, {this.trimTo, this.matrix});
 
   final Path path;
   final Paint paint;
+
+  /// Draw-on fraction 0..1 (`pathLength: 1` + `stroke-dashoffset` in the CSS).
+  final Animation<double>? trimTo;
+
+  /// Applied around the layer before drawing (the dot's scale, the knob's
+  /// travel). Must be the surface's [DrawkitSurface.accent] when it animates,
+  /// so repaints are subscribed.
+  final Matrix4 Function()? matrix;
 }
 
 /// Builds the sketch layers for a box of [size]. Called once per boil frame,
 /// so it must not read mutable widget state that changes per animation tick.
-typedef DrawkitLayerBuilder = List<DrawkitLayer> Function(Size size, RoughOptions options);
+typedef DrawkitLayerBuilder = List<DrawkitLayer> Function(
+  Size size,
+  RoughOptions options,
+);
+
+/// The CSS `--drawably-ease`: cubic-bezier(0.2, 0, 0, 1).
+const Curve drawkitEase = Cubic(0.2, 0, 0, 1);
 
 /// A pen-stroked stroke paint. Controls default to 2px, decorations to 1.5.
-Paint drawkitStroke(DrawkitStyle style, {Color? color, double fallbackWidth = 2}) => Paint()
+Paint drawkitStroke(
+  DrawkitStyle style, {
+  Color? color,
+  double fallbackWidth = 2,
+}) => Paint()
   ..color = color ?? style.effectiveStroke
   ..style = PaintingStyle.stroke
   ..strokeWidth = style.strokeWidth(fallbackWidth)
@@ -48,6 +70,7 @@ bool drawkitReduceMotion(BuildContext context) {
 /// never sample out of step (the bug the JS comment warns about).
 class DrawkitSurface extends StatefulWidget {
   const DrawkitSurface({
+    super.key,
     required this.builder,
     this.child,
     this.style,
@@ -60,8 +83,9 @@ class DrawkitSurface extends StatefulWidget {
     this.onHoverChanged,
     this.onPressedChanged,
     this.duration = const Duration(milliseconds: 1200),
+    this.boilClock,
+    this.accent,
     this.size,
-    super.key,
   }) : assert(size == null || child == null);
 
   final DrawkitLayerBuilder builder;
@@ -82,6 +106,16 @@ class DrawkitSurface extends StatefulWidget {
   /// Boil cycle; the loading button shortens it (450ms in the CSS).
   final Duration duration;
 
+  /// Shared boil clock. Controls with several painted pieces (the check
+  /// accents) own one controller and pass it here so every stroke steps
+  /// frames together — the guarantee the single CSS animation gives.
+  final Animation<double>? boilClock;
+
+  /// Secondary repaint driver for trim/matrix layers (the check draw-on, the
+  /// radio dot, the toggle knob). Frames stay cached; only the paint pass
+  /// re-runs while this animates.
+  final Animation<double>? accent;
+
   /// Required when there is no child: CustomPaint sizes itself from one.
   final Size? size;
 
@@ -89,7 +123,8 @@ class DrawkitSurface extends StatefulWidget {
   State<DrawkitSurface> createState() => DrawkitSurfaceState();
 }
 
-class DrawkitSurfaceState extends State<DrawkitSurface> with SingleTickerProviderStateMixin {
+class DrawkitSurfaceState extends State<DrawkitSurface>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: widget.duration,
@@ -106,7 +141,9 @@ class DrawkitSurfaceState extends State<DrawkitSurface> with SingleTickerProvide
   void didUpdateWidget(DrawkitSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
     _controller.duration = widget.duration;
-    if (widget.seed != null && widget.seed != oldWidget.seed) _seed = widget.seed!;
+    if (widget.seed != null && widget.seed != oldWidget.seed) {
+      _seed = widget.seed!;
+    }
   }
 
   @override
@@ -129,7 +166,11 @@ class DrawkitSurfaceState extends State<DrawkitSurface> with SingleTickerProvide
   void _onPointerEnter(PointerEnterEvent event) {
     setState(() => _hovered = true);
     widget.onHoverChanged?.call(true);
-    if (widget.resketchOnPointer && widget.enabled && !drawkitReduceMotion(context)) resketch();
+    if (widget.resketchOnPointer &&
+        widget.enabled &&
+        !drawkitReduceMotion(context)) {
+      resketch();
+    }
   }
 
   void _onPointerExit(PointerExitEvent event) {
@@ -139,7 +180,11 @@ class DrawkitSurfaceState extends State<DrawkitSurface> with SingleTickerProvide
 
   void _onPointerDown(PointerDownEvent event) {
     widget.onPressedChanged?.call(true);
-    if (widget.resketchOnPointer && widget.enabled && !drawkitReduceMotion(context)) resketch();
+    if (widget.resketchOnPointer &&
+        widget.enabled &&
+        !drawkitReduceMotion(context)) {
+      resketch();
+    }
   }
 
   @override
@@ -147,14 +192,15 @@ class DrawkitSurfaceState extends State<DrawkitSurface> with SingleTickerProvide
     final style = widget.style ?? DrawkitTheme.of(context);
     final reduceMotion = drawkitReduceMotion(context);
     final boil = widget.animate && style.boil > 0 && !reduceMotion;
-    _syncBoil(boil);
+    _syncBoil(boil && widget.boilClock == null);
 
     final painter = _DrawkitSurfacePainter(
       builder: widget.builder,
       style: style,
       seed: _seed,
       frameCount: boil ? 3 : 1,
-      animation: boil ? _controller : null,
+      animation: boil ? widget.boilClock ?? _controller : null,
+      accent: widget.accent,
     );
 
     Widget painted = RepaintBoundary(
@@ -170,12 +216,17 @@ class DrawkitSurfaceState extends State<DrawkitSurface> with SingleTickerProvide
     if (!widget.enabled) {
       return Opacity(
         opacity: 0.45,
-        child: MouseRegion(cursor: widget.cursor ?? MouseCursor.defer, child: painted),
+        child: MouseRegion(
+          cursor: widget.cursor ?? MouseCursor.defer,
+          child: painted,
+        ),
       );
     }
 
     return MouseRegion(
-      cursor: widget.cursor ?? (_hovered ? SystemMouseCursors.click : MouseCursor.defer),
+      cursor:
+          widget.cursor ??
+          (_hovered ? SystemMouseCursors.click : MouseCursor.defer),
       onEnter: _onPointerEnter,
       onExit: _onPointerExit,
       child: Listener(
@@ -200,21 +251,35 @@ class _DrawkitSurfacePainter extends CustomPainter {
     required this.seed,
     required this.frameCount,
     required Animation<double>? animation,
+    required Animation<double>? accent,
   }) : _animation = animation,
-       super(repaint: animation);
+       _accent = accent,
+       super(
+         repaint: switch ((animation, accent)) {
+           (null, null) => null,
+           (final a?, null) => a,
+           (null, final b?) => b,
+           (final a?, final b?) => Listenable.merge([a, b]),
+         },
+       );
 
   final DrawkitLayerBuilder builder;
   final DrawkitStyle style;
   final int seed;
   final int frameCount;
   final Animation<double>? _animation;
+  final Animation<double>? _accent;
 
   Size? _cachedSize;
   List<List<DrawkitLayer>> _frames = const [];
 
   void _buildFrames(Size size) {
     _cachedSize = size;
-    final base = RoughOptions(seed: seed, roughness: style.roughness, boil: style.boil);
+    final base = RoughOptions(
+      seed: seed,
+      roughness: style.roughness,
+      boil: style.boil,
+    );
     _frames = variants((o) => builder(size, o), base, frameCount);
   }
 
@@ -226,14 +291,28 @@ class _DrawkitSurfacePainter extends CustomPainter {
         ? 0
         : (_animation.value * _frames.length).floor() % _frames.length;
     for (final layer in _frames[index]) {
-      canvas.drawPath(layer.path, layer.paint);
+      var path = layer.path;
+      if (layer.trimTo != null) {
+        final t = layer.trimTo!.value.clamp(0.0, 1.0);
+        if (t <= 0) continue;
+        // PathMetrics caches its iterator: probe once with firstOrNull.
+        final metric = path.computeMetrics().firstOrNull;
+        if (metric == null) continue;
+        path = metric.extractPath(0, metric.length * t);
+      }
+      canvas.save();
+      if (layer.matrix != null) canvas.transform(layer.matrix!.call().storage);
+      canvas.drawPath(path, layer.paint);
+      canvas.restore();
     }
   }
 
   @override
   bool shouldRepaint(_DrawkitSurfacePainter oldDelegate) =>
+      builder != oldDelegate.builder ||
       seed != oldDelegate.seed ||
       style != oldDelegate.style ||
       frameCount != oldDelegate.frameCount ||
-      _animation != oldDelegate._animation;
+      _animation != oldDelegate._animation ||
+      _accent != oldDelegate._accent;
 }

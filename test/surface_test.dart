@@ -8,7 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   List<DrawkitLayer> layers(Size size, RoughOptions options) => [
     DrawkitLayer(
-      Path()..addOval(Rect.fromCircle(center: size.center(Offset.zero), radius: 8)),
+      Path()
+        ..addOval(Rect.fromCircle(center: size.center(Offset.zero), radius: 8)),
       Paint()..color = const Color(0xFF2724D1),
     ),
   ];
@@ -18,7 +19,9 @@ void main() {
     child: Center(child: SizedBox(width: 120, height: 36, child: child)),
   );
 
-  testWidgets('paints three boil frames through one shared clock', (tester) async {
+  testWidgets('paints three boil frames through one shared clock', (
+    tester,
+  ) async {
     final seeds = <int>{};
     await tester.pumpWidget(
       host(
@@ -147,12 +150,7 @@ void main() {
 
   testWidgets('disposes without leaking the boil ticker', (tester) async {
     await tester.pumpWidget(
-      host(
-        DrawkitSurface(
-          builder: layers,
-          child: const SizedBox.expand(),
-        ),
-      ),
+      host(DrawkitSurface(builder: layers, child: const SizedBox.expand())),
     );
     await tester.pump(const Duration(milliseconds: 100));
     await tester.pumpWidget(const SizedBox());

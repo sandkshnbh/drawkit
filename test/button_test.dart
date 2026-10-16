@@ -8,7 +8,9 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   Widget host(Widget child) => Directionality(
     textDirection: TextDirection.ltr,
-    child: Center(child: DrawkitTheme(data: const DrawkitStyle(boil: 0), child: child)),
+    child: Center(
+      child: DrawkitTheme(data: const DrawkitStyle(boil: 0), child: child),
+    ),
   );
 
   testWidgets('fires onPressed on tap', (tester) async {
@@ -20,10 +22,14 @@ void main() {
     expect(taps, 1);
   });
 
-  testWidgets('disabled button ignores taps and marks semantics', (tester) async {
+  testWidgets('disabled button ignores taps and marks semantics', (
+    tester,
+  ) async {
     final semanticsHandle = tester.ensureSemantics();
     await tester.pumpWidget(host(const DrawkitButton(child: Text('save'))));
-    final semantics = tester.getSemantics(find.bySemanticsLabel(RegExp('save')));
+    final semantics = tester.getSemantics(
+      find.bySemanticsLabel(RegExp('save')),
+    );
     expect(semantics.flagsCollection.isEnabled, Tristate.isFalse);
     await tester.tap(find.text('save'), warnIfMissed: false);
     semanticsHandle.dispose();
@@ -44,7 +50,9 @@ void main() {
     expect(taps, 0);
   });
 
-  testWidgets('keyboard activation works through the focus tree', (tester) async {
+  testWidgets('keyboard activation works through the focus tree', (
+    tester,
+  ) async {
     var taps = 0;
     await tester.pumpWidget(
       host(

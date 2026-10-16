@@ -74,16 +74,17 @@ class DrawkitStyle {
     ink: clearInk ? null : ink ?? this.ink,
   );
 
-  static DrawkitStyle lerp(DrawkitStyle a, DrawkitStyle b, double t) => DrawkitStyle(
-    seed: t < 0.5 ? a.seed : b.seed,
-    roughness: lerpDouble(a.roughness, b.roughness, t)!,
-    boil: lerpDouble(a.boil, b.boil, t)!,
-    strokeColor: Color.lerp(a.strokeColor, b.strokeColor, t)!,
-    fillColor: Color.lerp(a.fillColor, b.fillColor, t)!,
-    paperColor: Color.lerp(a.paperColor, b.paperColor, t)!,
-    width: lerpDouble(a.width, b.width, t),
-    ink: Color.lerp(a.ink, b.ink, t),
-  );
+  static DrawkitStyle lerp(DrawkitStyle a, DrawkitStyle b, double t) =>
+      DrawkitStyle(
+        seed: t < 0.5 ? a.seed : b.seed,
+        roughness: lerpDouble(a.roughness, b.roughness, t)!,
+        boil: lerpDouble(a.boil, b.boil, t)!,
+        strokeColor: Color.lerp(a.strokeColor, b.strokeColor, t)!,
+        fillColor: Color.lerp(a.fillColor, b.fillColor, t)!,
+        paperColor: Color.lerp(a.paperColor, b.paperColor, t)!,
+        width: lerpDouble(a.width, b.width, t),
+        ink: Color.lerp(a.ink, b.ink, t),
+      );
 
   @override
   bool operator ==(Object other) =>
@@ -98,8 +99,16 @@ class DrawkitStyle {
       other.ink == ink;
 
   @override
-  int get hashCode =>
-      Object.hash(seed, roughness, boil, strokeColor, fillColor, paperColor, width, ink);
+  int get hashCode => Object.hash(
+    seed,
+    roughness,
+    boil,
+    strokeColor,
+    fillColor,
+    paperColor,
+    width,
+    ink,
+  );
 }
 
 /// Optional defaults for a subtree; everything falls back to [DrawkitStyle]'s
@@ -110,11 +119,13 @@ class DrawkitTheme extends InheritedTheme {
   final DrawkitStyle data;
 
   static DrawkitStyle of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<DrawkitTheme>()?.data ?? const DrawkitStyle();
+      context.dependOnInheritedWidgetOfExactType<DrawkitTheme>()?.data ??
+      const DrawkitStyle();
 
   @override
   bool updateShouldNotify(DrawkitTheme oldWidget) => data != oldWidget.data;
 
   @override
-  Widget wrap(BuildContext context, Widget child) => DrawkitTheme(data: data, child: child);
+  Widget wrap(BuildContext context, Widget child) =>
+      DrawkitTheme(data: data, child: child);
 }
