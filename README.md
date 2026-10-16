@@ -1,39 +1,78 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# drawkit
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
-
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+Animated hand-drawn UI for Flutter. Real widgets on top, seeded pen strokes
+behind, one shared boil clock — a Dart port of [drawably](https://github.com/dwhitedeveloper/drawably)
+with **zero dependencies beyond the Flutter SDK** (no Material, no Cupertino).
 
 ```dart
-const like = 'sample';
+import 'package:drawkit/drawkit.dart';
+
+DrawkitButton(
+  onPressed: () => save(),
+  child: const Text('save'),
+)
 ```
 
-## Additional information
+## How it works
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+- **The widget does the work, the pen is decoration.** Text fields are real
+  `EditableText`s, the select is a real `RawMenuAnchor` menu, checkboxes are
+  real focus/semantics-visible toggles. The sketch layer sits behind them and
+  never participates in hit testing.
+- **One seed, one sketch.** All randomness goes through a bit-exact port of
+  the JS `mulberry32`; the same seed draws the same lines, down to the last
+  wobble. Golden vectors from the original engine live in
+  `test/fixtures/js_vectors.json`.
+- **Boil, not frame loops.** Three pre-generated stroke frames swap on a
+  shared 1200 ms clock (`variants(seed + i * 7919)`), the Dart equivalent of
+  the CSS `step-end` keyframes. Controls with several animated pieces (a
+  checkbox outline, its check, its focus ring) share one clock, so frames
+  can never sample out of step.
+- **Accents, not rebuilds.** Draw-on checks (`trimTo`) and the radio dot /
+  toggle knob (`matrix`) are applied at paint time from live animations —
+  frames stay cached.
+- **Reduced motion respected.** `MediaQuery.disableAnimations` and
+  `PlatformDispatcher.accessibilityFeatures.reduceMotion` freeze the boil on
+  frame 0 and skip pointer re-sketches.
+
+## Widgets
+
+| Group | Widgets |
+| --- | --- |
+| Controls | `DrawkitButton`, `DrawkitCheckbox`, `DrawkitRadio`, `DrawkitToggle`, `DrawkitInput`, `DrawkitTextarea`, `DrawkitSelect` |
+| Surfaces | `DrawkitDivider`, `DrawkitCard`, `DrawkitBadge`, `DrawkitList` |
+| Text | `DrawkitUnderline`, `DrawkitHighlight`, `DrawkitCircle` |
+| Composites | `DrawkitArrow`, `DrawkitChip`, `DrawkitTabs`, `DrawkitTooltip`, `DrawkitAlert`, `DrawkitSteps`, `DrawkitKbd`, `DrawkitQuote`, `DrawkitPager` |
+
+Theming runs through `DrawkitTheme` + `DrawkitStyle` (`seed`, `roughness`,
+`boil`, `strokeColor`, `fillColor`, `width`, `ink`); brand defaults match the
+CSS custom properties.
+
+The optional **DrawkitPen** typeface ships with the package — nothing loads it
+unless a style asks for `fontFamily: 'DrawkitPen'`.
+
+## Try it
+
+```sh
+cd example
+flutter run -d chrome
+```
+
+The gallery exercises every widget: hover, press, focus (Tab), disabled
+states, and the live knobs for roughness / boil / seed.
+
+## Development
+
+```sh
+dart analyze
+flutter test
+(cd example && flutter test && flutter build web)
+```
+
+`flutter analyze` currently crashes on this checkout because the project path
+contains non-ASCII characters (LSP JSON error); use `dart analyze`, which is
+what CI runs too on ASCII paths.
+
+## License
+
+MIT. Ported from drawably (MIT) — see LICENSE for the full attribution note.

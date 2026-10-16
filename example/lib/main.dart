@@ -172,8 +172,8 @@ class _Sidebar extends StatelessWidget {
           child: Text(
             'drawkit',
             style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
+              fontSize: 26,
+              fontFamily: 'DrawkitPen',
               color: DrawkitPalette.pen,
               decoration: TextDecoration.none,
             ),
