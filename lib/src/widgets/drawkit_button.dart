@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../core/focus.dart';
+import '../core/motion.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -11,8 +12,6 @@ import '../engine/rough.dart';
 enum DrawkitButtonVariant { outline, solid, scribble }
 
 enum DrawkitButtonState { idle, loading, error, success }
-
-enum DrawkitTone { accent, neutral, danger }
 
 const double _inset = 3;
 

@@ -1,5 +1,14 @@
 ## Unreleased
 
+- **Internal cleanup** — the keyboard intents the focusable controls share
+  moved into `src/core/intents.dart` (one definition instead of fifteen
+  private copies per widget), the popup panels (`DrawkitMenu`,
+  `DrawkitPopover`, `DrawkitSelect`) share their positioner, check painter,
+  and row widget through `src/widgets/drawkit_panel.dart`,
+  `drawkitReduceMotion` lives in `core/motion.dart` (was `style.dart`), and
+  `DrawkitTone` lives in `core/style.dart` (was `drawkit_button.dart`). No
+  API or pixel changes.
+
 - **Themes & Dark Mode** — `DrawkitPalette` is a value type with two presets
   now: `DrawkitPalette.light` (the CSS values, untouched) and
   `DrawkitPalette.dark` (night paper `#1D1E21`, indigo pen `#8B88FF`).

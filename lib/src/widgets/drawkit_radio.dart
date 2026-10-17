@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../core/focus.dart';
+import '../core/motion.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';

@@ -2,10 +2,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../core/focus.dart';
+import '../core/intents.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
 import 'drawkit_button.dart';
+import 'drawkit_panel.dart';
 
 const double _panelMaxHeight = 320;
 const double _panelGap = 6;
@@ -136,11 +138,12 @@ class _DrawkitPopoverState extends State<DrawkitPopover> {
         groupId: info.tapRegionGroupId,
         onTapOutside: (event) => _menu.close(),
         child: CustomSingleChildLayout(
-          delegate: _PopoverPositionDelegate(
+          delegate: DrawkitPanelPositionDelegate(
             anchorRect: _anchorRect,
             textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
             width: widget.width,
             gap: widget.gap,
+            maxHeight: _panelMaxHeight,
           ),
           child: _PopoverPanel(
             style: style,
@@ -222,54 +225,6 @@ class _PopoverPanel extends StatelessWidget {
   );
 }
 
-class _PopoverPositionDelegate extends SingleChildLayoutDelegate {
-  _PopoverPositionDelegate({
-    required this.anchorRect,
-    required this.textDirection,
-    required this.width,
-    required this.gap,
-  });
-
-  final Rect anchorRect;
-  final TextDirection textDirection;
-  final double? width;
-  final double gap;
-
-  @override
-  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
-    final w = width ?? anchorRect.width.clamp(180.0, 360.0);
-    return BoxConstraints(minWidth: w, maxWidth: w, maxHeight: _panelMaxHeight);
-  }
-
-  @override
-  Offset getPositionForChild(Size size, Size childSize) {
-    final below = anchorRect.bottom + gap;
-    final fitsBelow = below + childSize.height <= size.height;
-    final y = fitsBelow ? below : anchorRect.top - gap - childSize.height;
-    final rawX = textDirection == TextDirection.rtl
-        ? anchorRect.right - childSize.width
-        : anchorRect.left;
-    final x = rawX.clamp(
-      0.0,
-      (size.width - childSize.width).clamp(0.0, double.infinity),
-    );
-    return Offset(
-      x,
-      y.clamp(
-        0.0,
-        (size.height - childSize.height).clamp(0.0, double.infinity),
-      ),
-    );
-  }
-
-  @override
-  bool shouldRelayout(_PopoverPositionDelegate oldDelegate) =>
-      anchorRect != oldDelegate.anchorRect ||
-      textDirection != oldDelegate.textDirection ||
-      width != oldDelegate.width ||
-      gap != oldDelegate.gap;
-}
-
 /// A sketched button that drops a menu of [DrawkitMenuItem]s: hover wash,
 /// check marks, hints, dividers — and disabled rows that never fire.
 class DrawkitMenu extends StatefulWidget {
@@ -298,22 +253,6 @@ class DrawkitMenu extends StatefulWidget {
 
   @override
   State<DrawkitMenu> createState() => _DrawkitMenuState();
-}
-
-class _MoveIntent extends Intent {
-  const _MoveIntent(this.delta);
-
-  final int delta;
-}
-
-class _EdgeIntent extends Intent {
-  const _EdgeIntent(this.end);
-
-  final bool end;
-}
-
-class _NoopIntent extends Intent {
-  const _NoopIntent();
 }
 
 class _DrawkitMenuState extends State<DrawkitMenu> {
@@ -441,11 +380,12 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
         groupId: info.tapRegionGroupId,
         onTapOutside: (event) => _menu.close(),
         child: CustomSingleChildLayout(
-          delegate: _PopoverPositionDelegate(
+          delegate: DrawkitPanelPositionDelegate(
             anchorRect: _anchorRect,
             textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
             width: widget.minWidth,
             gap: 4,
+            maxHeight: _panelMaxHeight,
           ),
           child: _PopoverPanel(
             style: style,
@@ -455,33 +395,33 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
             child: Shortcuts(
               shortcuts: {
                 const SingleActivator(LogicalKeyboardKey.arrowDown):
-                    const _MoveIntent(1),
+                    const DrawkitMoveIntent(1),
                 const SingleActivator(LogicalKeyboardKey.arrowUp):
-                    const _MoveIntent(-1),
+                    const DrawkitMoveIntent(-1),
                 const SingleActivator(LogicalKeyboardKey.arrowLeft):
-                    const _NoopIntent(),
+                    const DrawkitNoopIntent(),
                 const SingleActivator(LogicalKeyboardKey.arrowRight):
-                    const _NoopIntent(),
+                    const DrawkitNoopIntent(),
                 const SingleActivator(LogicalKeyboardKey.home):
-                    const _EdgeIntent(false),
+                    const DrawkitEdgeIntent(false),
                 const SingleActivator(LogicalKeyboardKey.end):
-                    const _EdgeIntent(true),
+                    const DrawkitEdgeIntent(true),
               },
               child: Actions(
                 actions: {
-                  _MoveIntent: CallbackAction<_MoveIntent>(
+                  DrawkitMoveIntent: CallbackAction<DrawkitMoveIntent>(
                     onInvoke: (intent) {
                       _move(intent.delta);
                       return null;
                     },
                   ),
-                  _EdgeIntent: CallbackAction<_EdgeIntent>(
+                  DrawkitEdgeIntent: CallbackAction<DrawkitEdgeIntent>(
                     onInvoke: (intent) {
                       _edge(intent.end);
                       return null;
                     },
                   ),
-                  _NoopIntent: CallbackAction<_NoopIntent>(
+                  DrawkitNoopIntent: CallbackAction<DrawkitNoopIntent>(
                     onInvoke: (intent) => null,
                   ),
                 },
@@ -505,11 +445,22 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
                           ),
                         )
                       else
-                        _MenuRow(
-                          item: widget.items[i],
-                          textStyle: textStyle,
-                          style: style,
+                        DrawkitPanelRow(
+                          label: widget.items[i].label,
+                          textStyle: textStyle.copyWith(
+                            color: widget.items[i].active
+                                ? null
+                                : palette.inkFaint,
+                          ),
+                          hint: widget.items[i].hint,
+                          hintStyle: textStyle.copyWith(
+                            fontSize: (textStyle.fontSize ?? 14) - 2,
+                            color: palette.inkMuted,
+                          ),
+                          ink: style.effectiveStroke,
                           seed: widget.seed,
+                          enabled: widget.items[i].active,
+                          checked: widget.items[i].checked ? true : null,
                           focusNode: _rowNodes[i],
                           onPick: () => _pick(widget.items[i]),
                         ),
@@ -574,125 +525,6 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
   }
 }
 
-class _MenuRow extends StatefulWidget {
-  const _MenuRow({
-    required this.item,
-    required this.textStyle,
-    required this.style,
-    required this.seed,
-    required this.onPick,
-    this.focusNode,
-  });
-
-  final DrawkitMenuItem item;
-  final TextStyle textStyle;
-  final DrawkitStyle style;
-  final int? seed;
-  final VoidCallback onPick;
-  final FocusNode? focusNode;
-
-  @override
-  State<_MenuRow> createState() => _MenuRowState();
-}
-
-class _MenuRowState extends State<_MenuRow> {
-  bool _hovered = false;
-  bool _focused = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final item = widget.item;
-    final palette = widget.style.palette;
-    final ink = widget.style.effectiveStroke;
-    final wash = (_hovered || _focused) && item.active;
-    return FocusableActionDetector(
-      focusNode: widget.focusNode,
-      enabled: item.active,
-      onShowFocusHighlight: (value) => setState(() => _focused = value),
-      shortcuts: {
-        const SingleActivator(LogicalKeyboardKey.space): const ActivateIntent(),
-        const SingleActivator(LogicalKeyboardKey.enter): const ActivateIntent(),
-      },
-      actions: {
-        ActivateIntent: CallbackAction<ActivateIntent>(
-          onInvoke: (intent) {
-            if (item.active) widget.onPick();
-            return null;
-          },
-        ),
-      },
-      mouseCursor: item.active
-          ? SystemMouseCursors.click
-          : SystemMouseCursors.basic,
-      child: Semantics(
-        button: true,
-        enabled: item.active,
-        checked: item.checked ? true : null,
-        onTap: item.active ? widget.onPick : null,
-        child: MouseRegion(
-          onEnter: (_) => setState(() => _hovered = true),
-          onExit: (_) => setState(() => _hovered = false),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            excludeFromSemantics: true,
-            onTap: item.active ? widget.onPick : null,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: wash ? ink.withValues(alpha: 0.10) : null,
-              ),
-              child: DrawkitTapTarget(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 7,
-                  ),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: item.checked
-                            ? CustomPaint(
-                                painter: _CheckPainter(
-                                  seed: widget.seed ?? 1,
-                                  ink: ink,
-                                ),
-                              )
-                            : null,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          item.label,
-                          style: widget.textStyle.copyWith(
-                            color: item.active ? null : palette.inkFaint,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (item.hint != null) ...[
-                        const SizedBox(width: 12),
-                        Text(
-                          item.hint!,
-                          style: widget.textStyle.copyWith(
-                            fontSize: (widget.textStyle.fontSize ?? 14) - 2,
-                            color: palette.inkMuted,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _RulePainter extends CustomPainter {
   _RulePainter({required this.seed, required this.ink});
 
@@ -719,35 +551,5 @@ class _RulePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RulePainter oldDelegate) =>
-      seed != oldDelegate.seed || ink != oldDelegate.ink;
-}
-
-class _CheckPainter extends CustomPainter {
-  _CheckPainter({required this.seed, required this.ink});
-
-  final int seed;
-  final Color ink;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawPath(
-      roughCheckmark(
-        2,
-        2,
-        size.width - 4,
-        size.height - 4,
-        RoughOptions(seed: seed),
-      ),
-      Paint()
-        ..color = ink
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_CheckPainter oldDelegate) =>
       seed != oldDelegate.seed || ink != oldDelegate.ink;
 }

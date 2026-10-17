@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../core/focus.dart';
+import '../core/intents.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -78,24 +79,6 @@ class DrawkitDatePicker extends StatefulWidget {
 
   @override
   State<DrawkitDatePicker> createState() => _DrawkitDatePickerState();
-}
-
-class _ShiftIntent extends Intent {
-  const _ShiftIntent(this.days);
-
-  final int days;
-}
-
-class _PageIntent extends Intent {
-  const _PageIntent(this.months);
-
-  final int months;
-}
-
-class _EdgeIntent extends Intent {
-  const _EdgeIntent(this.end);
-
-  final bool end;
 }
 
 class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
@@ -257,45 +240,43 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
             focusNode: _dayNode,
             onShowFocusHighlight: (value) => setState(() => _focused = value),
             shortcuts: {
-              SingleActivator(LogicalKeyboardKey.arrowRight): _ShiftIntent(
+              SingleActivator(LogicalKeyboardKey.arrowRight): DrawkitMoveIntent(
                 horizontal,
               ),
-              SingleActivator(LogicalKeyboardKey.arrowLeft): _ShiftIntent(
+              SingleActivator(LogicalKeyboardKey.arrowLeft): DrawkitMoveIntent(
                 -horizontal,
               ),
               const SingleActivator(LogicalKeyboardKey.arrowDown):
-                  const _ShiftIntent(7),
+                  const DrawkitMoveIntent(7),
               const SingleActivator(LogicalKeyboardKey.arrowUp):
-                  const _ShiftIntent(-7),
+                  const DrawkitMoveIntent(-7),
               const SingleActivator(LogicalKeyboardKey.pageUp):
-                  const _PageIntent(-1),
+                  const DrawkitPageIntent(-1),
               const SingleActivator(LogicalKeyboardKey.pageDown):
-                  const _PageIntent(1),
-              const SingleActivator(LogicalKeyboardKey.home): const _EdgeIntent(
-                false,
-              ),
-              const SingleActivator(LogicalKeyboardKey.end): const _EdgeIntent(
-                true,
-              ),
+                  const DrawkitPageIntent(1),
+              const SingleActivator(LogicalKeyboardKey.home):
+                  const DrawkitEdgeIntent(false),
+              const SingleActivator(LogicalKeyboardKey.end):
+                  const DrawkitEdgeIntent(true),
               const SingleActivator(LogicalKeyboardKey.enter):
                   const ActivateIntent(),
               const SingleActivator(LogicalKeyboardKey.space):
                   const ActivateIntent(),
             },
             actions: {
-              _ShiftIntent: CallbackAction<_ShiftIntent>(
+              DrawkitMoveIntent: CallbackAction<DrawkitMoveIntent>(
                 onInvoke: (intent) {
-                  _shift(intent.days);
+                  _shift(intent.delta);
                   return null;
                 },
               ),
-              _PageIntent: CallbackAction<_PageIntent>(
+              DrawkitPageIntent: CallbackAction<DrawkitPageIntent>(
                 onInvoke: (intent) {
                   _page(intent.months);
                   return null;
                 },
               ),
-              _EdgeIntent: CallbackAction<_EdgeIntent>(
+              DrawkitEdgeIntent: CallbackAction<DrawkitEdgeIntent>(
                 onInvoke: (intent) {
                   _edge(intent.end);
                   return null;

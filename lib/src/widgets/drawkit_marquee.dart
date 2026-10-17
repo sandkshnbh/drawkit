@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../core/style.dart';
+import '../core/motion.dart';
 
 /// A ticker: [child] slides past forever, the copy behind it closing the
 /// seam. Motion flows start→end, so it walks leftward in LTR and rightward

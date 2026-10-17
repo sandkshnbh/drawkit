@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/intents.dart';
 import '../core/style.dart';
 import 'drawkit_dialog.dart';
 import 'drawkit_search.dart';
@@ -29,22 +30,6 @@ class DrawkitCommand<T> {
     if (label.toLowerCase().contains(q)) return true;
     return keywords.any((k) => k.toLowerCase().contains(q));
   }
-}
-
-class _MoveIntent extends Intent {
-  const _MoveIntent(this.delta);
-
-  final int delta;
-}
-
-class _EdgeIntent extends Intent {
-  const _EdgeIntent(this.end);
-
-  final bool end;
-}
-
-class _DismissIntent extends Intent {
-  const _DismissIntent();
 }
 
 /// Opens the sketch command palette: type to filter, arrows to walk, enter to
@@ -143,34 +128,34 @@ class _CommandPaletteState<T> extends State<_CommandPalette<T>> {
 
     return Shortcuts(
       shortcuts: {
-        const SingleActivator(LogicalKeyboardKey.arrowDown): const _MoveIntent(
-          1,
-        ),
-        const SingleActivator(LogicalKeyboardKey.arrowUp): const _MoveIntent(
-          -1,
-        ),
-        const SingleActivator(LogicalKeyboardKey.home): const _EdgeIntent(
+        const SingleActivator(LogicalKeyboardKey.arrowDown):
+            const DrawkitMoveIntent(1),
+        const SingleActivator(LogicalKeyboardKey.arrowUp):
+            const DrawkitMoveIntent(-1),
+        const SingleActivator(LogicalKeyboardKey.home): const DrawkitEdgeIntent(
           false,
         ),
-        const SingleActivator(LogicalKeyboardKey.end): const _EdgeIntent(true),
+        const SingleActivator(LogicalKeyboardKey.end): const DrawkitEdgeIntent(
+          true,
+        ),
         const SingleActivator(LogicalKeyboardKey.escape):
-            const _DismissIntent(),
+            const DrawkitDismissIntent(),
       },
       child: Actions(
         actions: {
-          _MoveIntent: CallbackAction<_MoveIntent>(
+          DrawkitMoveIntent: CallbackAction<DrawkitMoveIntent>(
             onInvoke: (intent) {
               _move(intent.delta);
               return null;
             },
           ),
-          _EdgeIntent: CallbackAction<_EdgeIntent>(
+          DrawkitEdgeIntent: CallbackAction<DrawkitEdgeIntent>(
             onInvoke: (intent) {
               _edge(intent.end);
               return null;
             },
           ),
-          _DismissIntent: CallbackAction<_DismissIntent>(
+          DrawkitDismissIntent: CallbackAction<DrawkitDismissIntent>(
             onInvoke: (intent) {
               Navigator.of(context).pop();
               return null;

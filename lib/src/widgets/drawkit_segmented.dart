@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../core/focus.dart';
+import '../core/intents.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -15,18 +16,6 @@ class DrawkitSegment<T> {
 
   final T value;
   final String label;
-}
-
-class _MoveIntent extends Intent {
-  const _MoveIntent(this.delta);
-
-  final int delta;
-}
-
-class _EdgeIntent extends Intent {
-  const _EdgeIntent(this.end);
-
-  final bool end;
 }
 
 /// A single-choice segmented control: one sketched frame, a scribble wash
@@ -227,33 +216,31 @@ class _DrawkitSegmentedButtonState<T> extends State<DrawkitSegmentedButton<T>> {
                     }
                   }),
                   shortcuts: {
-                    SingleActivator(LogicalKeyboardKey.arrowRight): _MoveIntent(
-                      horizontal,
-                    ),
-                    SingleActivator(LogicalKeyboardKey.arrowLeft): _MoveIntent(
-                      -horizontal,
-                    ),
+                    SingleActivator(LogicalKeyboardKey.arrowRight):
+                        DrawkitMoveIntent(horizontal),
+                    SingleActivator(LogicalKeyboardKey.arrowLeft):
+                        DrawkitMoveIntent(-horizontal),
                     const SingleActivator(LogicalKeyboardKey.arrowDown):
-                        const _MoveIntent(1),
+                        const DrawkitMoveIntent(1),
                     const SingleActivator(LogicalKeyboardKey.arrowUp):
-                        const _MoveIntent(-1),
+                        const DrawkitMoveIntent(-1),
                     const SingleActivator(LogicalKeyboardKey.home):
-                        const _EdgeIntent(false),
+                        const DrawkitEdgeIntent(false),
                     const SingleActivator(LogicalKeyboardKey.end):
-                        const _EdgeIntent(true),
+                        const DrawkitEdgeIntent(true),
                     const SingleActivator(LogicalKeyboardKey.space):
                         const ActivateIntent(),
                     const SingleActivator(LogicalKeyboardKey.enter):
                         const ActivateIntent(),
                   },
                   actions: {
-                    _MoveIntent: CallbackAction<_MoveIntent>(
+                    DrawkitMoveIntent: CallbackAction<DrawkitMoveIntent>(
                       onInvoke: (intent) {
                         _move(intent.delta);
                         return null;
                       },
                     ),
-                    _EdgeIntent: CallbackAction<_EdgeIntent>(
+                    DrawkitEdgeIntent: CallbackAction<DrawkitEdgeIntent>(
                       onInvoke: (intent) {
                         _edge(intent.end);
                         return null;

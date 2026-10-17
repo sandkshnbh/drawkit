@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/motion.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
-import 'drawkit_button.dart' show DrawkitTone;
 import 'drawkit_text.dart' show DrawkitUnderline;
 
 /// Handle for a toast shown with [showDrawkitToast].

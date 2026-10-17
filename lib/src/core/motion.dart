@@ -1,8 +1,18 @@
 import 'dart:math' as math;
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/widgets.dart';
 
 import 'style.dart';
+
+/// True when the platform asks for reduced motion. Mirrors the CSS
+/// `prefers-reduced-motion` block: boil freezes on frame 0, transitions and
+/// pointer re-sketches are skipped.
+bool drawkitReduceMotion(BuildContext context) {
+  final media = MediaQuery.maybeOf(context);
+  if (media != null && media.disableAnimations) return true;
+  return PlatformDispatcher.instance.accessibilityFeatures.reduceMotion;
+}
 
 /// Carries a draw-on progress down to every [DrawkitSurface] below it.
 ///

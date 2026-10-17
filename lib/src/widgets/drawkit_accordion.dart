@@ -2,6 +2,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../core/focus.dart';
+import '../core/motion.dart';
+import '../core/intents.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -44,18 +46,6 @@ class DrawkitAccordion extends StatefulWidget {
 
   @override
   State<DrawkitAccordion> createState() => _DrawkitAccordionState();
-}
-
-class _MoveIntent extends Intent {
-  const _MoveIntent(this.delta);
-
-  final int delta;
-}
-
-class _EdgeIntent extends Intent {
-  const _EdgeIntent(this.end);
-
-  final bool end;
 }
 
 class _DrawkitAccordionState extends State<DrawkitAccordion> {
@@ -181,16 +171,16 @@ class _AccordionTileState extends State<_AccordionTile> {
       shortcuts: {
         const SingleActivator(LogicalKeyboardKey.space): const ActivateIntent(),
         const SingleActivator(LogicalKeyboardKey.enter): const ActivateIntent(),
-        const SingleActivator(LogicalKeyboardKey.arrowDown): const _MoveIntent(
-          1,
-        ),
-        const SingleActivator(LogicalKeyboardKey.arrowUp): const _MoveIntent(
-          -1,
-        ),
-        const SingleActivator(LogicalKeyboardKey.home): const _EdgeIntent(
+        const SingleActivator(LogicalKeyboardKey.arrowDown):
+            const DrawkitMoveIntent(1),
+        const SingleActivator(LogicalKeyboardKey.arrowUp):
+            const DrawkitMoveIntent(-1),
+        const SingleActivator(LogicalKeyboardKey.home): const DrawkitEdgeIntent(
           false,
         ),
-        const SingleActivator(LogicalKeyboardKey.end): const _EdgeIntent(true),
+        const SingleActivator(LogicalKeyboardKey.end): const DrawkitEdgeIntent(
+          true,
+        ),
       },
       actions: {
         ActivateIntent: CallbackAction<ActivateIntent>(
@@ -199,13 +189,13 @@ class _AccordionTileState extends State<_AccordionTile> {
             return null;
           },
         ),
-        _MoveIntent: CallbackAction<_MoveIntent>(
+        DrawkitMoveIntent: CallbackAction<DrawkitMoveIntent>(
           onInvoke: (intent) {
             widget.onMove(intent.delta);
             return null;
           },
         ),
-        _EdgeIntent: CallbackAction<_EdgeIntent>(
+        DrawkitEdgeIntent: CallbackAction<DrawkitEdgeIntent>(
           onInvoke: (intent) {
             widget.onEdge(intent.end);
             return null;

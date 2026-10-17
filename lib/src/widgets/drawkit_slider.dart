@@ -2,24 +2,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../core/focus.dart';
+import '../core/intents.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
 
 const double _inset = 10;
 const double _thumbRadius = 8;
-
-class _AdjustIntent extends Intent {
-  const _AdjustIntent(this.delta);
-
-  final double delta;
-}
-
-class _JumpIntent extends Intent {
-  const _JumpIntent(this.end);
-
-  final bool end;
-}
 
 /// A sketched slider: thin track, bolder filled run, a paper-filled thumb.
 ///
@@ -200,27 +189,26 @@ class _DrawkitSliderState extends State<DrawkitSlider> {
 
     return Shortcuts(
       shortcuts: {
-        const SingleActivator(LogicalKeyboardKey.arrowUp): const _AdjustIntent(
-          1,
-        ),
+        const SingleActivator(LogicalKeyboardKey.arrowUp):
+            const DrawkitAdjustIntent(1),
         const SingleActivator(LogicalKeyboardKey.arrowDown):
-            const _AdjustIntent(-1),
-        SingleActivator(LogicalKeyboardKey.arrowRight): _AdjustIntent(
+            const DrawkitAdjustIntent(-1),
+        SingleActivator(LogicalKeyboardKey.arrowRight): DrawkitAdjustIntent(
           horizontal,
         ),
-        SingleActivator(LogicalKeyboardKey.arrowLeft): _AdjustIntent(
+        SingleActivator(LogicalKeyboardKey.arrowLeft): DrawkitAdjustIntent(
           -horizontal,
         ),
-        const SingleActivator(LogicalKeyboardKey.home): const _JumpIntent(
+        const SingleActivator(LogicalKeyboardKey.home): const DrawkitEdgeIntent(
           false,
         ),
-        const SingleActivator(LogicalKeyboardKey.end): const _JumpIntent(true),
-        const SingleActivator(LogicalKeyboardKey.pageUp): const _AdjustIntent(
-          5,
+        const SingleActivator(LogicalKeyboardKey.end): const DrawkitEdgeIntent(
+          true,
         ),
-        const SingleActivator(LogicalKeyboardKey.pageDown): const _AdjustIntent(
-          -5,
-        ),
+        const SingleActivator(LogicalKeyboardKey.pageUp):
+            const DrawkitAdjustIntent(5),
+        const SingleActivator(LogicalKeyboardKey.pageDown):
+            const DrawkitAdjustIntent(-5),
       },
       child: FocusableActionDetector(
         focusNode: _focusNode,
@@ -228,13 +216,13 @@ class _DrawkitSliderState extends State<DrawkitSlider> {
         enabled: _enabled,
         onShowFocusHighlight: (value) => setState(() => _focused = value),
         actions: {
-          _AdjustIntent: CallbackAction<_AdjustIntent>(
+          DrawkitAdjustIntent: CallbackAction<DrawkitAdjustIntent>(
             onInvoke: (intent) {
               _nudge(intent.delta * _step);
               return null;
             },
           ),
-          _JumpIntent: CallbackAction<_JumpIntent>(
+          DrawkitEdgeIntent: CallbackAction<DrawkitEdgeIntent>(
             onInvoke: (intent) {
               _report(intent.end ? widget.max : widget.min);
               return null;

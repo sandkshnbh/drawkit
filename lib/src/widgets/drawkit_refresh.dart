@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 
+import '../core/motion.dart';
 import '../core/style.dart';
 import 'drawkit_doodle.dart';
 import 'drawkit_progress.dart';
