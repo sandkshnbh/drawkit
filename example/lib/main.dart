@@ -111,8 +111,9 @@ class _GalleryState extends State<Gallery> {
 }
 
 class GalleryPage {
-  const GalleryPage(this.title, this.subtitle, this.builder);
+  const GalleryPage(this.group, this.title, this.subtitle, this.builder);
 
+  final String group;
   final String title;
   final String subtitle;
   final WidgetBuilder builder;
@@ -121,94 +122,106 @@ class GalleryPage {
 /// Filled in per milestone; see the individual page builders below.
 final List<GalleryPage> galleryPages = [
   GalleryPage(
+    'Foundations',
     'Surface',
     'The shared sketch surface: seeded chrome behind any child, one boil clock.',
     (context) => const SurfacePage(),
   ),
   GalleryPage(
-    'Button',
-    'Three variants, four states, three tones — real widget behaviour in front.',
-    (context) => const ButtonPage(),
-  ),
-  GalleryPage(
-    'Checkbox · Radio · Toggle',
-    'The choice controls: check draws on, dot scales in, knob travels.',
-    (context) => const ChoicePage(),
-  ),
-  GalleryPage(
-    'Input · Textarea',
-    'Sketch outline behind a real EditableText; focus ring, placeholder, growth.',
-    (context) => const FieldPage(),
-  ),
-  GalleryPage(
-    'Select',
-    'Chevron in the reserved gutter, overlay menu with sketched frame and check.',
-    (context) => const SelectPage(),
-  ),
-  GalleryPage(
-    'Divider · Card · Badge · List',
-    'Surface decorations: rules, frames, pills, and per-item markers.',
-    (context) => const DecorationsPage(),
-  ),
-  GalleryPage(
-    'Underline · Highlight · Circle',
-    'Text decorations drawn per line box, measured with a TextPainter.',
-    (context) => const TextPage(),
-  ),
-  GalleryPage(
-    'Arrow · Composites',
-    'Chip, tabs, tooltip, alert, steps, kbd, quote, pager — several strokes, one seed.',
-    (context) => const CompositePage(),
-  ),
-  GalleryPage(
-    'Motion',
-    'Draw-on tracing, staggered lists, and the error shake — one shared pen.',
-    (context) => const MotionPage(),
-  ),
-  GalleryPage(
-    'Actions',
-    'Segments, slider, stepper, search, icon buttons, and the floating pen.',
-    (context) => const ActionsPage(),
-  ),
-  GalleryPage(
-    'Feedback',
-    'Dialogs, sheets, toasts, progress bars, spinners, and loading skeletons.',
-    (context) => const FeedbackPage(),
-  ),
-  GalleryPage(
-    'Menus',
-    'Dropdowns, popovers, an accordion, a command palette, and a date picker.',
-    (context) => const MenusPage(),
-  ),
-  GalleryPage(
-    'Structure',
-    'App bar, nav rail, bottom bar, breadcrumb, and a ruled table.',
-    (context) => const StructurePage(),
-  ),
-  GalleryPage(
-    'Content',
-    'Headings, avatars, a captioned figure, stars, doodles, and a ticker.',
-    (context) => const ContentPage(),
-  ),
-  GalleryPage(
-    'States',
-    'Validation, empty margins, undoable toasts, and a pull-to-refresh.',
-    (context) => const StatesPage(),
-  ),
-  GalleryPage(
-    'Focus & Keyboard',
-    'One ring on every control — Tab, arrows, Home/End, Enter, Escape.',
-    (context) => const FocusPage(),
-  ),
-  GalleryPage(
+    'Foundations',
     'Ink · Palette',
     'Two papers side by side: the full palette, control by control.',
     (context) => const PalettePage(),
   ),
   GalleryPage(
-    'Floating',
-    'A capsule nav bar that tucks away on scroll, and an unfolding fab menu.',
-    (context) => const FloatingPage(),
+    'Foundations',
+    'Motion',
+    'Draw-on tracing, staggered lists, and the error shake — one shared pen.',
+    (context) => const MotionPage(),
+  ),
+  GalleryPage(
+    'Foundations',
+    'Focus & Keyboard',
+    'One ring on every control — Tab, arrows, Home/End, Enter, Escape.',
+    (context) => const FocusPage(),
+  ),
+  GalleryPage(
+    'Actions',
+    'Buttons',
+    'Variants, states, tones — plus icon buttons, the floating pen, and the fab menu.',
+    (context) => const ButtonPage(),
+  ),
+  GalleryPage(
+    'Forms',
+    'Fields',
+    'Input, textarea, and search: real text editing behind a sketch outline.',
+    (context) => const FieldPage(),
+  ),
+  GalleryPage(
+    'Forms',
+    'Choices',
+    'Checkboxes, radios, toggles — and chips and segments for the wider picks.',
+    (context) => const ChoicePage(),
+  ),
+  GalleryPage(
+    'Forms',
+    'Select & Dates',
+    'A dropdown and a calendar: pick one value out of many.',
+    (context) => const SelectPage(),
+  ),
+  GalleryPage(
+    'Forms',
+    'Values',
+    'Slider, stepper, and stars: numbers and ratings with a drawn response.',
+    (context) => const ValuesPage(),
+  ),
+  GalleryPage(
+    'Navigation',
+    'Navigation',
+    'App bar, rail, bottom bar, breadcrumb, pager — and the floating capsule.',
+    (context) => const NavigationPage(),
+  ),
+  GalleryPage(
+    'Navigation',
+    'Tabs & Steps',
+    'Tabs that slide the underline, steps that count the walk.',
+    (context) => const TabsPage(),
+  ),
+  GalleryPage(
+    'Overlays',
+    'Menus & Popovers',
+    'Dropdowns, popovers, the tooltip, and the command palette.',
+    (context) => const MenusPage(),
+  ),
+  GalleryPage(
+    'Overlays',
+    'Dialogs & Sheets',
+    'Modals and drawers that trace themselves in over the page.',
+    (context) => const DialogsPage(),
+  ),
+  GalleryPage(
+    'Feedback',
+    'Feedback & States',
+    'Toasts, alerts, validation, empty margins, loading, and the pull.',
+    (context) => const FeedbackPage(),
+  ),
+  GalleryPage(
+    'Display',
+    'Cards & Tables',
+    'Frames, rules, badges, lists, the accordion, and a ruled ledger.',
+    (context) => const ContainersPage(),
+  ),
+  GalleryPage(
+    'Display',
+    'Type & Ink',
+    'Headings, underline, highlight, circle, quote, and kbd.',
+    (context) => const TypePage(),
+  ),
+  GalleryPage(
+    'Display',
+    'Pictures & Extras',
+    'Faces, plates, doodles, arrows, and a ticker.',
+    (context) => const PicturesPage(),
   ),
 ];
 
@@ -260,27 +273,52 @@ class _Sidebar extends StatelessWidget {
           Expanded(
             child: ListView.builder(
               itemCount: pages.length,
-              itemBuilder: (context, i) => GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => onSelect(i),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 9,
-                  ),
-                  color: i == selected ? palette.paper : null,
-                  child: Text(
-                    pages[i].title,
-                    style: TextStyle(
-                      color: i == selected ? palette.pen : palette.inkMuted,
-                      fontWeight: i == selected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      decoration: TextDecoration.none,
+              itemBuilder: (context, i) {
+                final page = pages[i];
+                final showGroup = i == 0 || pages[i - 1].group != page.group;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (showGroup)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(18, 14, 18, 6),
+                        child: Text(
+                          page.group.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 11,
+                            letterSpacing: 1.2,
+                            fontWeight: FontWeight.w600,
+                            color: palette.inkMuted,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => onSelect(i),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 9,
+                        ),
+                        color: i == selected ? palette.paper : null,
+                        child: Text(
+                          page.title,
+                          style: TextStyle(
+                            color: i == selected
+                                ? palette.pen
+                                : palette.inkMuted,
+                            fontWeight: i == selected
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
+                  ],
+                );
+              },
             ),
           ),
           Padding(
@@ -510,90 +548,187 @@ class ButtonPage extends StatefulWidget {
 
 class _ButtonPageState extends State<ButtonPage> {
   DrawkitButtonState state = DrawkitButtonState.idle;
+  bool _favourite = false;
+  int _pages = 0;
+
+  TextStyle get body => TextStyle(
+    fontSize: 14,
+    height: 1.5,
+    color: DrawkitTheme.of(context).palette.ink,
+    decoration: TextDecoration.none,
+  );
 
   @override
   Widget build(BuildContext context) {
     final palette = DrawkitTheme.of(context).palette;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          spacing: 18,
-          runSpacing: 18,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            for (final variant in DrawkitButtonVariant.values)
-              DrawkitButton(
-                variant: variant,
-                onPressed: () {},
-                child: Text(variant.name),
-              ),
-          ],
-        ),
-        const SizedBox(height: 18),
-        Wrap(
-          spacing: 18,
-          runSpacing: 18,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            for (final tone in DrawkitTone.values)
-              DrawkitButton(
-                tone: tone,
-                onPressed: () {},
-                child: Text('tone: ${tone.name}'),
-              ),
-            const DrawkitButton(onPressed: null, child: Text('disabled')),
-          ],
-        ),
-        const SizedBox(height: 26),
-        Row(
-          children: [
-            for (final s in DrawkitButtonState.values)
-              Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: DrawkitButton(
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Variants — one frame, three finishes', style: body),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 18,
+            runSpacing: 18,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              for (final variant in DrawkitButtonVariant.values)
+                DrawkitButton(
+                  variant: variant,
+                  onPressed: () {},
+                  child: Text(variant.name),
+                ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Text('Tones — and the disabled hand', style: body),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 18,
+            runSpacing: 18,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              for (final tone in DrawkitTone.values)
+                DrawkitButton(
+                  tone: tone,
+                  onPressed: () {},
+                  child: Text('tone: ${tone.name}'),
+                ),
+              const DrawkitButton(onPressed: null, child: Text('disabled')),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'States — loading slows the boil, error and success re-ink',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              for (final s in DrawkitButtonState.values)
+                DrawkitButton(
                   state: s,
                   onPressed: () {},
                   child: Text('state: ${s.name}'),
                 ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Wrap(
+            spacing: 18,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              DrawkitButton(
+                variant: DrawkitButtonVariant.solid,
+                state: state,
+                onPressed: () {
+                  setState(() {
+                    state = switch (state) {
+                      DrawkitButtonState.idle => DrawkitButtonState.loading,
+                      DrawkitButtonState.loading => DrawkitButtonState.success,
+                      DrawkitButtonState.success => DrawkitButtonState.error,
+                      DrawkitButtonState.error => DrawkitButtonState.idle,
+                    };
+                  });
+                },
+                child: Text('cycle state: ${state.name}'),
               ),
-          ],
-        ),
-        const SizedBox(height: 26),
-        Wrap(
-          spacing: 18,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            DrawkitButton(
-              variant: DrawkitButtonVariant.solid,
-              state: state,
-              onPressed: () {
-                setState(() {
-                  state = switch (state) {
-                    DrawkitButtonState.idle => DrawkitButtonState.loading,
-                    DrawkitButtonState.loading => DrawkitButtonState.success,
-                    DrawkitButtonState.success => DrawkitButtonState.error,
-                    DrawkitButtonState.error => DrawkitButtonState.idle,
-                  };
-                });
-              },
-              child: Text('cycle state: ${state.name}'),
-            ),
-            Text(
-              'Tab to me for the focus ring →',
-              style: TextStyle(
-                color: palette.inkMuted,
-                decoration: TextDecoration.none,
+              Text(
+                'Tab to me for the focus ring →',
+                style: body.copyWith(color: palette.inkMuted),
+              ),
+              const DrawkitButton(
+                autofocus: false,
+                onPressed: _noop,
+                child: Text('focus me'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 26),
+          Text('Icon buttons — one glyph, a required label', style: body),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              DrawkitIconButton(
+                semanticLabel: 'Favourite',
+                tone: _favourite ? DrawkitTone.accent : DrawkitTone.neutral,
+                variant: _favourite
+                    ? DrawkitButtonVariant.solid
+                    : DrawkitButtonVariant.outline,
+                onPressed: () => setState(() => _favourite = !_favourite),
+                child: Text(_favourite ? '★' : '☆'),
+              ),
+              const SizedBox(width: 8),
+              DrawkitIconButton(
+                semanticLabel: 'Clear the pages',
+                tone: DrawkitTone.danger,
+                onPressed: () => setState(() => _pages = 0),
+                child: const Text('×'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Floating pen — the one action that never scrolls away',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              DrawkitFab(
+                semanticLabel: 'add a page',
+                onPressed: () => setState(() => _pages += 1),
+                child: const Text('＋'),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                _pages == 0
+                    ? 'no new pages yet'
+                    : '$_pages new ${_pages == 1 ? 'page' : 'pages'}',
+                style: body.copyWith(color: palette.inkMuted),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Fab menu — labelled pills unfold above the circle',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 210,
+            child: Align(
+              alignment: AlignmentDirectional.bottomEnd,
+              child: DrawkitFabMenu(
+                semanticLabel: 'quick actions',
+                items: [
+                  DrawkitFabMenuItem(
+                    label: 'New note',
+                    icon: Text('✎'),
+                    onPressed: () =>
+                        showDrawkitToast(context, message: 'a fresh note'),
+                  ),
+                  DrawkitFabMenuItem(
+                    label: 'New sketch',
+                    icon: Text('✏'),
+                    onPressed: () =>
+                        showDrawkitToast(context, message: 'a blank page'),
+                  ),
+                  DrawkitFabMenuItem(
+                    label: 'Import',
+                    icon: Text('⌤'),
+                    onPressed: () =>
+                        showDrawkitToast(context, message: 'importing…'),
+                  ),
+                ],
               ),
             ),
-            const DrawkitButton(
-              autofocus: false,
-              onPressed: _noop,
-              child: Text('focus me'),
-            ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -615,6 +750,8 @@ class _ChoicePageState extends State<ChoicePage> {
   bool newsletter = false;
   bool darkInk = false;
   String? fruit = 'apple';
+  bool chip = true;
+  String view = 'grid';
 
   @override
   Widget build(BuildContext context) {
@@ -680,7 +817,39 @@ class _ChoicePageState extends State<ChoicePage> {
           text: 'Disabled toggle',
           onTap: null,
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 26),
+        Text(
+          'Chip — a tag that picks itself',
+          style: TextStyle(
+            color: palette.inkMuted,
+            decoration: TextDecoration.none,
+          ),
+        ),
+        const SizedBox(height: 10),
+        DrawkitChip(
+          selected: chip,
+          onChanged: (v) => setState(() => chip = v),
+          child: Text('dashed'),
+        ),
+        const SizedBox(height: 26),
+        Text(
+          'Segments — one frame, a scribbled wash for the pick',
+          style: TextStyle(
+            color: palette.inkMuted,
+            decoration: TextDecoration.none,
+          ),
+        ),
+        const SizedBox(height: 10),
+        DrawkitSegmentedButton<String>(
+          segments: const [
+            DrawkitSegment(value: 'grid', label: 'Grid'),
+            DrawkitSegment(value: 'list', label: 'List'),
+            DrawkitSegment(value: 'kanban', label: 'Kanban'),
+          ],
+          selected: view,
+          onChanged: (value) => setState(() => view = value),
+        ),
+        const SizedBox(height: 26),
         Text(
           'Tab moves focus, Space/Enter flips — the focus ring answers.',
           style: TextStyle(
@@ -735,6 +904,7 @@ class FieldPage extends StatefulWidget {
 class _FieldPageState extends State<FieldPage> {
   final name = TextEditingController();
   final notes = TextEditingController();
+  String _query = '';
 
   @override
   void dispose() {
@@ -790,6 +960,30 @@ class _FieldPageState extends State<FieldPage> {
             enabled: false,
           ),
         ),
+        const SizedBox(height: 22),
+        Text(
+          'Search — the magnifier holds the leading gutter',
+          style: TextStyle(
+            color: palette.inkMuted,
+            decoration: TextDecoration.none,
+          ),
+        ),
+        const SizedBox(height: 6),
+        SizedBox(
+          width: 300,
+          child: DrawkitSearchField(
+            placeholder: 'search the sketchbook…',
+            onChanged: (value) => setState(() => _query = value),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          _query.isEmpty ? 'nothing typed yet' : 'you are looking for: $_query',
+          style: TextStyle(
+            color: palette.inkMuted,
+            decoration: TextDecoration.none,
+          ),
+        ),
         const SizedBox(height: 26),
         Text(
           'name: ${name.text.isEmpty ? '…' : name.text}\nnotes: ${notes.text.isEmpty ? '…' : notes.text.replaceAll('\n', ' ⏎ ')}',
@@ -815,6 +1009,7 @@ class SelectPage extends StatefulWidget {
 
 class _SelectPageState extends State<SelectPage> {
   String? fruit = 'banana';
+  DateTime? _date = DateTime(2026, 10, 16);
 
   static const _fruits = [
     DrawkitSelectOption(value: 'apple', label: 'Apple'),
@@ -857,42 +1052,64 @@ class _SelectPageState extends State<SelectPage> {
             decoration: TextDecoration.none,
           ),
         ),
+        const SizedBox(height: 26),
+        Text(
+          _date == null
+              ? 'Date picker — nothing picked'
+              : 'Date picker — ${_date!.year}-${_date!.month}-${_date!.day}',
+          style: TextStyle(
+            color: palette.inkMuted,
+            decoration: TextDecoration.none,
+          ),
+        ),
+        const SizedBox(height: 10),
+        DrawkitDatePicker(
+          value: _date,
+          onChanged: (date) => setState(() => _date = date),
+          semanticLabel: 'sheet date',
+        ),
       ],
     );
   }
 }
 
 // ---------------------------------------------------------------------------
-// Decorations page
+// Containers page
 
-class DecorationsPage extends StatefulWidget {
-  const DecorationsPage({super.key});
+class ContainersPage extends StatefulWidget {
+  const ContainersPage({super.key});
 
   @override
-  State<DecorationsPage> createState() => _DecorationsPageState();
+  State<ContainersPage> createState() => _ContainersPageState();
 }
 
-class _DecorationsPageState extends State<DecorationsPage> {
+class _ContainersPageState extends State<ContainersPage> {
   DrawkitListMarker marker = DrawkitListMarker.dash;
+
+  TextStyle get body => TextStyle(
+    fontSize: 14,
+    height: 1.5,
+    color: DrawkitTheme.of(context).palette.ink,
+    decoration: TextDecoration.none,
+  );
+
+  TextStyle get caption => TextStyle(
+    fontSize: 14,
+    height: 1.5,
+    color: DrawkitTheme.of(context).palette.inkMuted,
+    decoration: TextDecoration.none,
+  );
 
   @override
   Widget build(BuildContext context) {
-    final palette = DrawkitTheme.of(context).palette;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'divider',
-          style: TextStyle(
-            color: palette.inkMuted,
-            decoration: TextDecoration.none,
-          ),
-        ),
-        const DrawkitDivider(),
-        const SizedBox(height: 18),
-        SizedBox(
-          width: 360,
-          child: DrawkitCard(
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Card — one seeded frame around anything', style: caption),
+          const SizedBox(height: 10),
+          DrawkitCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -908,10 +1125,7 @@ class _DecorationsPageState extends State<DecorationsPage> {
                 const SizedBox(height: 6),
                 Text(
                   'The frame is one seeded stroke; put anything inside.',
-                  style: TextStyle(
-                    color: palette.inkMuted,
-                    decoration: TextDecoration.none,
-                  ),
+                  style: caption,
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -927,33 +1141,98 @@ class _DecorationsPageState extends State<DecorationsPage> {
               ],
             ),
           ),
-        ),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            DrawkitButton(
-              onPressed: () => setState(() {
-                marker = marker == DrawkitListMarker.dash
-                    ? DrawkitListMarker.check
-                    : DrawkitListMarker.dash;
-              }),
-              child: Text('marker: ${marker.name}'),
-            ),
-            const SizedBox(width: 18),
-          ],
-        ),
-        SizedBox(height: 12),
-        DrawkitList(
-          marker: marker,
-          children: const [
-            Text('Seeded randomness makes every mount a fresh sketch.'),
-            Text(
-              'Boil frames come from the variants generator, three per stroke.',
-            ),
-            Text('The marker gutter is 24px of reserved padding.'),
-          ],
-        ),
-      ],
+          const SizedBox(height: 22),
+          Text('Divider — a hand rule that stays hand-drawn', style: caption),
+          const SizedBox(height: 10),
+          const DrawkitDivider(),
+          const SizedBox(height: 22),
+          Text('List — the marker gutter redraws per pick', style: caption),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              DrawkitButton(
+                onPressed: () => setState(() {
+                  marker = marker == DrawkitListMarker.dash
+                      ? DrawkitListMarker.check
+                      : DrawkitListMarker.dash;
+                }),
+                child: Text('marker: ${marker.name}'),
+              ),
+              const SizedBox(width: 18),
+            ],
+          ),
+          SizedBox(height: 12),
+          DrawkitList(
+            marker: marker,
+            children: const [
+              Text('Seeded randomness makes every mount a fresh sketch.'),
+              Text(
+                'Boil frames come from the variants generator, three per stroke.',
+              ),
+              Text('The marker gutter is 24px of reserved padding.'),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Text('Accordion — headers unfold on a sketch line', style: caption),
+          const SizedBox(height: 10),
+          DrawkitAccordion(
+            initiallyExpanded: {1},
+            sections: [
+              DrawkitAccordionSection(
+                title: 'Pencils',
+                child: Text(
+                  'HB, 2B, and one grudging 4H kept for margins.',
+                  style: body,
+                ),
+              ),
+              DrawkitAccordionSection(
+                title: 'Paper',
+                child: Text(
+                  'Ruled, graph, and the good cotton stock.',
+                  style: body,
+                ),
+              ),
+              DrawkitAccordionSection(
+                title: 'Ink',
+                child: Text(
+                  'Waterproof black, and a red for corrections.',
+                  style: body,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Table — a ruled ledger, header line, faint row rules',
+            style: caption,
+          ),
+          const SizedBox(height: 10),
+          DrawkitTable(
+            columns: [
+              DrawkitTableColumn(label: 'Pencil', flex: 2),
+              DrawkitTableColumn(label: 'Qty'),
+              DrawkitTableColumn(label: 'Total'),
+            ],
+            rows: [
+              [
+                Text('HB', style: body),
+                Text('12', style: body),
+                Text('\$1.20', style: body),
+              ],
+              [
+                Text('2B', style: body),
+                Text('3', style: body),
+                Text('\$0.60', style: body),
+              ],
+              [
+                Text('4H', style: body),
+                Text('1', style: body),
+                Text('\$0.30', style: body),
+              ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -961,8 +1240,8 @@ class _DecorationsPageState extends State<DecorationsPage> {
 // ---------------------------------------------------------------------------
 // Text decoration page
 
-class TextPage extends StatelessWidget {
-  const TextPage({super.key});
+class TypePage extends StatelessWidget {
+  const TypePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -973,21 +1252,44 @@ class TextPage extends StatelessWidget {
       color: palette.ink,
       decoration: TextDecoration.none,
     );
+    final caption = TextStyle(
+      fontSize: 14,
+      height: 1.5,
+      color: palette.inkMuted,
+      decoration: TextDecoration.none,
+    );
     return SizedBox(
       width: 460,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const DrawkitHeading(text: 'The Type Kit', underline: true),
+          const SizedBox(height: 8),
+          DrawkitHeading(
+            text: 'display type with the pen in the margins',
+            level: 3,
+            textStyle: TextStyle(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Underline — every wrapped line gets its own stroke',
+            style: caption,
+          ),
+          const SizedBox(height: 10),
           DrawkitUnderline(
             text: 'Every wrapped line gets its own underline stroke, so a sentence that crosses lines stays ruled to the last word.',
             textStyle: body,
           ),
           const SizedBox(height: 22),
+          Text('Highlight — a marker wash at 30% multiply', style: caption),
+          const SizedBox(height: 10),
           DrawkitHighlight(
             text: 'Important, but not shouting: the marker wash is one 6px scribble at 30% in multiply.',
             textStyle: body,
           ),
           const SizedBox(height: 22),
+          Text('Circle — the word, circled on arrival', style: caption),
+          const SizedBox(height: 10),
           DrawkitCircle(
             text: 'circled on arrival',
             textStyle: TextStyle(
@@ -997,146 +1299,28 @@ class TextPage extends StatelessWidget {
               decoration: TextDecoration.none,
             ),
           ),
+          const SizedBox(height: 26),
+          Text('Quote — the margin remembers who said it', style: caption),
+          const SizedBox(height: 10),
+          DrawkitQuote(
+            text: 'Any sufficiently advanced CSS is indistinguishable from a canvas library.',
+            footer: Text('— the internet, paraphrased'),
+          ),
+          const SizedBox(height: 26),
+          Text('Kbd — keys drawn like keys', style: caption),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              DrawkitKbd(child: Text('⌘K')),
+              SizedBox(width: 10),
+              DrawkitKbd(child: Text('⇧⏎')),
+            ],
+          ),
         ],
       ),
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Composite page
-
-class CompositePage extends StatefulWidget {
-  const CompositePage({super.key});
-
-  @override
-  State<CompositePage> createState() => _CompositePageState();
-}
-
-class _CompositePageState extends State<CompositePage> {
-  bool chip = true;
-  int tab = 0;
-  int page = 0;
-  final targetKey = GlobalKey();
-  final fromKey = GlobalKey();
-
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      DrawkitChip(
-        selected: chip,
-        onChanged: (v) => setState(() => chip = v),
-        child: Text('dashed'),
-      ),
-      SizedBox(height: 24),
-      DrawkitTabs(
-        labels: ['overview', 'details', 'notes'],
-        active: tab,
-        onChanged: (i) => setState(() => tab = i),
-      ),
-      SizedBox(height: 24),
-      SizedBox(
-        height: 160,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            PositionedDirectional(
-              top: 8,
-              start: 8,
-              child: DrawkitTooltip(
-                target: targetKey,
-                child: const Text('the target is down there'),
-              ),
-            ),
-            PositionedDirectional(
-              top: 110,
-              start: 260,
-              child: SizedBox(
-                key: targetKey,
-                width: 90,
-                height: 48,
-                child: const DrawkitButton(
-                  onPressed: _noop,
-                  child: Text('target'),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      SizedBox(height: 16),
-      DrawkitAlert(
-        tag: Text('rant'),
-        child: Text('The sketch layer never lies, the browser sometimes does.'),
-      ),
-      SizedBox(height: 24),
-      DrawkitSteps(
-        children: [
-          Text('Pick a seed'),
-          Text('Watch the strokes boil'),
-          Text('Ship the sketch'),
-        ],
-      ),
-      SizedBox(height: 24),
-      Row(
-        children: [
-          DrawkitKbd(child: Text('⌘K')),
-          SizedBox(width: 10),
-          DrawkitKbd(child: Text('⇧⏎')),
-        ],
-      ),
-      SizedBox(height: 24),
-      DrawkitQuote(
-        text: 'Any sufficiently advanced CSS is indistinguishable from a canvas library.',
-        footer: Text('— the internet, paraphrased'),
-      ),
-      SizedBox(height: 24),
-      DrawkitPager(
-        count: 5,
-        page: page,
-        onPage: (i) => setState(() => page = i),
-      ),
-      SizedBox(height: 26),
-      SizedBox(
-        height: 110,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            PositionedDirectional(
-              top: 0,
-              start: 0,
-              child: SizedBox(
-                key: fromKey,
-                width: 90,
-                height: 36,
-                child: const DrawkitButton(
-                  onPressed: _noop,
-                  child: Text('from'),
-                ),
-              ),
-            ),
-            PositionedDirectional(
-              top: 60,
-              start: 240,
-              child: SizedBox(
-                key: _toKey,
-                width: 90,
-                height: 48,
-                child: const DrawkitButton(onPressed: _noop, child: Text('to')),
-              ),
-            ),
-            Positioned.fill(
-              child: DrawkitArrow(from: fromKey, to: _toKey),
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
-}
-
-final GlobalKey _toKey = GlobalKey();
 
 // ---------------------------------------------------------------------------
 // Motion page
@@ -1233,19 +1417,17 @@ class _MotionPageState extends State<MotionPage> {
   }
 }
 
-class ActionsPage extends StatefulWidget {
-  const ActionsPage({super.key});
+class ValuesPage extends StatefulWidget {
+  const ValuesPage({super.key});
 
   @override
-  State<ActionsPage> createState() => _ActionsPageState();
+  State<ValuesPage> createState() => _ValuesPageState();
 }
 
-class _ActionsPageState extends State<ActionsPage> {
-  String _view = 'grid';
+class _ValuesPageState extends State<ValuesPage> {
   double _size = 0.4;
   int _copies = 1;
-  String _query = '';
-  bool _favourite = false;
+  int _stars = 3;
 
   @override
   Widget build(BuildContext context) {
@@ -1262,21 +1444,6 @@ class _ActionsPageState extends State<ActionsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Segmented — one frame, a scribbled wash for the pick',
-            style: body,
-          ),
-          const SizedBox(height: 10),
-          DrawkitSegmentedButton<String>(
-            segments: const [
-              DrawkitSegment(value: 'grid', label: 'Grid'),
-              DrawkitSegment(value: 'list', label: 'List'),
-              DrawkitSegment(value: 'kanban', label: 'Kanban'),
-            ],
-            selected: _view,
-            onChanged: (value) => setState(() => _view = value),
-          ),
-          const SizedBox(height: 22),
-          Text(
             'Slider — stroke width ${_size.toStringAsFixed(2)}',
             style: body,
           ),
@@ -1292,55 +1459,23 @@ class _ActionsPageState extends State<ActionsPage> {
             style: body,
           ),
           const SizedBox(height: 10),
-          Row(
-            children: [
-              DrawkitStepper(
-                value: _copies,
-                min: 1,
-                max: 9,
-                onChanged: (value) => setState(() => _copies = value),
-              ),
-              const Spacer(),
-              DrawkitIconButton(
-                semanticLabel: 'Favourite',
-                tone: _favourite ? DrawkitTone.accent : DrawkitTone.neutral,
-                variant: _favourite
-                    ? DrawkitButtonVariant.solid
-                    : DrawkitButtonVariant.outline,
-                onPressed: () => setState(() => _favourite = !_favourite),
-                child: Text(_favourite ? '★' : '☆'),
-              ),
-              const SizedBox(width: 8),
-              DrawkitIconButton(
-                semanticLabel: 'Delete',
-                tone: DrawkitTone.danger,
-                onPressed: () => setState(() => _copies = 1),
-                child: const Text('×'),
-              ),
-              const SizedBox(width: 16),
-              DrawkitFab(
-                semanticLabel: 'Add sketch',
-                size: 44,
-                tone: DrawkitTone.accent,
-                onPressed: () =>
-                    setState(() => _copies = (_copies + 1).clamp(1, 9)),
-                child: const Text('+'),
-              ),
-            ],
+          DrawkitStepper(
+            value: _copies,
+            min: 1,
+            max: 9,
+            semanticLabel: 'copies',
+            onChanged: (value) => setState(() => _copies = value),
           ),
           const SizedBox(height: 22),
-          Text('Search — the magnifier holds the leading gutter', style: body),
-          const SizedBox(height: 10),
-          DrawkitSearchField(
-            placeholder: 'search the sketchbook…',
-            onChanged: (value) => setState(() => _query = value),
-          ),
-          SizedBox(height: 10),
           Text(
-            _query.isEmpty
-                ? 'nothing typed yet'
-                : 'you are looking for: $_query',
-            style: body.copyWith(color: palette.inkMuted),
+            'Rating — tap a star, tap again to clear one ($_stars/5)',
+            style: body,
+          ),
+          const SizedBox(height: 8),
+          DrawkitRating(
+            value: _stars,
+            onChanged: (v) => setState(() => _stars = v),
+            starSize: 30,
           ),
         ],
       ),
@@ -1356,18 +1491,206 @@ class FeedbackPage extends StatefulWidget {
 }
 
 class _FeedbackPageState extends State<FeedbackPage> {
-  String _last = 'nothing yet';
   double _progress = 0.35;
+  final TextEditingController _email = TextEditingController();
+  String? _emailError;
+  List<String> _notes = ['Sharpen the HB', 'Dust the eraser', 'Rinse the nib'];
+  final List<int> _fetched = [3, 2, 1];
+
+  TextStyle get body => TextStyle(
+    fontSize: 14,
+    height: 1.5,
+    color: DrawkitTheme.of(context).palette.ink,
+    decoration: TextDecoration.none,
+  );
+
+  @override
+  void dispose() {
+    _email.dispose();
+    super.dispose();
+  }
+
+  void _validate() {
+    final text = _email.text.trim();
+    setState(() {
+      _emailError = text.contains('@')
+          ? null
+          : text.isEmpty
+          ? 'An address, please — the pen refuses to guess.'
+          : 'That is missing its @ — even the ink knows.';
+    });
+  }
+
+  void _deleteNote(int index) {
+    final removed = _notes[index];
+    setState(() => _notes = [..._notes]..removeAt(index));
+    showDrawkitToast(
+      context,
+      message: '“$removed” torn out',
+      tone: DrawkitTone.neutral,
+      action: DrawkitToastAction(
+        label: 'Undo',
+        onPressed: () =>
+            setState(() => _notes = [..._notes]..insert(index, removed)),
+      ),
+    );
+  }
+
+  Future<void> _refresh() async {
+    await Future<void>.delayed(Duration(milliseconds: 900));
+    if (!mounted) return;
+    setState(() => _fetched.insert(0, _fetched.first + 1));
+  }
 
   @override
   Widget build(BuildContext context) {
     final palette = DrawkitTheme.of(context).palette;
-    final body = TextStyle(
-      fontSize: 14,
-      height: 1.5,
-      color: palette.ink,
-      decoration: TextDecoration.none,
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Progress — ${(_progress * 100).round()}%', style: body),
+          const SizedBox(height: 10),
+          DrawkitProgressBar(
+            value: _progress,
+            semanticLabel: 'gallery progress',
+          ),
+          const SizedBox(height: 12),
+          DrawkitSlider(
+            value: _progress,
+            divisions: 20,
+            onChanged: (value) => setState(() => _progress = value),
+          ),
+          const SizedBox(height: 12),
+          const DrawkitProgressBar(semanticLabel: 'waiting'),
+          const SizedBox(height: 22),
+          const Row(
+            children: [
+              DrawkitSpinner(),
+              SizedBox(width: 14),
+              Expanded(child: DrawkitSkeleton(lines: 2, spacing: 8)),
+              SizedBox(width: 14),
+              DrawkitSkeleton.circle(),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Text('Alert — a margin note in ink', style: body),
+          const SizedBox(height: 10),
+          DrawkitAlert(
+            tag: Text('rant'),
+            child: Text(
+              'The sketch layer never lies, the browser sometimes does.',
+            ),
+          ),
+          const SizedBox(height: 26),
+          Text(
+            'Validation — the outline inks red, the message speaks',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: 320,
+            child: DrawkitInput(
+              controller: _email,
+              placeholder: 'you@sketchbook.paper',
+              helper: 'We never share it.',
+              error: _emailError,
+              onSubmitted: (_) => _validate(),
+            ),
+          ),
+          const SizedBox(height: 10),
+          DrawkitButton(onPressed: _validate, child: const Text('Validate')),
+          const SizedBox(height: 26),
+          Text('Notes — deleting offers an Undo', style: body),
+          const SizedBox(height: 10),
+          if (_notes.isEmpty)
+            SizedBox(
+              height: 220,
+              child: DrawkitEmpty(
+                doodle: DrawkitDoodleKind.burst,
+                title: 'The margin is blank',
+                message: 'Every note was torn out, but the pen remembers.',
+                action: DrawkitButton(
+                  onPressed: () => setState(
+                    () => _notes = ['Sharpen the HB', 'Dust the eraser'],
+                  ),
+                  child: const Text('Write two back'),
+                ),
+              ),
+            )
+          else
+            for (var i = 0; i < _notes.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: DrawkitCard(
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(_notes[i], style: body)),
+                      DrawkitIconButton(
+                        semanticLabel: 'delete ${_notes[i]}',
+                        onPressed: () => _deleteNote(i),
+                        child: const Text('✕'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          const SizedBox(height: 20),
+          Text(
+            'Pull-to-refresh — drag the list down past the flip',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          DrawkitCard(
+            child: SizedBox(
+              height: 200,
+              child: DrawkitRefresh(
+                onRefresh: _refresh,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    for (final n in _fetched)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text('fetched page $n', style: body),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Progress and skeletons keep the page honest while it waits',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+        ],
+      ),
     );
+  }
+}
+
+class DialogsPage extends StatefulWidget {
+  const DialogsPage({super.key});
+
+  @override
+  State<DialogsPage> createState() => _DialogsPageState();
+}
+
+class _DialogsPageState extends State<DialogsPage> {
+  String _last = 'nothing yet';
+
+  TextStyle get body => TextStyle(
+    fontSize: 14,
+    height: 1.5,
+    color: DrawkitTheme.of(context).palette.ink,
+    decoration: TextDecoration.none,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
     return SizedBox(
       width: 460,
       child: Column(
@@ -1496,31 +1819,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
             ],
           ),
           const SizedBox(height: 22),
-          Text('Progress — ${(_progress * 100).round()}%', style: body),
-          const SizedBox(height: 10),
-          DrawkitProgressBar(
-            value: _progress,
-            semanticLabel: 'gallery progress',
-          ),
-          const SizedBox(height: 12),
-          DrawkitSlider(
-            value: _progress,
-            divisions: 20,
-            onChanged: (value) => setState(() => _progress = value),
-          ),
-          const SizedBox(height: 12),
-          const DrawkitProgressBar(semanticLabel: 'waiting'),
-          const SizedBox(height: 22),
-          Row(
-            children: [
-              const DrawkitSpinner(),
-              const SizedBox(width: 14),
-              const Expanded(child: DrawkitSkeleton(lines: 2, spacing: 8)),
-              const SizedBox(width: 14),
-              const DrawkitSkeleton.circle(),
-            ],
-          ),
-          const SizedBox(height: 22),
           Text(_last, style: body.copyWith(color: palette.inkMuted)),
         ],
       ),
@@ -1538,7 +1836,7 @@ class MenusPage extends StatefulWidget {
 class _MenusPageState extends State<MenusPage> {
   bool _ruled = true;
   bool _graph = false;
-  DateTime? _date = DateTime(2026, 10, 16);
+  final _tipTarget = GlobalKey();
   String _last = 'nothing yet';
 
   TextStyle get body => TextStyle(
@@ -1666,62 +1964,41 @@ class _MenusPageState extends State<MenusPage> {
                 },
                 child: const Text('command palette'),
               ),
-              DrawkitButton(
-                onPressed: () async {
-                  final picked = await showDrawkitDatePicker(
-                    context: context,
-                    initialDate: _date,
-                  );
-                  if (!mounted || picked == null) return;
-                  setState(() => _date = picked);
-                },
-                child: const Text('pick a date'),
-              ),
             ],
           ),
           const SizedBox(height: 22),
-          Text('Accordion — headers unfold on a sketch line', style: body),
-          SizedBox(height: 10),
-          DrawkitAccordion(
-            initiallyExpanded: {1},
-            sections: [
-              DrawkitAccordionSection(
-                title: 'Pencils',
-                child: Text(
-                  'HB, 2B, and one grudging 4H kept for margins.',
-                  style: body,
+          Text('Tooltip — after 300 ms of hover or focus', style: body),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 130,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                PositionedDirectional(
+                  top: 0,
+                  start: 0,
+                  child: DrawkitTooltip(
+                    target: _tipTarget,
+                    child: const Text('the target is down there'),
+                  ),
                 ),
-              ),
-              DrawkitAccordionSection(
-                title: 'Paper',
-                child: Text(
-                  'Ruled, graph, and the good cotton stock.',
-                  style: body,
+                PositionedDirectional(
+                  top: 70,
+                  start: 240,
+                  child: SizedBox(
+                    key: _tipTarget,
+                    width: 90,
+                    height: 48,
+                    child: const DrawkitButton(
+                      onPressed: _noop,
+                      child: Text('target'),
+                    ),
+                  ),
                 ),
-              ),
-              DrawkitAccordionSection(
-                title: 'Ink',
-                child: Text(
-                  'Waterproof black, and a red for corrections.',
-                  style: body,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 22),
-          Text(
-            _date == null
-                ? 'Date picker — nothing picked'
-                : 'Date picker — ${_date!.year}-${_date!.month}-${_date!.day}',
-            style: body,
+              ],
+            ),
           ),
           const SizedBox(height: 10),
-          DrawkitDatePicker(
-            value: _date,
-            onChanged: (date) => setState(() => _date = date),
-            semanticLabel: 'sheet date',
-          ),
-          const SizedBox(height: 22),
           Text(_last, style: body.copyWith(color: palette.inkMuted)),
         ],
       ),
@@ -1729,16 +2006,27 @@ class _MenusPageState extends State<MenusPage> {
   }
 }
 
-class StructurePage extends StatefulWidget {
-  const StructurePage({super.key});
+class NavigationPage extends StatefulWidget {
+  const NavigationPage({super.key});
 
   @override
-  State<StructurePage> createState() => _StructurePageState();
+  State<NavigationPage> createState() => _NavigationPageState();
 }
 
-class _StructurePageState extends State<StructurePage> {
+class _NavigationPageState extends State<NavigationPage> {
   int _rail = 0;
   int _bottom = 0;
+  int _labels = 0;
+  int _flexible = 0;
+  int _scrolling = 0;
+  int _page = 0;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   TextStyle get body => TextStyle(
     fontSize: 14,
@@ -1748,7 +2036,7 @@ class _StructurePageState extends State<StructurePage> {
   );
 
   static const destinations = [
-    DrawkitNavDestination(label: 'Inbox', icon: Text('✉')),
+    DrawkitNavDestination(label: 'Inbox', icon: Text('✉'), badge: 3),
     DrawkitNavDestination(label: 'Drafts', icon: Text('✎')),
     DrawkitNavDestination(label: 'Archive', icon: Text('▤')),
   ];
@@ -1783,8 +2071,12 @@ class _StructurePageState extends State<StructurePage> {
             ],
           ),
           const SizedBox(height: 22),
-          Text('Navigation — both bars mirror in RTL', style: body),
-          SizedBox(height: 10),
+          Text(
+            'Rail — destinations stack down the side; everything mirrors '
+            'in RTL',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 10),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1806,12 +2098,93 @@ class _StructurePageState extends State<StructurePage> {
             ],
           ),
           const SizedBox(height: 22),
+          Text(
+            'Bottom bar — one paper strip across the foot',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 10),
           DrawkitBottomNav(
             destinations: destinations,
             selected: _bottom,
             onChanged: (i) => setState(() => _bottom = i),
           ),
-          SizedBox(height: 22),
+          const SizedBox(height: 22),
+          Text(
+            'Floating — a capsule hovering above the content, badge on the '
+            'icon',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 10),
+          DrawkitFloatingNavBar(
+            destinations: destinations,
+            selected: _labels,
+            onChanged: (i) => setState(() => _labels = i),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'picked: ${destinations[_labels].label.toLowerCase()}',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Floating, flexible — only the pick opens into a label',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 10),
+          DrawkitFloatingNavBar(
+            destinations: destinations,
+            selected: _flexible,
+            showLabels: false,
+            onChanged: (i) => setState(() => _flexible = i),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'picked: ${destinations[_flexible].label.toLowerCase()}',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Scroll-aware — drag the list down: the bar tucks away, the '
+            'first upward flick brings it back',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 220,
+            child: Column(
+              children: [
+                Expanded(
+                  child: DrawkitCard(
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      itemCount: 40,
+                      itemBuilder: (context, i) => SizedBox(
+                        height: 34,
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Text('row $i', style: body),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                DrawkitFloatingNavBar(
+                  destinations: destinations,
+                  selected: _scrolling,
+                  hideOnScroll: true,
+                  scrollController: _scrollController,
+                  onChanged: (i) => setState(() => _scrolling = i),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Breadcrumb — the trail, last stop in bold',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 10),
           DrawkitBreadcrumb(
             items: [
               DrawkitBreadcrumbItem(
@@ -1827,32 +2200,16 @@ class _StructurePageState extends State<StructurePage> {
               DrawkitBreadcrumbItem(label: 'HB'),
             ],
           ),
-          SizedBox(height: 22),
-          Text('A ruled ledger — header line, faint row rules', style: body),
-          SizedBox(height: 6),
-          DrawkitTable(
-            columns: [
-              DrawkitTableColumn(label: 'Pencil', flex: 2),
-              DrawkitTableColumn(label: 'Qty'),
-              DrawkitTableColumn(label: 'Total'),
-            ],
-            rows: [
-              [
-                Text('HB', style: body),
-                Text('12', style: body),
-                Text('\$1.20', style: body),
-              ],
-              [
-                Text('2B', style: body),
-                Text('3', style: body),
-                Text('\$0.60', style: body),
-              ],
-              [
-                Text('4H', style: body),
-                Text('1', style: body),
-                Text('\$0.30', style: body),
-              ],
-            ],
+          const SizedBox(height: 22),
+          Text(
+            'Pager — page numbers in a sketch row',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 10),
+          DrawkitPager(
+            count: 5,
+            page: _page,
+            onPage: (i) => setState(() => _page = i),
           ),
         ],
       ),
@@ -1860,15 +2217,15 @@ class _StructurePageState extends State<StructurePage> {
   }
 }
 
-class ContentPage extends StatefulWidget {
-  const ContentPage({super.key});
+class TabsPage extends StatefulWidget {
+  const TabsPage({super.key});
 
   @override
-  State<ContentPage> createState() => _ContentPageState();
+  State<TabsPage> createState() => _TabsPageState();
 }
 
-class _ContentPageState extends State<ContentPage> {
-  int _stars = 3;
+class _TabsPageState extends State<TabsPage> {
+  int tab = 0;
 
   TextStyle get body => TextStyle(
     fontSize: 14,
@@ -1885,14 +2242,60 @@ class _ContentPageState extends State<ContentPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const DrawkitHeading(text: 'The Content Kit', underline: true),
-          const SizedBox(height: 8),
-          DrawkitHeading(
-            text: 'display type, faces, plates, ink, and idle hands',
-            level: 3,
-            textStyle: TextStyle(color: palette.inkMuted),
+          Text(
+            'Tabs — the underline slides to the pick',
+            style: body.copyWith(color: palette.inkMuted),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          DrawkitTabs(
+            labels: ['overview', 'details', 'notes'],
+            active: tab,
+            onChanged: (i) => setState(() => tab = i),
+          ),
+          const SizedBox(height: 26),
+          Text(
+            'Steps — the walk, numbered in the margins',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 10),
+          DrawkitSteps(
+            children: [
+              Text('Pick a seed'),
+              Text('Watch the strokes boil'),
+              Text('Ship the sketch'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PicturesPage extends StatefulWidget {
+  const PicturesPage({super.key});
+
+  @override
+  State<PicturesPage> createState() => _PicturesPageState();
+}
+
+class _PicturesPageState extends State<PicturesPage> {
+  final _arrowFrom = GlobalKey();
+  final _arrowTo = GlobalKey();
+
+  TextStyle get body => TextStyle(
+    fontSize: 14,
+    height: 1.5,
+    color: DrawkitTheme.of(context).palette.ink,
+    decoration: TextDecoration.none,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text('A crowd — discs overlap, the overflow confesses', style: body),
           const SizedBox(height: 10),
           DrawkitAvatarGroup(
@@ -1913,17 +2316,6 @@ class _ContentPageState extends State<ContentPage> {
             child: const Center(
               child: DrawkitDoodle(kind: DrawkitDoodleKind.spiral, size: 72),
             ),
-          ),
-          const SizedBox(height: 22),
-          Text(
-            'Rating — tap a star, tap again to clear one ($_stars/5)',
-            style: body,
-          ),
-          const SizedBox(height: 8),
-          DrawkitRating(
-            value: _stars,
-            onChanged: (v) => setState(() => _stars = v),
-            starSize: 30,
           ),
           const SizedBox(height: 22),
           Text('Doodles — decorative, silent, never interactive', style: body),
@@ -1947,163 +2339,45 @@ class _ContentPageState extends State<ContentPage> {
             ),
           ),
           const SizedBox(height: 22),
-        ],
-      ),
-    );
-  }
-}
-
-class StatesPage extends StatefulWidget {
-  const StatesPage({super.key});
-
-  @override
-  State<StatesPage> createState() => _StatesPageState();
-}
-
-class _StatesPageState extends State<StatesPage> {
-  TextStyle get body => TextStyle(
-    fontSize: 14,
-    height: 1.5,
-    color: DrawkitTheme.of(context).palette.ink,
-    decoration: TextDecoration.none,
-  );
-
-  final TextEditingController _email = TextEditingController();
-  String? _emailError;
-  List<String> _notes = ['Sharpen the HB', 'Dust the eraser', 'Rinse the nib'];
-  final List<int> _fetched = [3, 2, 1];
-
-  @override
-  void dispose() {
-    _email.dispose();
-    super.dispose();
-  }
-
-  void _validate() {
-    final text = _email.text.trim();
-    setState(() {
-      _emailError = text.contains('@')
-          ? null
-          : text.isEmpty
-          ? 'An address, please — the pen refuses to guess.'
-          : 'That is missing its @ — even the ink knows.';
-    });
-  }
-
-  void _deleteNote(int index) {
-    final removed = _notes[index];
-    setState(() => _notes = [..._notes]..removeAt(index));
-    showDrawkitToast(
-      context,
-      message: '“$removed” torn out',
-      tone: DrawkitTone.neutral,
-      action: DrawkitToastAction(
-        label: 'Undo',
-        onPressed: () =>
-            setState(() => _notes = [..._notes]..insert(index, removed)),
-      ),
-    );
-  }
-
-  Future<void> _refresh() async {
-    await Future<void>.delayed(Duration(milliseconds: 900));
-    if (!mounted) return;
-    setState(() => _fetched.insert(0, _fetched.first + 1));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = DrawkitTheme.of(context).palette;
-    return SizedBox(
-      width: 460,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const DrawkitHeading(text: 'The States Kit', underline: true),
-          const SizedBox(height: 8),
-          DrawkitHeading(
-            text: 'errors, empty margins, undo, and the pull',
-            level: 3,
-            textStyle: TextStyle(color: palette.inkMuted),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Validation — the outline inks red, the message speaks',
-            style: body,
-          ),
-          SizedBox(height: 10),
-          SizedBox(
-            width: 320,
-            child: DrawkitInput(
-              controller: _email,
-              placeholder: 'you@sketchbook.paper',
-              helper: 'We never share it.',
-              error: _emailError,
-              onSubmitted: (_) => _validate(),
-            ),
-          ),
+          Text('An arrow — a line from one point to another', style: body),
           const SizedBox(height: 10),
-          DrawkitButton(onPressed: _validate, child: const Text('Validate')),
-          const SizedBox(height: 26),
-          Text('Notes — deleting offers an Undo', style: body),
-          SizedBox(height: 10),
-          if (_notes.isEmpty)
-            SizedBox(
-              height: 220,
-              child: DrawkitEmpty(
-                doodle: DrawkitDoodleKind.burst,
-                title: 'The margin is blank',
-                message: 'Every note was torn out, but the pen remembers.',
-                action: DrawkitButton(
-                  onPressed: () => setState(
-                    () => _notes = ['Sharpen the HB', 'Dust the eraser'],
-                  ),
-                  child: const Text('Write two back'),
-                ),
-              ),
-            )
-          else
-            for (var i = 0; i < _notes.length; i++)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: DrawkitCard(
-                  child: Row(
-                    children: [
-                      Expanded(child: Text(_notes[i], style: body)),
-                      DrawkitIconButton(
-                        semanticLabel: 'delete ${_notes[i]}',
-                        onPressed: () => _deleteNote(i),
-                        child: const Text('✕'),
-                      ),
-                    ],
+          SizedBox(
+            height: 110,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                PositionedDirectional(
+                  top: 0,
+                  start: 0,
+                  child: SizedBox(
+                    key: _arrowFrom,
+                    width: 90,
+                    height: 36,
+                    child: const DrawkitButton(
+                      onPressed: _noop,
+                      child: Text('from'),
+                    ),
                   ),
                 ),
-              ),
-          const SizedBox(height: 20),
-          Text(
-            'Pull-to-refresh — drag the list down past the flip',
-            style: body,
-          ),
-          SizedBox(height: 10),
-          DrawkitCard(
-            child: SizedBox(
-              height: 200,
-              child: DrawkitRefresh(
-                onRefresh: _refresh,
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [
-                    for (final n in _fetched)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Text('fetched page $n', style: body),
-                      ),
-                  ],
+                PositionedDirectional(
+                  top: 60,
+                  start: 240,
+                  child: SizedBox(
+                    key: _arrowTo,
+                    width: 90,
+                    height: 48,
+                    child: const DrawkitButton(
+                      onPressed: _noop,
+                      child: Text('to'),
+                    ),
+                  ),
                 ),
-              ),
+                Positioned.fill(
+                  child: DrawkitArrow(from: _arrowFrom, to: _arrowTo),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 22),
         ],
       ),
     );
@@ -2555,154 +2829,6 @@ class _Swatch extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class FloatingPage extends StatefulWidget {
-  const FloatingPage({super.key});
-
-  @override
-  State<FloatingPage> createState() => _FloatingPageState();
-}
-
-class _FloatingPageState extends State<FloatingPage> {
-  int _labels = 0;
-  int _flexible = 0;
-  int _scrolling = 0;
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  TextStyle get body => TextStyle(
-    fontSize: 14,
-    height: 1.5,
-    color: DrawkitTheme.of(context).palette.ink,
-    decoration: TextDecoration.none,
-  );
-
-  static const destinations = [
-    DrawkitNavDestination(label: 'Inbox', icon: Text('✉'), badge: 3),
-    DrawkitNavDestination(label: 'Drafts', icon: Text('✎')),
-    DrawkitNavDestination(label: 'Archive', icon: Text('▤')),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = DrawkitTheme.of(context).palette;
-    return SizedBox(
-      width: 460,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Floating — capsule bar and speed-dial fab', style: body),
-          const SizedBox(height: 10),
-          DrawkitFloatingNavBar(
-            destinations: destinations,
-            selected: _labels,
-            onChanged: (i) => setState(() => _labels = i),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'labelled capsule — picked: '
-            '${destinations[_labels].label.toLowerCase()}',
-            style: body.copyWith(color: palette.inkMuted),
-          ),
-          const SizedBox(height: 22),
-          Text(
-            'flexible mood: only the pick opens into a label',
-            style: body.copyWith(color: palette.inkMuted),
-          ),
-          const SizedBox(height: 10),
-          DrawkitFloatingNavBar(
-            destinations: destinations,
-            selected: _flexible,
-            showLabels: false,
-            onChanged: (i) => setState(() => _flexible = i),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'picked: ${destinations[_flexible].label.toLowerCase()}',
-            style: body.copyWith(color: palette.inkMuted),
-          ),
-          const SizedBox(height: 22),
-          Text(
-            'scroll-aware: drag the list down — the bar tucks away, '
-            'the first upward flick brings it back',
-            style: body.copyWith(color: palette.inkMuted),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 220,
-            child: Column(
-              children: [
-                Expanded(
-                  child: DrawkitCard(
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount: 40,
-                      itemBuilder: (context, i) => SizedBox(
-                        height: 34,
-                        child: Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: Text('row $i', style: body),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                DrawkitFloatingNavBar(
-                  destinations: destinations,
-                  selected: _scrolling,
-                  hideOnScroll: true,
-                  scrollController: _scrollController,
-                  onChanged: (i) => setState(() => _scrolling = i),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 22),
-          Text(
-            'fab menu: the circle unfolds labelled actions',
-            style: body.copyWith(color: palette.inkMuted),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 230,
-            child: Align(
-              alignment: AlignmentDirectional.bottomEnd,
-              child: DrawkitFabMenu(
-                semanticLabel: 'quick actions',
-                items: [
-                  DrawkitFabMenuItem(
-                    label: 'New note',
-                    icon: Text('✎'),
-                    onPressed: () =>
-                        showDrawkitToast(context, message: 'a fresh note'),
-                  ),
-                  DrawkitFabMenuItem(
-                    label: 'New sketch',
-                    icon: Text('✏'),
-                    onPressed: () =>
-                        showDrawkitToast(context, message: 'a blank page'),
-                  ),
-                  DrawkitFabMenuItem(
-                    label: 'Import',
-                    icon: Text('⌤'),
-                    onPressed: () =>
-                        showDrawkitToast(context, message: 'importing…'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

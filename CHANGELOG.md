@@ -1,5 +1,18 @@
 ## Unreleased
 
+- **Gallery reorganization** — the demo app is grouped by function now
+  (Foundations, Actions, Forms, Navigation, Overlays, Feedback, Display) with
+  uppercase section headers in the sidebar, and every page collects its whole
+  family: Buttons absorbs the icon-button, fab, and fab-menu demos, Fields
+  gains the search field, Choices gains chips and segments, Select & Dates
+  gains the date picker, the new Values page holds the slider, stepper, and
+  rating, Navigation absorbs the floating-capsule demos and gains the pager,
+  the new Tabs & Steps page takes tabs and steps, Menus & Popovers gains the
+  tooltip, the new Dialogs & Sheets page takes the modals, sheets, and
+  toasts, Feedback & States absorbs validation, the empty state, undo, and
+  pull-to-refresh, and Cards & Tables / Type & Ink / Pictures & Extras round
+  out the display set. 17 gallery pages; no library changes.
+
 - **Floating navigation** — `DrawkitFloatingNavBar` floats a paper capsule
   above the content (directional margin + bottom safe area) with the picked
   destination wearing a soft ink blob. Two label moods: `showLabels: true`
@@ -14,7 +27,7 @@
   speed-dial sibling of `DrawkitFab`: labelled pills unfold above the
   circle (nearest action leads the stagger), the face turns 45°, Escape
   and outside taps fold it back, and focus walks from the top pill into
-  the trigger. The gallery gained a "Floating" page (both label moods, a
+  the trigger. The gallery shipped the floating demos (both label moods, a
   scroll-aware list, and the speed dial). 249 tests.
 
 - **Internal cleanup** — the keyboard intents the focusable controls share
