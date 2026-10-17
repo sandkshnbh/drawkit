@@ -1,5 +1,7 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/focus.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/prng.dart';
@@ -72,7 +74,12 @@ class DrawkitChip extends StatelessWidget {
 }
 
 /// Tabs: the underline follows the active index, seeds stable per selection.
-class DrawkitTabs extends StatelessWidget {
+///
+/// Keyboard follows the tabs pattern: Tab lands on the active tab, the arrow
+/// keys move focus and activate (automatic activation, wrapping, following
+/// the reading direction), and Home/End jump to the ends. A sketched ring
+/// wraps the focused label.
+class DrawkitTabs extends StatefulWidget {
   const DrawkitTabs({
     required this.labels,
     required this.active,
@@ -93,37 +100,203 @@ class DrawkitTabs extends StatelessWidget {
   final bool animate;
 
   @override
+  State<DrawkitTabs> createState() => _DrawkitTabsState();
+}
+
+class _MoveIntent extends Intent {
+  const _MoveIntent(this.delta);
+
+  final int delta;
+}
+
+class _EdgeIntent extends Intent {
+  const _EdgeIntent(this.end);
+
+  final bool end;
+}
+
+class _DrawkitTabsState extends State<DrawkitTabs> {
+  late List<FocusNode> _nodes;
+  int? _focused;
+
+  bool get _enabled => widget.onChanged != null;
+
+  int get _active => widget.active >= 0 && widget.active < widget.labels.length
+      ? widget.active
+      : -1;
+
+  int get _tabStop => _active >= 0 ? _active : 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _nodes = [
+      for (var i = 0; i < widget.labels.length; i++)
+        FocusNode(skipTraversal: i != _tabStop),
+    ];
+  }
+
+  @override
+  void didUpdateWidget(DrawkitTabs oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.labels.length != _nodes.length) {
+      for (final node in _nodes) {
+        node.dispose();
+      }
+      _nodes = [
+        for (var i = 0; i < widget.labels.length; i++)
+          FocusNode(skipTraversal: i != _tabStop),
+      ];
+      _focused = null;
+    } else if (widget.active != oldWidget.active ||
+        widget.onChanged != oldWidget.onChanged) {
+      _syncTraversal();
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final node in _nodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  void _syncTraversal() {
+    final stop = _tabStop;
+    for (var i = 0; i < _nodes.length; i++) {
+      _nodes[i].skipTraversal = !_enabled || i != stop;
+    }
+  }
+
+  void _pick(int index) {
+    if (!_enabled || widget.labels.isEmpty) return;
+    if (index != widget.active) widget.onChanged!(index);
+    _nodes[index].requestFocus();
+  }
+
+  void _move(int delta) {
+    final count = widget.labels.length;
+    if (count == 0) return;
+    final from = _focused ?? _tabStop;
+    _pick((from + delta + count) % count);
+  }
+
+  void _edge(bool end) => _pick(end ? widget.labels.length - 1 : 0);
+
+  @override
   Widget build(BuildContext context) {
-    final base = seed ?? randomSeed();
+    final resolvedStyle = widget.style ?? DrawkitTheme.of(context);
+    final enabled = _enabled;
+    final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
+    final horizontal = rtl ? -1 : 1;
+    final base = widget.seed ?? randomSeed();
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        for (var i = 0; i < labels.length; i++)
+        for (var i = 0; i < widget.labels.length; i++)
           Padding(
             padding: EdgeInsetsDirectional.only(
-              end: i == labels.length - 1 ? 0 : 18,
+              end: i == widget.labels.length - 1 ? 0 : 18,
             ),
-            child: Semantics(
-              selected: i == active,
-              button: true,
-              child: MouseRegion(
-                cursor: onChanged == null
-                    ? SystemMouseCursors.basic
-                    : SystemMouseCursors.click,
+            child: FocusableActionDetector(
+              focusNode: _nodes[i],
+              enabled: enabled,
+              onShowFocusHighlight: (value) => setState(() {
+                if (value) {
+                  _focused = i;
+                } else if (_focused == i) {
+                  _focused = null;
+                }
+              }),
+              shortcuts: {
+                SingleActivator(LogicalKeyboardKey.arrowRight): _MoveIntent(
+                  horizontal,
+                ),
+                SingleActivator(LogicalKeyboardKey.arrowLeft): _MoveIntent(
+                  -horizontal,
+                ),
+                const SingleActivator(LogicalKeyboardKey.arrowDown):
+                    const _MoveIntent(1),
+                const SingleActivator(LogicalKeyboardKey.arrowUp):
+                    const _MoveIntent(-1),
+                const SingleActivator(LogicalKeyboardKey.home):
+                    const _EdgeIntent(false),
+                const SingleActivator(LogicalKeyboardKey.end):
+                    const _EdgeIntent(true),
+                const SingleActivator(LogicalKeyboardKey.space):
+                    const ActivateIntent(),
+                const SingleActivator(LogicalKeyboardKey.enter):
+                    const ActivateIntent(),
+              },
+              actions: {
+                _MoveIntent: CallbackAction<_MoveIntent>(
+                  onInvoke: (intent) {
+                    _move(intent.delta);
+                    return null;
+                  },
+                ),
+                _EdgeIntent: CallbackAction<_EdgeIntent>(
+                  onInvoke: (intent) {
+                    _edge(intent.end);
+                    return null;
+                  },
+                ),
+                ActivateIntent: CallbackAction<ActivateIntent>(
+                  onInvoke: (intent) {
+                    _pick(i);
+                    return null;
+                  },
+                ),
+              },
+              mouseCursor: enabled
+                  ? SystemMouseCursors.click
+                  : SystemMouseCursors.basic,
+              child: Semantics(
+                selected: i == widget.active,
+                button: true,
+                enabled: enabled,
                 child: GestureDetector(
-                  onTap: onChanged == null ? null : () => onChanged!(i),
-                  child: i == active
-                      ? DrawkitUnderline(
-                          text: labels[i],
-                          textStyle: textStyle,
-                          style: style,
-                          seed: base,
-                          animate: animate,
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.only(bottom: 2),
-                          child: Text(labels[i], style: textStyle),
+                  onTap: enabled ? () => widget.onChanged!(i) : null,
+                  child: DrawkitSurface(
+                    builder: (size, options) => [
+                      if (_focused == i && enabled)
+                        drawkitFocusRingRect(
+                          size: size,
+                          radius: 8,
+                          gapX: 6,
+                          gapY: 4,
+                          options: options,
+                          style: resolvedStyle,
                         ),
+                    ],
+                    style: resolvedStyle,
+                    seed: base + 31 * (i + 1),
+                    animate: widget.animate,
+                    enabled: enabled,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
+                      child: i == widget.active
+                          ? DrawkitUnderline(
+                              text: widget.labels[i],
+                              textStyle: widget.textStyle,
+                              style: widget.style,
+                              seed: base,
+                              animate: widget.animate,
+                            )
+                          : Padding(
+                              padding: const EdgeInsets.only(bottom: 2),
+                              child: Text(
+                                widget.labels[i],
+                                style: widget.textStyle,
+                              ),
+                            ),
+                    ),
+                  ),
                 ),
               ),
             ),

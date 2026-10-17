@@ -37,6 +37,12 @@ class _MoveIntent extends Intent {
   final int delta;
 }
 
+class _EdgeIntent extends Intent {
+  const _EdgeIntent(this.end);
+
+  final bool end;
+}
+
 class _DismissIntent extends Intent {
   const _DismissIntent();
 }
@@ -112,6 +118,12 @@ class _CommandPaletteState<T> extends State<_CommandPalette<T>> {
     setState(() => _highlighted = (_highlighted + delta) % count);
   }
 
+  void _edge(bool end) {
+    final count = _filtered.length;
+    if (count == 0) return;
+    setState(() => _highlighted = end ? count - 1 : 0);
+  }
+
   void _invoke(DrawkitCommand<T> command) =>
       Navigator.of(context).pop(command.value);
 
@@ -137,6 +149,10 @@ class _CommandPaletteState<T> extends State<_CommandPalette<T>> {
         const SingleActivator(LogicalKeyboardKey.arrowUp): const _MoveIntent(
           -1,
         ),
+        const SingleActivator(LogicalKeyboardKey.home): const _EdgeIntent(
+          false,
+        ),
+        const SingleActivator(LogicalKeyboardKey.end): const _EdgeIntent(true),
         const SingleActivator(LogicalKeyboardKey.escape):
             const _DismissIntent(),
       },
@@ -145,6 +161,12 @@ class _CommandPaletteState<T> extends State<_CommandPalette<T>> {
           _MoveIntent: CallbackAction<_MoveIntent>(
             onInvoke: (intent) {
               _move(intent.delta);
+              return null;
+            },
+          ),
+          _EdgeIntent: CallbackAction<_EdgeIntent>(
+            onInvoke: (intent) {
+              _edge(intent.end);
               return null;
             },
           ),

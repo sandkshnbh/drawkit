@@ -1,6 +1,9 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/focus.dart';
 import '../core/style.dart';
+import '../core/surface.dart';
 import 'drawkit_text.dart';
 
 /// One step on a [DrawkitBreadcrumb]. Null [onTap] marks the current page —
@@ -86,20 +89,84 @@ class DrawkitBreadcrumb extends StatelessWidget {
         ),
       );
     }
-    return Semantics(
-      button: true,
-      label: item.label,
-      child: ExcludeSemantics(
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
+    return _Crumb(
+      item: item,
+      base: base,
+      style: style,
+      seed: seed,
+      animate: animate,
+    );
+  }
+}
+
+class _Crumb extends StatefulWidget {
+  const _Crumb({
+    required this.item,
+    required this.base,
+    this.style,
+    this.seed,
+    this.animate = true,
+  });
+
+  final DrawkitBreadcrumbItem item;
+  final TextStyle base;
+  final DrawkitStyle? style;
+  final int? seed;
+  final bool animate;
+
+  @override
+  State<_Crumb> createState() => _CrumbState();
+}
+
+class _CrumbState extends State<_Crumb> {
+  bool _focused = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolved = widget.style ?? DrawkitTheme.of(context);
+    return FocusableActionDetector(
+      onShowFocusHighlight: (value) => setState(() => _focused = value),
+      shortcuts: {
+        const SingleActivator(LogicalKeyboardKey.space): const ActivateIntent(),
+        const SingleActivator(LogicalKeyboardKey.enter): const ActivateIntent(),
+      },
+      actions: {
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (intent) {
+            widget.item.onTap!();
+            return null;
+          },
+        ),
+      },
+      mouseCursor: SystemMouseCursors.click,
+      child: Semantics(
+        button: true,
+        label: widget.item.label,
+        child: ExcludeSemantics(
           child: GestureDetector(
-            onTap: item.onTap,
-            child: DrawkitUnderline(
-              text: item.label,
-              textStyle: base,
-              style: style,
-              seed: seed,
-              animate: animate,
+            onTap: widget.item.onTap,
+            child: DrawkitSurface(
+              builder: (size, options) => [
+                if (_focused)
+                  drawkitFocusRingRect(
+                    size: size,
+                    radius: 8,
+                    gapX: 6,
+                    gapY: 4,
+                    options: options,
+                    style: resolved,
+                  ),
+              ],
+              style: resolved,
+              seed: widget.seed,
+              animate: widget.animate,
+              child: DrawkitUnderline(
+                text: widget.item.label,
+                textStyle: widget.base,
+                style: widget.style,
+                seed: widget.seed,
+                animate: widget.animate,
+              ),
             ),
           ),
         ),

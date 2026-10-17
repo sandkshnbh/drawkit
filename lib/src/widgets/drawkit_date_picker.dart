@@ -1,5 +1,7 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/focus.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -34,6 +36,11 @@ const List<String> _defaultWeekdays = [
 /// A hand-drawn month calendar: chevron header, weekday row, and a day grid
 /// where the pick gets a shaded ball, today gets a dot, and out-of-range days
 /// fade. Rows follow the ambient direction like every other widget.
+///
+/// Keyboard: the grid is one tab stop with a roving cursor. Arrow keys walk
+/// by day (horizontal arrows follow the reading direction, crossing month
+/// edges pages the calendar), PageUp/PageDown page by month, Home/End jump
+/// to the first/last day, and Enter/Space picks the cursor.
 ///
 /// Weekdays start on Monday; pass [weekdayLabels] and [monthNames] to
 /// localise. Tapping a day reports it — [showDrawkitDatePicker] wraps this in
@@ -73,16 +80,44 @@ class DrawkitDatePicker extends StatefulWidget {
   State<DrawkitDatePicker> createState() => _DrawkitDatePickerState();
 }
 
+class _ShiftIntent extends Intent {
+  const _ShiftIntent(this.days);
+
+  final int days;
+}
+
+class _PageIntent extends Intent {
+  const _PageIntent(this.months);
+
+  final int months;
+}
+
+class _EdgeIntent extends Intent {
+  const _EdgeIntent(this.end);
+
+  final bool end;
+}
+
 class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
   static const double _cell = 34;
 
   late DateTime _month;
+  late DateTime _cursor;
+  final FocusNode _dayNode = FocusNode();
+  bool _focused = false;
 
   @override
   void initState() {
     super.initState();
     final anchor = widget.value ?? widget.today ?? DateTime.now();
     _month = DateTime(anchor.year, anchor.month);
+    _cursor = DateTime(anchor.year, anchor.month, anchor.day);
+  }
+
+  @override
+  void dispose() {
+    _dayNode.dispose();
+    super.dispose();
   }
 
   bool _sameDay(DateTime a, DateTime b) =>
@@ -106,6 +141,45 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
     setState(() => _month = DateTime(_month.year, _month.month + months));
   }
 
+  /// Moves the cursor by whole days, paging the month when it crosses an
+  /// edge (so ArrowRight from the 31st lands on the 1st of the next month).
+  void _shift(int days) {
+    setState(() {
+      _cursor = _cursor.add(Duration(days: days));
+      _month = DateTime(_cursor.year, _cursor.month);
+    });
+  }
+
+  /// Pages by months, keeping the day when the target month is long enough.
+  void _page(int months) {
+    setState(() {
+      final target = DateTime(_month.year, _month.month + months);
+      final daysInTarget = DateTime(target.year, target.month + 1, 0).day;
+      _month = target;
+      _cursor = DateTime(
+        target.year,
+        target.month,
+        _cursor.day.clamp(1, daysInTarget),
+      );
+    });
+  }
+
+  void _edge(bool end) {
+    setState(() {
+      final daysInMonth = DateTime(_month.year, _month.month + 1, 0).day;
+      _cursor = DateTime(_month.year, _month.month, end ? daysInMonth : 1);
+    });
+  }
+
+  void _pickCursor() {
+    if (_enabled(_cursor)) widget.onChanged(_cursor);
+  }
+
+  void _pick(DateTime date) {
+    setState(() => _cursor = date);
+    widget.onChanged(date);
+  }
+
   String get _title {
     final name = widget.monthNames[(_month.month - 1) % 12];
     return '$name ${_month.year}';
@@ -119,6 +193,8 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
     final daysInMonth = DateTime(_month.year, _month.month + 1, 0).day;
     final leading = DateTime(_month.year, _month.month, 1).weekday - 1;
     final rows = ((leading + daysInMonth) / 7).ceil();
+    final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
+    final horizontal = rtl ? -1 : 1;
 
     return Semantics(
       label: widget.semanticLabel,
@@ -176,23 +252,84 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
                 ),
             ],
           ),
-          for (var week = 0; week < rows; week++)
-            Row(
+          FocusableActionDetector(
+            focusNode: _dayNode,
+            onShowFocusHighlight: (value) => setState(() => _focused = value),
+            shortcuts: {
+              SingleActivator(LogicalKeyboardKey.arrowRight): _ShiftIntent(
+                horizontal,
+              ),
+              SingleActivator(LogicalKeyboardKey.arrowLeft): _ShiftIntent(
+                -horizontal,
+              ),
+              const SingleActivator(LogicalKeyboardKey.arrowDown):
+                  const _ShiftIntent(7),
+              const SingleActivator(LogicalKeyboardKey.arrowUp):
+                  const _ShiftIntent(-7),
+              const SingleActivator(LogicalKeyboardKey.pageUp):
+                  const _PageIntent(-1),
+              const SingleActivator(LogicalKeyboardKey.pageDown):
+                  const _PageIntent(1),
+              const SingleActivator(LogicalKeyboardKey.home): const _EdgeIntent(
+                false,
+              ),
+              const SingleActivator(LogicalKeyboardKey.end): const _EdgeIntent(
+                true,
+              ),
+              const SingleActivator(LogicalKeyboardKey.enter):
+                  const ActivateIntent(),
+              const SingleActivator(LogicalKeyboardKey.space):
+                  const ActivateIntent(),
+            },
+            actions: {
+              _ShiftIntent: CallbackAction<_ShiftIntent>(
+                onInvoke: (intent) {
+                  _shift(intent.days);
+                  return null;
+                },
+              ),
+              _PageIntent: CallbackAction<_PageIntent>(
+                onInvoke: (intent) {
+                  _page(intent.months);
+                  return null;
+                },
+              ),
+              _EdgeIntent: CallbackAction<_EdgeIntent>(
+                onInvoke: (intent) {
+                  _edge(intent.end);
+                  return null;
+                },
+              ),
+              ActivateIntent: CallbackAction<ActivateIntent>(
+                onInvoke: (intent) {
+                  _pickCursor();
+                  return null;
+                },
+              ),
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                for (var slot = 0; slot < 7; slot++)
-                  SizedBox(
-                    width: _cell,
-                    height: _cell,
-                    child: _cellFor(
-                      week * 7 + slot - leading + 1,
-                      daysInMonth,
-                      today,
-                      style,
-                      textStyle,
-                    ),
+                for (var week = 0; week < rows; week++)
+                  Row(
+                    children: [
+                      for (var slot = 0; slot < 7; slot++)
+                        SizedBox(
+                          width: _cell,
+                          height: _cell,
+                          child: _cellFor(
+                            week * 7 + slot - leading + 1,
+                            daysInMonth,
+                            today,
+                            style,
+                            textStyle,
+                          ),
+                        ),
+                    ],
                   ),
               ],
             ),
+          ),
         ],
       ),
     );
@@ -210,6 +347,7 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
     final selected = widget.value != null && _sameDay(widget.value!, date);
     final isToday = _sameDay(today, date);
     final enabled = _enabled(date);
+    final cursor = _focused && _sameDay(_cursor, date);
 
     final text = Container(
       alignment: Alignment.center,
@@ -224,45 +362,66 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
       ),
     );
 
+    Widget cell;
     if (!selected && !isToday) {
-      return enabled
+      cell = enabled
           ? GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => widget.onChanged(date),
+              onTap: () => _pick(date),
               child: text,
             )
           : text;
+    } else {
+      cell = GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: enabled ? () => _pick(date) : null,
+        child: DrawkitSurface(
+          builder: (size, options) {
+            final cx = size.width / 2;
+            final cy = size.height / 2;
+            return [
+              if (selected)
+                DrawkitLayer(
+                  roughCircle(cx, cy, size.width / 2 - 2, options),
+                  drawkitStroke(
+                    style,
+                    color: style.effectiveStroke.withValues(alpha: 0.20),
+                    fallbackWidth: 7,
+                  ),
+                ),
+              if (!selected && isToday)
+                DrawkitLayer(
+                  roughCircle(cx, size.height - 4.5, 1.8, options),
+                  drawkitFillPaint(
+                    style.effectiveStroke.withValues(alpha: 0.7),
+                  ),
+                ),
+            ];
+          },
+          style: style,
+          seed: widget.seed,
+          animate: widget.animate,
+          child: text,
+        ),
+      );
     }
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: enabled ? () => widget.onChanged(date) : null,
-      child: DrawkitSurface(
-        builder: (size, options) {
-          final cx = size.width / 2;
-          final cy = size.height / 2;
-          return [
-            if (selected)
-              DrawkitLayer(
-                roughCircle(cx, cy, size.width / 2 - 2, options),
-                drawkitStroke(
-                  style,
-                  color: style.effectiveStroke.withValues(alpha: 0.20),
-                  fallbackWidth: 7,
-                ),
-              ),
-            if (!selected && isToday)
-              DrawkitLayer(
-                roughCircle(cx, size.height - 4.5, 1.8, options),
-                drawkitFillPaint(style.effectiveStroke.withValues(alpha: 0.7)),
-              ),
-          ];
-        },
-        style: style,
-        seed: widget.seed,
-        animate: widget.animate,
-        child: text,
-      ),
+    if (!cursor) return cell;
+    return DrawkitSurface(
+      builder: (size, options) => [
+        drawkitFocusRingRect(
+          size: size,
+          radius: 10,
+          gapX: 2,
+          gapY: 2,
+          options: options,
+          style: style,
+        ),
+      ],
+      style: style,
+      seed: widget.seed,
+      animate: widget.animate,
+      child: cell,
     );
   }
 }

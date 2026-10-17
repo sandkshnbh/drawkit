@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/focus.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -128,9 +129,11 @@ class _DrawkitCheckboxState extends State<DrawkitCheckbox>
     );
     if (_focused) {
       layers.add(
-        DrawkitLayer(
-          roughRoundedRect(-1, -1, w + 2, h + 2, 7, options),
-          drawkitStroke(style, fallbackWidth: 1.5),
+        drawkitFocusRingRect(
+          size: Size(w, h),
+          radius: 7,
+          options: options,
+          style: style,
         ),
       );
     }

@@ -183,6 +183,11 @@ final List<GalleryPage> galleryPages = [
     'Validation, empty margins, undoable toasts, and a pull-to-refresh.',
     (context) => const StatesPage(),
   ),
+  GalleryPage(
+    'Focus & Keyboard',
+    'One ring on every control — Tab, arrows, Home/End, Enter, Escape.',
+    (context) => const FocusPage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -2021,6 +2026,290 @@ class _StatesPageState extends State<StatesPage> {
               ),
             ),
           ),
+          const SizedBox(height: 22),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Focus page
+
+class FocusPage extends StatefulWidget {
+  const FocusPage({super.key});
+
+  @override
+  State<FocusPage> createState() => _FocusPageState();
+}
+
+class _FocusPageState extends State<FocusPage> {
+  static const body = TextStyle(
+    fontSize: 14,
+    height: 1.5,
+    color: DrawkitPalette.ink,
+    decoration: TextDecoration.none,
+  );
+
+  static const hint = TextStyle(
+    fontSize: 13,
+    height: 1.5,
+    color: DrawkitPalette.inkMuted,
+    decoration: TextDecoration.none,
+  );
+
+  double _inkLevel = 0.45;
+  String _segment = 'pen';
+  int _tab = 0;
+  String? _pick = 'ink';
+  DateTime _date = DateTime(2026, 6, 15);
+  int _nav = 0;
+  String _last = 'nothing yet — pressing a key would be a start';
+
+  void _say(String note) => setState(() => _last = note);
+
+  Future<void> _openDialog() async {
+    await showDrawkitDialog<void>(
+      context: context,
+      child: DrawkitDialog(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'A page within the page',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: DrawkitPalette.ink,
+                decoration: TextDecoration.none,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Escape folds it away; Tab never wanders outside; focus '
+              'returns to the button that opened it.',
+              style: body,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                DrawkitButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _say('dialog closed — the trigger holds focus again');
+                  },
+                  child: const Text('close'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const DrawkitHeading(text: 'The Focus Kit', underline: true),
+          const SizedBox(height: 8),
+          const DrawkitHeading(
+            text: 'one ring, drawn only while the keyboard is at work',
+            level: 3,
+            textStyle: TextStyle(color: DrawkitPalette.inkMuted),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Tab to walk the page · arrows to move · Home/End to jump · '
+            'Enter/Space to choose · Escape to close',
+            style: hint,
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Slider — Home, End, PageUp and PageDown; RTL mirrors the arrows',
+            style: body,
+          ),
+          const SizedBox(height: 8),
+          DrawkitSlider(
+            value: _inkLevel,
+            onChanged: (v) => setState(() {
+              _inkLevel = v;
+              _last = 'ink level ${(v * 100).round()}%';
+            }),
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'Segments and tabs — the selection owns the single tab stop',
+            style: body,
+          ),
+          const SizedBox(height: 8),
+          DrawkitSegmentedButton<String>(
+            segments: const [
+              DrawkitSegment(value: 'pen', label: 'pen'),
+              DrawkitSegment(value: 'pencil', label: 'pencil'),
+              DrawkitSegment(value: 'brush', label: 'brush'),
+            ],
+            selected: _segment,
+            onChanged: (v) => setState(() {
+              _segment = v;
+              _last = 'drawing with the $v';
+            }),
+          ),
+          const SizedBox(height: 12),
+          DrawkitTabs(
+            labels: const ['Sketch', 'Ink', 'Export'],
+            active: _tab,
+            onChanged: (i) => setState(() {
+              _tab = i;
+              _last = 'tab: ${const ['Sketch', 'Ink', 'Export'][i]}';
+            }),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            const [
+              'a rough start, all construction lines',
+              'the damp layer, still catching light',
+              'a clean file, corners folded shut',
+            ][_tab],
+            style: hint,
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'Accordion — Up/Down walk the headers, Enter folds a section',
+            style: body,
+          ),
+          const SizedBox(height: 8),
+          const DrawkitAccordion(
+            sections: [
+              DrawkitAccordionSection(
+                title: 'What takes focus',
+                child: Text(
+                  'Anything with a story to tell the keyboard — buttons, '
+                  'fields, rows, days, crumbs.',
+                  style: hint,
+                ),
+              ),
+              DrawkitAccordionSection(
+                title: 'Where the ring comes from',
+                child: Text(
+                  'one helper inks the dashed holder around every control.',
+                  style: hint,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'Select and menu — arrows walk, Escape hands focus back',
+            style: body,
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              SizedBox(
+                width: 220,
+                child: DrawkitSelect<String>(
+                  options: const [
+                    DrawkitSelectOption(value: 'ink', label: 'Ink'),
+                    DrawkitSelectOption(value: 'wash', label: 'Wash'),
+                    DrawkitSelectOption(value: 'gouache', label: 'Gouache'),
+                  ],
+                  value: _pick,
+                  onChanged: (v) => setState(() {
+                    _pick = v;
+                    _last = 'medium: $v';
+                  }),
+                ),
+              ),
+              DrawkitMenu(
+                semanticLabel: 'focus menu',
+                items: [
+                  DrawkitMenuItem(
+                    label: 'Sharpen the HB',
+                    onSelected: () => _say('the HB is sharp again'),
+                  ),
+                  DrawkitMenuItem(
+                    label: 'Refill the well',
+                    onSelected: () => _say('the well is full'),
+                  ),
+                  const DrawkitMenuItem.divider(),
+                  const DrawkitMenuItem(label: 'Fold the page', enabled: false),
+                ],
+                child: const Text('maintenance', style: body),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'Date picker — arrows walk days, PageUp/Down change months',
+            style: body,
+          ),
+          const SizedBox(height: 8),
+          DrawkitDatePicker(
+            value: _date,
+            today: DateTime(2026, 6, 15),
+            onChanged: (d) => setState(() {
+              _date = d;
+              _last = 'dated ${d.year}-${d.month}-${d.day}';
+            }),
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'Breadcrumb and nav rail — plain Tab stops, Enter to choose',
+            style: body,
+          ),
+          const SizedBox(height: 10),
+          DrawkitBreadcrumb(
+            items: [
+              DrawkitBreadcrumbItem(
+                label: 'kit',
+                onTap: () => _say('back to the kit'),
+              ),
+              DrawkitBreadcrumbItem(
+                label: 'focus',
+                onTap: () => _say('still on the focus page'),
+              ),
+              const DrawkitBreadcrumbItem(label: 'here'),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 170,
+            width: 150,
+            child: DrawkitNavRail(
+              destinations: const [
+                DrawkitNavDestination(label: 'Sketches'),
+                DrawkitNavDestination(label: 'Swatches'),
+                DrawkitNavDestination(label: 'Filed'),
+              ],
+              selected: _nav,
+              onChanged: (i) => setState(() {
+                _nav = i;
+                _last = 'rail: ${const ['Sketches', 'Swatches', 'Filed'][i]}';
+              }),
+            ),
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'Dialog — Escape dismisses, Tab stays inside, focus comes home',
+            style: body,
+          ),
+          const SizedBox(height: 8),
+          DrawkitButton(
+            onPressed: () => _openDialog(),
+            child: const Text('Open a dialog'),
+          ),
+          const SizedBox(height: 16),
+          Text('last action: $_last', style: hint),
           const SizedBox(height: 22),
         ],
       ),

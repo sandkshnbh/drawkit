@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/focus.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -150,9 +151,11 @@ class _DrawkitRadioState<T> extends State<DrawkitRadio<T>>
     }
     if (_focused) {
       layers.add(
-        DrawkitLayer(
-          roughCircle(center.dx, center.dy, r + 1, options),
-          drawkitStroke(style, fallbackWidth: 1.5),
+        drawkitFocusRingCircle(
+          center: center,
+          radius: r,
+          options: options,
+          style: style,
         ),
       );
     }

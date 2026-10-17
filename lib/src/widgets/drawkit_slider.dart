@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/focus.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -14,12 +15,21 @@ class _AdjustIntent extends Intent {
   final double delta;
 }
 
+class _JumpIntent extends Intent {
+  const _JumpIntent(this.end);
+
+  final bool end;
+}
+
 /// A sketched slider: thin track, bolder filled run, a paper-filled thumb.
 ///
 /// Drag or tap anywhere on the track, or focus it and use the arrow keys —
 /// step is one division when [divisions] is set, 5% of the range otherwise.
-/// The fill grows from the leading edge, so RTL fills right to left, and a
-/// tap maps to the value under the finger, never the x coordinate.
+/// Home/End jump to the ends, PageUp/PageDown move five steps, and the
+/// horizontal arrows follow the reading direction (in RTL, right decreases),
+/// matching Flutter's own sliders. The fill grows from the leading edge, so
+/// RTL fills right to left, and a tap maps to the value under the finger,
+/// never the x coordinate.
 class DrawkitSlider extends StatefulWidget {
   const DrawkitSlider({
     required this.value,
@@ -164,9 +174,13 @@ class _DrawkitSliderState extends State<DrawkitSlider> {
     );
     if (_focused) {
       layers.add(
-        DrawkitLayer(
-          roughRoundedRect(-1, 0, size.width + 2, size.height, 8, options),
-          drawkitStroke(style, color: ink, fallbackWidth: 1.5),
+        drawkitFocusRingRect(
+          size: size,
+          radius: 8,
+          gapY: 0,
+          color: ink,
+          options: options,
+          style: style,
         ),
       );
     }
@@ -182,18 +196,31 @@ class _DrawkitSliderState extends State<DrawkitSlider> {
     final ink = _resolvedInk(resolvedStyle);
     final style = resolvedStyle.copyWith(strokeColor: ink, fillColor: ink);
     final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
+    final horizontal = rtl ? -1.0 : 1.0;
 
     return Shortcuts(
       shortcuts: {
-        const SingleActivator(LogicalKeyboardKey.arrowRight):
-            const _AdjustIntent(1),
         const SingleActivator(LogicalKeyboardKey.arrowUp): const _AdjustIntent(
           1,
         ),
-        const SingleActivator(LogicalKeyboardKey.arrowLeft):
-            const _AdjustIntent(-1),
         const SingleActivator(LogicalKeyboardKey.arrowDown):
             const _AdjustIntent(-1),
+        SingleActivator(LogicalKeyboardKey.arrowRight): _AdjustIntent(
+          horizontal,
+        ),
+        SingleActivator(LogicalKeyboardKey.arrowLeft): _AdjustIntent(
+          -horizontal,
+        ),
+        const SingleActivator(LogicalKeyboardKey.home): const _JumpIntent(
+          false,
+        ),
+        const SingleActivator(LogicalKeyboardKey.end): const _JumpIntent(true),
+        const SingleActivator(LogicalKeyboardKey.pageUp): const _AdjustIntent(
+          5,
+        ),
+        const SingleActivator(LogicalKeyboardKey.pageDown): const _AdjustIntent(
+          -5,
+        ),
       },
       child: FocusableActionDetector(
         focusNode: _focusNode,
@@ -204,6 +231,12 @@ class _DrawkitSliderState extends State<DrawkitSlider> {
           _AdjustIntent: CallbackAction<_AdjustIntent>(
             onInvoke: (intent) {
               _nudge(intent.delta * _step);
+              return null;
+            },
+          ),
+          _JumpIntent: CallbackAction<_JumpIntent>(
+            onInvoke: (intent) {
+              _report(intent.end ? widget.max : widget.min);
               return null;
             },
           ),

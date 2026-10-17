@@ -1,0 +1,47 @@
+import 'package:flutter/widgets.dart';
+
+import '../engine/rough.dart';
+import 'style.dart';
+import 'surface.dart';
+
+/// The shared keyboard-focus ring: one extra rough outline drawn just outside
+/// a widget's resting stroke, so focus reads as a second pass of the pen
+/// instead of a diffuse glow. Widgets own the when (their `_focused` flag);
+/// this owns the how, keeping every control's ring in the same hand.
+///
+/// [radius] should match the shape's own corner radius so the ring follows
+/// its silhouette. The default `1px` gap keeps the two strokes close without
+/// touching.
+DrawkitLayer drawkitFocusRingRect({
+  required Size size,
+  required RoughOptions options,
+  required DrawkitStyle style,
+  Color? color,
+  double radius = 10,
+  double gapX = 1,
+  double gapY = 1,
+}) => DrawkitLayer(
+  roughRoundedRect(
+    -gapX,
+    -gapY,
+    size.width + 2 * gapX,
+    size.height + 2 * gapY,
+    radius,
+    options,
+  ),
+  drawkitStroke(style, color: color, fallbackWidth: 1.5),
+);
+
+/// Circular variant of [drawkitFocusRingRect] for discs (radios, icon
+/// buttons): a second circle at `radius + gap`.
+DrawkitLayer drawkitFocusRingCircle({
+  required Offset center,
+  required double radius,
+  required RoughOptions options,
+  required DrawkitStyle style,
+  Color? color,
+  double gap = 1,
+}) => DrawkitLayer(
+  roughCircle(center.dx, center.dy, radius + gap, options),
+  drawkitStroke(style, color: color, fallbackWidth: 1.5),
+);

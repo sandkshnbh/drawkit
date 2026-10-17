@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/focus.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -155,9 +156,12 @@ class _DrawkitButtonState extends State<DrawkitButton> {
     layers.add(DrawkitLayer(outline, outlinePaint));
     if (_focused) {
       layers.add(
-        DrawkitLayer(
-          roughRoundedRect(-1, -1, w + 2, h + 2, 10, options),
-          drawkitStroke(style, color: ink, fallbackWidth: 1.5),
+        drawkitFocusRingRect(
+          size: Size(w, h),
+          radius: 10,
+          color: ink,
+          options: options,
+          style: style,
         ),
       );
     }
@@ -400,9 +404,13 @@ class _DrawkitFabState extends State<DrawkitFab> {
     layers.add(DrawkitLayer(roughCircle(cx, cy, r, options), outlinePaint));
     if (_focused) {
       layers.add(
-        DrawkitLayer(
-          roughCircle(cx, cy, r + 2, options),
-          drawkitStroke(style, color: ink, fallbackWidth: 1.5),
+        drawkitFocusRingCircle(
+          center: Offset(cx, cy),
+          radius: r,
+          gap: 2,
+          color: ink,
+          options: options,
+          style: style,
         ),
       );
     }

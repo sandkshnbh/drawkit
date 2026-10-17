@@ -1,5 +1,7 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/focus.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -131,7 +133,7 @@ class DrawkitBottomNav extends StatelessWidget {
   }
 }
 
-class _NavTile extends StatelessWidget {
+class _NavTile extends StatefulWidget {
   const _NavTile({
     required this.destination,
     required this.isSelected,
@@ -151,17 +153,24 @@ class _NavTile extends StatelessWidget {
   final bool animate;
 
   @override
+  State<_NavTile> createState() => _NavTileState();
+}
+
+class _NavTileState extends State<_NavTile> {
+  bool _focused = false;
+
+  @override
   Widget build(BuildContext context) {
-    final resolved = style ?? DrawkitTheme.of(context);
-    final enabled = onTap != null;
+    final resolved = widget.style ?? DrawkitTheme.of(context);
+    final enabled = widget.onTap != null;
     final label = Text(
-      destination.label,
+      widget.destination.label,
       style: TextStyle(
         fontSize: 12,
         height: 1.2,
-        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+        fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
         color: enabled
-            ? (isSelected ? DrawkitPalette.ink : DrawkitPalette.inkMuted)
+            ? (widget.isSelected ? DrawkitPalette.ink : DrawkitPalette.inkMuted)
             : DrawkitPalette.inkFaint,
         decoration: TextDecoration.none,
       ),
@@ -175,8 +184,8 @@ class _NavTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (destination.icon != null) ...[
-            destination.icon!,
+          if (widget.destination.icon != null) ...[
+            widget.destination.icon!,
             const SizedBox(height: 4),
           ],
           label,
@@ -184,7 +193,7 @@ class _NavTile extends StatelessWidget {
       ),
     );
 
-    if (isSelected) {
+    if (widget.isSelected) {
       content = DrawkitSurface(
         builder: (size, options) => [
           DrawkitLayer(
@@ -197,28 +206,63 @@ class _NavTile extends StatelessWidget {
           ),
         ],
         style: resolved,
-        seed: seed,
-        animate: animate,
+        seed: widget.seed,
+        animate: widget.animate,
         resketchOnPointer: true,
         child: content,
       );
     }
 
-    return Semantics(
-      button: true,
-      selected: isSelected,
+    if (_focused && enabled) {
+      content = DrawkitSurface(
+        builder: (size, options) => [
+          drawkitFocusRingRect(
+            size: size,
+            radius: 10,
+            gapX: -5,
+            gapY: -3,
+            options: options,
+            style: resolved,
+          ),
+        ],
+        style: resolved,
+        seed: widget.seed,
+        animate: widget.animate,
+        child: content,
+      );
+    }
+
+    return FocusableActionDetector(
       enabled: enabled,
-      label: destination.label,
-      child: ExcludeSemantics(
-        child: MouseRegion(
-          cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      onShowFocusHighlight: (value) => setState(() => _focused = value),
+      shortcuts: {
+        const SingleActivator(LogicalKeyboardKey.space): const ActivateIntent(),
+        const SingleActivator(LogicalKeyboardKey.enter): const ActivateIntent(),
+      },
+      actions: {
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (intent) {
+            widget.onTap?.call();
+            return null;
+          },
+        ),
+      },
+      mouseCursor: enabled
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
+      child: Semantics(
+        button: true,
+        selected: widget.isSelected,
+        enabled: enabled,
+        label: widget.destination.label,
+        child: ExcludeSemantics(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: onTap,
-            child: width == null
+            onTap: widget.onTap,
+            child: widget.width == null
                 ? Center(child: content)
                 : SizedBox(
-                    width: width,
+                    width: widget.width,
                     child: Center(child: content),
                   ),
           ),

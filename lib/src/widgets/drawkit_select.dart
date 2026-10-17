@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/focus.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -60,11 +61,28 @@ class DrawkitSelect<T> extends StatefulWidget {
   State<DrawkitSelect<T>> createState() => _DrawkitSelectState<T>();
 }
 
+class _MoveIntent extends Intent {
+  const _MoveIntent(this.delta);
+
+  final int delta;
+}
+
+class _EdgeIntent extends Intent {
+  const _EdgeIntent(this.end);
+
+  final bool end;
+}
+
+class _NoopIntent extends Intent {
+  const _NoopIntent();
+}
+
 class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
   final MenuController _menu = MenuController();
   final GlobalKey _fieldKey = GlobalKey();
   late FocusNode _focusNode;
   late bool _ownsFocusNode;
+  List<FocusNode> _optionNodes = const [];
   bool _focused = false;
 
   /// Captured when the menu opens: reading the anchor's size during overlay
@@ -75,6 +93,7 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
   void initState() {
     super.initState();
     _attachFocusNode();
+    _syncOptionNodes();
   }
 
   void _attachFocusNode() {
@@ -93,13 +112,57 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
       if (_ownsFocusNode) _focusNode.dispose();
       _attachFocusNode();
     }
+    if (widget.options.length != _optionNodes.length) _syncOptionNodes();
   }
 
   @override
   void dispose() {
+    for (final node in _optionNodes) {
+      node.dispose();
+    }
     _focusNode.removeListener(_onFocusChanged);
     if (_ownsFocusNode) _focusNode.dispose();
     super.dispose();
+  }
+
+  void _syncOptionNodes() {
+    for (final node in _optionNodes) {
+      node.dispose();
+    }
+    _optionNodes = [
+      for (var i = 0; i < widget.options.length; i++)
+        FocusNode(skipTraversal: true),
+    ];
+  }
+
+  void _focusOption(int index) {
+    if (index < 0 || index >= _optionNodes.length) return;
+    _optionNodes[index].requestFocus();
+  }
+
+  void _move(int delta) {
+    final count = _optionNodes.length;
+    if (count == 0) return;
+    final current = _optionNodes.indexWhere((n) => n.hasFocus);
+    final at = current < 0 ? (delta > 0 ? -1 : 0) : current;
+    _focusOption((at + delta + count) % count);
+  }
+
+  void _edge(bool end) => _focusOption(end ? _optionNodes.length - 1 : 0);
+
+  void _opened() {
+    final selected = widget.options.indexWhere((o) => o.value == widget.value);
+    final target = selected >= 0 ? selected : 0;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _menu.isOpen) _focusOption(target);
+    });
+  }
+
+  void _closed() {
+    if (!_optionNodes.any((n) => n.hasFocus)) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
   }
 
   void _toggleMenu() {
@@ -194,9 +257,11 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
     );
     if (_focused) {
       layers.add(
-        DrawkitLayer(
-          roughRoundedRect(-1, -1, w + 2, h + 2, 8, options),
-          drawkitStroke(style, fallbackWidth: 1.5),
+        drawkitFocusRingRect(
+          size: Size(w, h),
+          radius: 8,
+          options: options,
+          style: style,
         ),
       );
     }
@@ -216,6 +281,8 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
       controller: _menu,
       consumeOutsideTaps: true,
       childFocusNode: _focusNode,
+      onOpen: _opened,
+      onClose: _closed,
       overlayBuilder: (context, info) => TapRegion(
         groupId: info.tapRegionGroupId,
         onTapOutside: (event) => _menu.close(),
@@ -324,20 +391,56 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
           child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final option in widget.options)
-                  _SelectRow(
-                    label: option.label,
-                    selected: option.value == widget.value,
-                    textStyle: textStyle,
-                    ink: style.effectiveStroke,
-                    seed: widget.seed,
-                    onPick: () => _pick(option.value),
+            child: Shortcuts(
+              shortcuts: {
+                const SingleActivator(LogicalKeyboardKey.arrowDown):
+                    const _MoveIntent(1),
+                const SingleActivator(LogicalKeyboardKey.arrowUp):
+                    const _MoveIntent(-1),
+                const SingleActivator(LogicalKeyboardKey.arrowLeft):
+                    const _NoopIntent(),
+                const SingleActivator(LogicalKeyboardKey.arrowRight):
+                    const _NoopIntent(),
+                const SingleActivator(LogicalKeyboardKey.home):
+                    const _EdgeIntent(false),
+                const SingleActivator(LogicalKeyboardKey.end):
+                    const _EdgeIntent(true),
+              },
+              child: Actions(
+                actions: {
+                  _MoveIntent: CallbackAction<_MoveIntent>(
+                    onInvoke: (intent) {
+                      _move(intent.delta);
+                      return null;
+                    },
                   ),
-              ],
+                  _EdgeIntent: CallbackAction<_EdgeIntent>(
+                    onInvoke: (intent) {
+                      _edge(intent.end);
+                      return null;
+                    },
+                  ),
+                  _NoopIntent: CallbackAction<_NoopIntent>(
+                    onInvoke: (intent) => null,
+                  ),
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < widget.options.length; i++)
+                      _SelectRow(
+                        label: widget.options[i].label,
+                        selected: widget.options[i].value == widget.value,
+                        textStyle: textStyle,
+                        ink: style.effectiveStroke,
+                        seed: widget.seed,
+                        focusNode: _optionNodes[i],
+                        onPick: () => _pick(widget.options[i].value),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -400,6 +503,7 @@ class _SelectRow extends StatefulWidget {
     required this.ink,
     required this.seed,
     required this.onPick,
+    this.focusNode,
   });
 
   final String label;
@@ -408,6 +512,7 @@ class _SelectRow extends StatefulWidget {
   final Color ink;
   final int? seed;
   final VoidCallback onPick;
+  final FocusNode? focusNode;
 
   @override
   State<_SelectRow> createState() => _SelectRowState();
@@ -421,6 +526,7 @@ class _SelectRowState extends State<_SelectRow> {
   Widget build(BuildContext context) {
     final wash = (_hovered || _focused) && !widget.selected;
     return FocusableActionDetector(
+      focusNode: widget.focusNode,
       onShowFocusHighlight: (value) => setState(() => _focused = value),
       shortcuts: {
         const SingleActivator(LogicalKeyboardKey.space): const ActivateIntent(),

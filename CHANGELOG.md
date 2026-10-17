@@ -1,5 +1,22 @@
 ## Unreleased
 
+- **Focus & Keyboard** — one shared ring for every control:
+  `drawkitFocusRingRect` and `drawkitFocusRingCircle` are exported helpers,
+  and the existing rings (button, icon button, checkbox, radio, toggle,
+  select, slider) all come from them now. `DrawkitSlider` answers Home/End
+  (the ends) and PageUp/PageDown (five steps), and horizontal arrows follow
+  the reading direction (RTL included, like Flutter sliders).
+  `DrawkitSegmentedButton` and `DrawkitTabs` keep a roving tab stop — the
+  selection is the only stop, arrows move (and activate) with wrap-around,
+  plus Home/End. `DrawkitBreadcrumb`, `DrawkitNavRail` / `DrawkitBottomNav`,
+  `DrawkitChip` and `DrawkitPager` activate from the keyboard, and
+  `DrawkitAccordion` headers answer Up/Down/Home/End. `DrawkitMenu` and
+  `DrawkitSelect` walk rows with arrows (wrapping, skipping disabled rows),
+  answer Home/End, and hand focus back to the trigger or field on close; the
+  command palette gained Home/End. `DrawkitDatePicker` is a single tab stop:
+  arrows walk days and weeks (RTL aware), PageUp/PageDown page months keeping
+  the day, Home/End jump to the month's edges, Enter picks. Dialog and sheet
+  Escape, Tab trap, and focus return are pinned down by tests.
 - **States** — `DrawkitInput` / `DrawkitTextarea` gained `error` and `helper`:
   an error inks the outline and cursor red, replaces the helper below the
   field, and announces itself through a live region. `DrawkitEmpty` (faint
