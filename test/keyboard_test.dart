@@ -21,7 +21,7 @@ void main() {
           textDirection: direction,
           child: DrawkitTheme(
             data: const DrawkitStyle(boil: 0),
-            child: Center(child: SizedBox(width: 300, child: child)),
+            child: Center(child: SizedBox(width: 360, child: child)),
           ),
         ),
       );

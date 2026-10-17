@@ -172,23 +172,28 @@ class _DrawkitCheckboxState extends State<DrawkitCheckbox>
       mouseCursor: widget.enabled
           ? SystemMouseCursors.click
           : SystemMouseCursors.basic,
-      child: Semantics(
-        checked: widget.value,
-        enabled: widget.enabled,
-        label: widget.semanticLabel,
+      child: GestureDetector(
+        excludeFromSemantics: true,
         onTap: widget.enabled ? _toggle : null,
-        child: DrawkitSurface(
-          builder: (size, options) => _layers(size, options, style),
-          style: style,
-          seed: widget.seed,
-          animate: widget.animate,
+        child: Semantics(
+          checked: widget.value,
           enabled: widget.enabled,
-          resketchOnPointer: true,
-          boilClock: _boil,
-          accent: _check,
-          size: DrawkitCheckbox.size,
+          label: widget.semanticLabel,
           onTap: widget.enabled ? _toggle : null,
-          onPressedChanged: (v) => setState(() => _pressed = v),
+          child: DrawkitTapTarget(
+            child: DrawkitSurface(
+              builder: (size, options) => _layers(size, options, style),
+              style: style,
+              seed: widget.seed,
+              animate: widget.animate,
+              enabled: widget.enabled,
+              resketchOnPointer: true,
+              boilClock: _boil,
+              accent: _check,
+              size: DrawkitCheckbox.size,
+              onPressedChanged: (v) => setState(() => _pressed = v),
+            ),
+          ),
         ),
       ),
     );

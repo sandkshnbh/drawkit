@@ -194,24 +194,29 @@ class _DrawkitRadioState<T> extends State<DrawkitRadio<T>>
       mouseCursor: widget.enabled
           ? SystemMouseCursors.click
           : SystemMouseCursors.basic,
-      child: Semantics(
-        checked: widget.selected,
-        enabled: widget.enabled,
-        inMutuallyExclusiveGroup: true,
-        label: widget.semanticLabel,
+      child: GestureDetector(
+        excludeFromSemantics: true,
         onTap: widget.enabled ? _select : null,
-        child: DrawkitSurface(
-          builder: (size, options) => _layers(size, options, style),
-          style: style,
-          seed: widget.seed,
-          animate: widget.animate,
+        child: Semantics(
+          checked: widget.selected,
           enabled: widget.enabled,
-          resketchOnPointer: true,
-          boilClock: _boil,
-          accent: _dot,
-          size: DrawkitRadio.size,
+          inMutuallyExclusiveGroup: true,
+          label: widget.semanticLabel,
           onTap: widget.enabled ? _select : null,
-          onPressedChanged: (v) => setState(() => _pressed = v),
+          child: DrawkitTapTarget(
+            child: DrawkitSurface(
+              builder: (size, options) => _layers(size, options, style),
+              style: style,
+              seed: widget.seed,
+              animate: widget.animate,
+              enabled: widget.enabled,
+              resketchOnPointer: true,
+              boilClock: _boil,
+              accent: _dot,
+              size: DrawkitRadio.size,
+              onPressedChanged: (v) => setState(() => _pressed = v),
+            ),
+          ),
         ),
       ),
     );

@@ -560,6 +560,7 @@ class _ChoicePageState extends State<ChoicePage> {
       _ChoiceRow(
         control: DrawkitCheckbox(
           value: terms,
+          semanticLabel: 'accept the scribbles',
           onChanged: (v) => setState(() => terms = v),
         ),
         text: 'I accept the scribbles (checked, with the check drawn on)',
@@ -568,13 +569,18 @@ class _ChoicePageState extends State<ChoicePage> {
       _ChoiceRow(
         control: DrawkitCheckbox(
           value: newsletter,
+          semanticLabel: 'send me one doodle a week',
           onChanged: (v) => setState(() => newsletter = v),
         ),
         text: 'Send me one doodle a week',
         onTap: () => setState(() => newsletter = !newsletter),
       ),
       _ChoiceRow(
-        control: const DrawkitCheckbox(value: false, onChanged: null),
+        control: const DrawkitCheckbox(
+          value: false,
+          semanticLabel: 'disabled checkbox',
+          onChanged: null,
+        ),
         text: 'Disabled checkbox — the ink stays, the hand stops',
         onTap: null,
       ),
@@ -584,6 +590,7 @@ class _ChoicePageState extends State<ChoicePage> {
           control: DrawkitRadio<String>(
             value: f,
             groupValue: fruit,
+            semanticLabel: 'radio $f',
             onChanged: (v) => setState(() => fruit = v),
           ),
           text: 'Radio: $f',
@@ -593,13 +600,18 @@ class _ChoicePageState extends State<ChoicePage> {
       _ChoiceRow(
         control: DrawkitToggle(
           value: darkInk,
+          semanticLabel: 'dark ink',
           onChanged: (v) => setState(() => darkInk = v),
         ),
         text: 'Dark ink (toggle — the knob travels 20px)',
         onTap: () => setState(() => darkInk = !darkInk),
       ),
       _ChoiceRow(
-        control: const DrawkitToggle(value: true, onChanged: null),
+        control: const DrawkitToggle(
+          value: true,
+          semanticLabel: 'disabled toggle',
+          onChanged: null,
+        ),
         text: 'Disabled toggle',
         onTap: null,
       ),
@@ -967,7 +979,7 @@ class _CompositePageState extends State<CompositePage> {
               child: SizedBox(
                 key: targetKey,
                 width: 90,
-                height: 36,
+                height: 48,
                 child: const DrawkitButton(
                   onPressed: _noop,
                   child: Text('target'),
@@ -1034,7 +1046,7 @@ class _CompositePageState extends State<CompositePage> {
               child: SizedBox(
                 key: _toKey,
                 width: 90,
-                height: 36,
+                height: 48,
                 child: const DrawkitButton(onPressed: _noop, child: Text('to')),
               ),
             ),

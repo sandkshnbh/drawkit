@@ -4,6 +4,34 @@ import '../engine/rough.dart';
 import 'style.dart';
 import 'surface.dart';
 
+/// The smallest interactive box drawkit ships: Android asks for 48dp, iOS for
+/// 44pt, and the controls take the stricter one everywhere. The drawing
+/// itself keeps its own size — only the touch/semantics box grows.
+const double drawkitMinTapTarget = 48;
+
+/// Wraps a drawn control so its interactive box is at least
+/// [drawkitMinTapTarget] on both axes, with the drawing centered inside.
+/// Host it *inside* the gesture/semantics layer (so the tap action and the
+/// semantics rect cover the full box), never around it.
+class DrawkitTapTarget extends StatelessWidget {
+  const DrawkitTapTarget({
+    super.key,
+    this.minWidth = drawkitMinTapTarget,
+    this.minHeight = drawkitMinTapTarget,
+    required this.child,
+  });
+
+  final double minWidth;
+  final double minHeight;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => ConstrainedBox(
+    constraints: BoxConstraints(minWidth: minWidth, minHeight: minHeight),
+    child: Center(widthFactor: 1, heightFactor: 1, child: child),
+  );
+}
+
 /// The shared keyboard-focus ring: one extra rough outline drawn just outside
 /// a widget's resting stroke, so focus reads as a second pass of the pen
 /// instead of a diffuse glow. Widgets own the when (their `_focused` flag);

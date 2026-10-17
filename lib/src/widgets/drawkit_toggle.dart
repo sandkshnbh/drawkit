@@ -194,23 +194,29 @@ class _DrawkitToggleState extends State<DrawkitToggle>
       mouseCursor: widget.enabled
           ? SystemMouseCursors.click
           : SystemMouseCursors.basic,
-      child: Semantics(
-        checked: widget.value,
-        enabled: widget.enabled,
-        label: widget.semanticLabel,
+      child: GestureDetector(
+        excludeFromSemantics: true,
         onTap: widget.enabled ? _toggle : null,
-        child: DrawkitSurface(
-          builder: (size, options) => _layers(size, options, style, direction),
-          style: style,
-          seed: widget.seed,
-          animate: widget.animate,
+        child: Semantics(
+          checked: widget.value,
           enabled: widget.enabled,
-          resketchOnPointer: true,
-          boilClock: _boil,
-          accent: _knob,
-          size: DrawkitToggle.size,
+          label: widget.semanticLabel,
           onTap: widget.enabled ? _toggle : null,
-          onPressedChanged: (v) => setState(() => _pressed = v),
+          child: DrawkitTapTarget(
+            child: DrawkitSurface(
+              builder: (size, options) =>
+                  _layers(size, options, style, direction),
+              style: style,
+              seed: widget.seed,
+              animate: widget.animate,
+              enabled: widget.enabled,
+              resketchOnPointer: true,
+              boilClock: _boil,
+              accent: _knob,
+              size: DrawkitToggle.size,
+              onPressedChanged: (v) => setState(() => _pressed = v),
+            ),
+          ),
         ),
       ),
     );

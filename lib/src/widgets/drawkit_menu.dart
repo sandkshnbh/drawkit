@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/focus.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -171,11 +172,15 @@ class _DrawkitPopoverState extends State<DrawkitPopover> {
         child: Semantics(
           button: true,
           label: widget.semanticLabel,
-          child: GestureDetector(
-            key: _anchorKey,
-            behavior: HitTestBehavior.opaque,
-            onTap: _toggle,
-            child: widget.trigger,
+          onTap: _toggle,
+          child: ExcludeSemantics(
+            child: GestureDetector(
+              key: _anchorKey,
+              behavior: HitTestBehavior.opaque,
+              excludeFromSemantics: true,
+              onTap: _toggle,
+              child: DrawkitTapTarget(child: widget.trigger),
+            ),
           ),
         ),
       ),
@@ -621,57 +626,61 @@ class _MenuRowState extends State<_MenuRow> {
         button: true,
         enabled: item.active,
         checked: item.checked ? true : null,
+        onTap: item.active ? widget.onPick : null,
         child: MouseRegion(
           onEnter: (_) => setState(() => _hovered = true),
           onExit: (_) => setState(() => _hovered = false),
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
             onTap: item.active ? widget.onPick : null,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: wash ? ink.withValues(alpha: 0.10) : null,
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 7,
-                ),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: item.checked
-                          ? CustomPaint(
-                              painter: _CheckPainter(
-                                seed: widget.seed ?? 1,
-                                ink: ink,
-                              ),
-                            )
-                          : null,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        item.label,
-                        style: widget.textStyle.copyWith(
-                          color: item.active ? null : DrawkitPalette.inkFaint,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+              child: DrawkitTapTarget(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 7,
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: item.checked
+                            ? CustomPaint(
+                                painter: _CheckPainter(
+                                  seed: widget.seed ?? 1,
+                                  ink: ink,
+                                ),
+                              )
+                            : null,
                       ),
-                    ),
-                    if (item.hint != null) ...[
-                      const SizedBox(width: 12),
-                      Text(
-                        item.hint!,
-                        style: widget.textStyle.copyWith(
-                          fontSize: (widget.textStyle.fontSize ?? 14) - 2,
-                          color: DrawkitPalette.inkFaint,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          item.label,
+                          style: widget.textStyle.copyWith(
+                            color: item.active ? null : DrawkitPalette.inkFaint,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      if (item.hint != null) ...[
+                        const SizedBox(width: 12),
+                        Text(
+                          item.hint!,
+                          style: widget.textStyle.copyWith(
+                            fontSize: (widget.textStyle.fontSize ?? 14) - 2,
+                            color: DrawkitPalette.inkMuted,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),

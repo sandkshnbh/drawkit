@@ -232,7 +232,7 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
         roughLine(x, y, x + _chevronW / 2, y + _chevronH, chevronOptions),
         drawkitStroke(
           style,
-          color: placeholder ? DrawkitPalette.inkFaint : null,
+          color: placeholder ? DrawkitPalette.inkMuted : null,
         ),
       ),
     );
@@ -251,7 +251,7 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
         ),
         drawkitStroke(
           style,
-          color: placeholder ? DrawkitPalette.inkFaint : null,
+          color: placeholder ? DrawkitPalette.inkMuted : null,
         ),
       ),
     );
@@ -320,8 +320,10 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
           button: true,
           enabled: widget.enabled,
           label: widget.semanticLabel,
+          onTap: _toggleMenu,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
             onTap: _toggleMenu,
             child: ConstrainedBox(
               constraints: BoxConstraints(minWidth: widget.minWidth),
@@ -346,13 +348,19 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
                     top: 8,
                     bottom: 8,
                   ),
-                  child: Text(
-                    _label,
-                    style: textStyle.copyWith(
-                      color: isPlaceholder ? DrawkitPalette.inkFaint : null,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 32),
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Text(
+                        _label,
+                        style: textStyle.copyWith(
+                          color: isPlaceholder ? DrawkitPalette.inkMuted : null,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
@@ -541,42 +549,53 @@ class _SelectRowState extends State<_SelectRow> {
         ),
       },
       mouseCursor: SystemMouseCursors.click,
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: widget.onPick,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: wash ? widget.ink.withValues(alpha: 0.10) : null,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: widget.selected
-                        ? CustomPaint(
-                            painter: _CheckPainter(
-                              seed: widget.seed ?? 1,
-                              ink: widget.ink,
-                            ),
-                          )
-                        : null,
+      child: Semantics(
+        button: true,
+        selected: widget.selected,
+        onTap: widget.onPick,
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _hovered = true),
+          onExit: (_) => setState(() => _hovered = false),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
+            onTap: widget.onPick,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: wash ? widget.ink.withValues(alpha: 0.10) : null,
+              ),
+              child: DrawkitTapTarget(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 7,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      widget.label,
-                      style: widget.textStyle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: widget.selected
+                            ? CustomPaint(
+                                painter: _CheckPainter(
+                                  seed: widget.seed ?? 1,
+                                  ink: widget.ink,
+                                ),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          widget.label,
+                          style: widget.textStyle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

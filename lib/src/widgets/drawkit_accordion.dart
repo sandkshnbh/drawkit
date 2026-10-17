@@ -226,94 +226,97 @@ class _AccordionTileState extends State<_AccordionTile> {
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
+                excludeFromSemantics: true,
                 onTap: widget.onToggle,
-                child: DrawkitSurface(
-                  builder: (size, options) => [
-                    if (_focused)
-                      drawkitFocusRingRect(
-                        size: size,
-                        radius: 10,
-                        options: options,
-                        style: style,
-                      ),
-                    DrawkitLayer(
-                      roughLine(
-                        0,
-                        size.height - 2,
-                        size.width,
-                        size.height - 2,
-                        options,
-                      ),
-                      drawkitStroke(
-                        style,
-                        color: style.effectiveStroke.withValues(
-                          alpha: _hovered ? 0.9 : 0.45,
+                child: DrawkitTapTarget(
+                  child: DrawkitSurface(
+                    builder: (size, options) => [
+                      if (_focused)
+                        drawkitFocusRingRect(
+                          size: size,
+                          radius: 10,
+                          options: options,
+                          style: style,
                         ),
-                        fallbackWidth: 1.5,
+                      DrawkitLayer(
+                        roughLine(
+                          0,
+                          size.height - 2,
+                          size.width,
+                          size.height - 2,
+                          options,
+                        ),
+                        drawkitStroke(
+                          style,
+                          color: style.effectiveStroke.withValues(
+                            alpha: _hovered ? 0.9 : 0.45,
+                          ),
+                          fallbackWidth: 1.5,
+                        ),
                       ),
-                    ),
-                  ],
-                  style: style,
-                  seed: widget.seed,
-                  animate: widget.animate,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(2, 10, 2, 10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            widget.section.title,
-                            style: textStyle.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: DrawkitPalette.ink,
+                    ],
+                    style: style,
+                    seed: widget.seed,
+                    animate: widget.animate,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(2, 10, 2, 10),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              widget.section.title,
+                              style: textStyle.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: DrawkitPalette.ink,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        AnimatedRotation(
-                          turns: widget.open ? 0.5 : 0,
-                          duration: motion
-                              ? const Duration(milliseconds: 180)
-                              : Duration.zero,
-                          curve: drawkitEase,
-                          child: DrawkitSurface(
-                            builder: (size, options) => [
-                              DrawkitLayer(
-                                roughLine(
-                                  0,
-                                  0,
-                                  size.width / 2,
-                                  size.height,
-                                  RoughOptions(
-                                    seed: options.seed,
-                                    roughness: options.roughness * 0.4,
-                                    boil: options.boil,
+                          const SizedBox(width: 10),
+                          AnimatedRotation(
+                            turns: widget.open ? 0.5 : 0,
+                            duration: motion
+                                ? const Duration(milliseconds: 180)
+                                : Duration.zero,
+                            curve: drawkitEase,
+                            child: DrawkitSurface(
+                              builder: (size, options) => [
+                                DrawkitLayer(
+                                  roughLine(
+                                    0,
+                                    0,
+                                    size.width / 2,
+                                    size.height,
+                                    RoughOptions(
+                                      seed: options.seed,
+                                      roughness: options.roughness * 0.4,
+                                      boil: options.boil,
+                                    ),
                                   ),
+                                  drawkitStroke(style, fallbackWidth: 1.5),
                                 ),
-                                drawkitStroke(style, fallbackWidth: 1.5),
-                              ),
-                              DrawkitLayer(
-                                roughLine(
-                                  size.width / 2,
-                                  size.height,
-                                  size.width,
-                                  0,
-                                  RoughOptions(
-                                    seed: options.seed + 1,
-                                    roughness: options.roughness * 0.4,
-                                    boil: options.boil,
+                                DrawkitLayer(
+                                  roughLine(
+                                    size.width / 2,
+                                    size.height,
+                                    size.width,
+                                    0,
+                                    RoughOptions(
+                                      seed: options.seed + 1,
+                                      roughness: options.roughness * 0.4,
+                                      boil: options.boil,
+                                    ),
                                   ),
+                                  drawkitStroke(style, fallbackWidth: 1.5),
                                 ),
-                                drawkitStroke(style, fallbackWidth: 1.5),
-                              ),
-                            ],
-                            style: style,
-                            seed: widget.seed,
-                            animate: widget.animate,
-                            size: const Size(10, 6),
+                              ],
+                              style: style,
+                              seed: widget.seed,
+                              animate: widget.animate,
+                              size: const Size(10, 6),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

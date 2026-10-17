@@ -173,6 +173,9 @@ class _DrawkitButtonState extends State<DrawkitButton> {
     final themeStyle = widget.style ?? DrawkitTheme.of(context);
     final ink = _resolvedInk(themeStyle);
     final style = themeStyle.copyWith(strokeColor: ink, fillColor: ink);
+    final textColor = widget.variant == DrawkitButtonVariant.solid
+        ? themeStyle.paperColor
+        : drawkitReadableInk(ink);
     final reduceMotion = drawkitReduceMotion(context);
     final duration = widget.state == DrawkitButtonState.loading
         ? const Duration(milliseconds: 450)
@@ -217,30 +220,38 @@ class _DrawkitButtonState extends State<DrawkitButton> {
           mouseCursor: widget.enabled
               ? SystemMouseCursors.click
               : SystemMouseCursors.basic,
-          child: Semantics(
-            button: true,
-            enabled: widget.enabled,
-            label: widget.semanticLabel,
-            child: DrawkitSurface(
-              builder: (size, options) => _layers(size, options, style, ink),
-              style: style,
-              seed: widget.seed,
-              animate: widget.animate,
+          child: GestureDetector(
+            excludeFromSemantics: true,
+            onTap: widget.enabled ? widget.onPressed : null,
+            child: Semantics(
+              button: true,
               enabled: widget.enabled,
-              resketchOnPointer: true,
-              duration: duration,
-              onHoverChanged: (v) => setState(() => _hovered = v),
-              onPressedChanged: (v) => setState(() => _pressed = v),
+              label: widget.semanticLabel,
               onTap: widget.enabled ? widget.onPressed : null,
-              child: DefaultTextStyle(
-                style: DefaultTextStyle.of(context).style.copyWith(color: ink),
-                child: Padding(
-                  padding: widget.padding,
-                  child: Align(
-                    alignment: AlignmentDirectional.center,
-                    widthFactor: 1,
-                    heightFactor: 1,
-                    child: widget.child,
+              child: DrawkitTapTarget(
+                child: DrawkitSurface(
+                  builder: (size, options) =>
+                      _layers(size, options, style, ink),
+                  style: style,
+                  seed: widget.seed,
+                  animate: widget.animate,
+                  enabled: widget.enabled,
+                  resketchOnPointer: true,
+                  duration: duration,
+                  onHoverChanged: (v) => setState(() => _hovered = v),
+                  onPressedChanged: (v) => setState(() => _pressed = v),
+                  child: DefaultTextStyle(
+                    style: DefaultTextStyle.of(context).style
+                        .copyWith(color: textColor),
+                    child: Padding(
+                      padding: widget.padding,
+                      child: Align(
+                        alignment: AlignmentDirectional.center,
+                        widthFactor: 1,
+                        heightFactor: 1,
+                        child: widget.child,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -285,21 +296,21 @@ class DrawkitIconButton extends StatelessWidget {
   final bool autofocus;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    width: size,
-    height: size,
-    child: DrawkitButton(
-      onPressed: onPressed,
-      variant: variant,
-      state: state,
-      tone: tone,
-      style: style,
-      seed: seed,
-      animate: animate,
-      padding: EdgeInsets.zero,
-      focusNode: focusNode,
-      autofocus: autofocus,
-      semanticLabel: semanticLabel,
+  Widget build(BuildContext context) => DrawkitButton(
+    onPressed: onPressed,
+    variant: variant,
+    state: state,
+    tone: tone,
+    style: style,
+    seed: seed,
+    animate: animate,
+    padding: EdgeInsets.zero,
+    focusNode: focusNode,
+    autofocus: autofocus,
+    semanticLabel: semanticLabel,
+    child: SizedBox(
+      width: size,
+      height: size,
       child: Center(child: child),
     ),
   );
@@ -480,7 +491,7 @@ class _DrawkitFabState extends State<DrawkitFab> {
                 onTap: widget.enabled ? widget.onPressed : null,
                 child: DefaultTextStyle(
                   style: DefaultTextStyle.of(context).style
-                      .copyWith(color: ink),
+                      .copyWith(color: drawkitReadableInk(ink)),
                   child: Center(child: widget.child),
                 ),
               ),

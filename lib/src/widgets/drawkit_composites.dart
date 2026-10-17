@@ -18,7 +18,7 @@ import 'drawkit_text.dart';
 /// as `composites.ts`, adapted to widgets.
 
 /// Badge around the whole chip, checkbox on its own 0.8-scaled box.
-class DrawkitChip extends StatelessWidget {
+class DrawkitChip extends StatefulWidget {
   const DrawkitChip({
     required this.selected,
     required this.onChanged,
@@ -37,35 +37,107 @@ class DrawkitChip extends StatelessWidget {
   final bool animate;
 
   @override
+  State<DrawkitChip> createState() => _DrawkitChipState();
+}
+
+class _DrawkitChipState extends State<DrawkitChip> {
+  final FocusNode _focusNode = FocusNode();
+  final FocusNode _decorNode = FocusNode(
+    skipTraversal: true,
+    canRequestFocus: false,
+  );
+  bool _focused = false;
+
+  bool get _enabled => widget.onChanged != null;
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _decorNode.dispose();
+    super.dispose();
+  }
+
+  void _toggle() => widget.onChanged?.call(!widget.selected);
+
+  @override
   Widget build(BuildContext context) {
-    final base = seed ?? randomSeed();
+    final base = widget.seed ?? randomSeed();
+    final resolved = widget.style ?? DrawkitTheme.of(context);
     return MouseRegion(
-      cursor: onChanged == null
-          ? SystemMouseCursors.basic
-          : SystemMouseCursors.click,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onChanged == null ? null : () => onChanged!(!selected),
-        child: DrawkitBadge(
-          style: style,
-          seed: base,
-          animate: animate,
-          padding: const EdgeInsetsDirectional.fromSTEB(6, 3, 10, 3),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Transform.scale(
-                scale: 0.8,
-                child: DrawkitCheckbox(
-                  value: selected,
-                  onChanged: onChanged,
-                  seed: base + 1,
-                  animate: animate,
+      cursor: _enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      child: FocusableActionDetector(
+        focusNode: _focusNode,
+        enabled: _enabled,
+        onShowFocusHighlight: (value) => setState(() => _focused = value),
+        shortcuts: {
+          const SingleActivator(LogicalKeyboardKey.space):
+              const ActivateIntent(),
+          const SingleActivator(LogicalKeyboardKey.enter):
+              const ActivateIntent(),
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (intent) {
+              _toggle();
+              return null;
+            },
+          ),
+        },
+        child: Semantics(
+          button: true,
+          selected: widget.selected,
+          enabled: _enabled,
+          onTap: _enabled ? _toggle : null,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
+            onTap: _enabled ? _toggle : null,
+            child: DrawkitTapTarget(
+              child: DrawkitSurface(
+                builder: (size, options) => [
+                  if (_focused && _enabled)
+                    drawkitFocusRingRect(
+                      size: size,
+                      radius: 14,
+                      gapX: 3,
+                      gapY: 3,
+                      options: options,
+                      style: resolved,
+                    ),
+                ],
+                style: resolved,
+                seed: base,
+                animate: widget.animate,
+                enabled: _enabled,
+                child: DrawkitBadge(
+                  style: widget.style,
+                  seed: base,
+                  animate: widget.animate,
+                  padding: const EdgeInsetsDirectional.fromSTEB(6, 3, 10, 3),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ExcludeSemantics(
+                        child: IgnorePointer(
+                          child: Transform.scale(
+                            scale: 0.8,
+                            child: DrawkitCheckbox(
+                              value: widget.selected,
+                              onChanged: widget.onChanged,
+                              focusNode: _decorNode,
+                              seed: base + 1,
+                              animate: widget.animate,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      widget.child,
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(width: 8),
-              child,
-            ],
+            ),
           ),
         ),
       ),
@@ -257,44 +329,48 @@ class _DrawkitTabsState extends State<DrawkitTabs> {
                 selected: i == widget.active,
                 button: true,
                 enabled: enabled,
+                onTap: enabled ? () => widget.onChanged!(i) : null,
                 child: GestureDetector(
+                  excludeFromSemantics: true,
                   onTap: enabled ? () => widget.onChanged!(i) : null,
-                  child: DrawkitSurface(
-                    builder: (size, options) => [
-                      if (_focused == i && enabled)
-                        drawkitFocusRingRect(
-                          size: size,
-                          radius: 8,
-                          gapX: 6,
-                          gapY: 4,
-                          options: options,
-                          style: resolvedStyle,
+                  child: DrawkitTapTarget(
+                    child: DrawkitSurface(
+                      builder: (size, options) => [
+                        if (_focused == i && enabled)
+                          drawkitFocusRingRect(
+                            size: size,
+                            radius: 8,
+                            gapX: 6,
+                            gapY: 4,
+                            options: options,
+                            style: resolvedStyle,
+                          ),
+                      ],
+                      style: resolvedStyle,
+                      seed: base + 31 * (i + 1),
+                      animate: widget.animate,
+                      enabled: enabled,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 2,
                         ),
-                    ],
-                    style: resolvedStyle,
-                    seed: base + 31 * (i + 1),
-                    animate: widget.animate,
-                    enabled: enabled,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 2,
-                      ),
-                      child: i == widget.active
-                          ? DrawkitUnderline(
-                              text: widget.labels[i],
-                              textStyle: widget.textStyle,
-                              style: widget.style,
-                              seed: base,
-                              animate: widget.animate,
-                            )
-                          : Padding(
-                              padding: const EdgeInsets.only(bottom: 2),
-                              child: Text(
-                                widget.labels[i],
-                                style: widget.textStyle,
+                        child: i == widget.active
+                            ? DrawkitUnderline(
+                                text: widget.labels[i],
+                                textStyle: widget.textStyle,
+                                style: widget.style,
+                                seed: base,
+                                animate: widget.animate,
+                              )
+                            : Padding(
+                                padding: const EdgeInsets.only(bottom: 2),
+                                child: Text(
+                                  widget.labels[i],
+                                  style: widget.textStyle,
+                                ),
                               ),
-                            ),
+                      ),
                     ),
                   ),
                 ),

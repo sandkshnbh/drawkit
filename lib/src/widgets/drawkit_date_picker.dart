@@ -99,7 +99,7 @@ class _EdgeIntent extends Intent {
 }
 
 class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
-  static const double _cell = 34;
+  static const double _cell = 48;
 
   late DateTime _month;
   late DateTime _cursor;

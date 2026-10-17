@@ -1,5 +1,23 @@
 ## Unreleased
 
+- **Accessibility** — every control now answers the accessibility guidelines:
+  a shared `DrawkitTapTarget` (`drawkitMinTapTarget` = 48) wraps the drawings
+  inside their gesture layers, so touch boxes reach 48×48 (iOS 44 included)
+  while the sketch keeps its size; `DrawkitButton`, `DrawkitIconButton`,
+  `DrawkitFab`, checkbox, radio, toggle, chip, segments, tabs, slider,
+  stepper, pager, breadcrumb, nav tiles, menu rows, select rows, popover
+  triggers, accordion headers, and date-picker cells (48px grid) all pass
+  `androidTapTargetGuideline` and `iOSTapTargetGuideline`. Gesture detectors
+  are excluded from semantics and every tappable node carries an explicit
+  `onTap` plus a label (`labeledTapTargetGuideline` clean). Text follows
+  WCAG contrast on the paper: solid buttons now ink their label in the paper
+  color (the drawn fill stays the tone), tone/state buttons pass their label
+  through `drawkitReadableInk` (darkened until 4.5:1 while the stroke keeps
+  the brand tone), placeholders and hints moved from `inkFaint` to
+  `inkMuted`, disabled fields announce `enabled: false`, and
+  `drawkitContrast` is exported for checks. `test/a11y_test.dart` locks the
+  four guidelines over a broad control sample plus a 2× text-scale pass, and
+  `example/test/a11y_gallery_test.dart` audits every gallery page.
 - **Focus & Keyboard** — one shared ring for every control:
   `drawkitFocusRingRect` and `drawkitFocusRingCircle` are exported helpers,
   and the existing rings (button, icon button, checkbox, radio, toggle,

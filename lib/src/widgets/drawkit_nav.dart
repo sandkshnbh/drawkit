@@ -255,15 +255,16 @@ class _NavTileState extends State<_NavTile> {
         selected: widget.isSelected,
         enabled: enabled,
         label: widget.destination.label,
+        onTap: widget.onTap,
         child: ExcludeSemantics(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: widget.onTap,
             child: widget.width == null
-                ? Center(child: content)
+                ? Center(child: DrawkitTapTarget(child: content))
                 : SizedBox(
                     width: widget.width,
-                    child: Center(child: content),
+                    child: Center(child: DrawkitTapTarget(child: content)),
                   ),
           ),
         ),

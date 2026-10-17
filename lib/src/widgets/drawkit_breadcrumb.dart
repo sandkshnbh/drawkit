@@ -142,30 +142,33 @@ class _CrumbState extends State<_Crumb> {
       child: Semantics(
         button: true,
         label: widget.item.label,
+        onTap: widget.item.onTap,
         child: ExcludeSemantics(
           child: GestureDetector(
             onTap: widget.item.onTap,
-            child: DrawkitSurface(
-              builder: (size, options) => [
-                if (_focused)
-                  drawkitFocusRingRect(
-                    size: size,
-                    radius: 8,
-                    gapX: 6,
-                    gapY: 4,
-                    options: options,
-                    style: resolved,
-                  ),
-              ],
-              style: resolved,
-              seed: widget.seed,
-              animate: widget.animate,
-              child: DrawkitUnderline(
-                text: widget.item.label,
-                textStyle: widget.base,
-                style: widget.style,
+            child: DrawkitTapTarget(
+              child: DrawkitSurface(
+                builder: (size, options) => [
+                  if (_focused)
+                    drawkitFocusRingRect(
+                      size: size,
+                      radius: 8,
+                      gapX: 6,
+                      gapY: 4,
+                      options: options,
+                      style: resolved,
+                    ),
+                ],
+                style: resolved,
                 seed: widget.seed,
                 animate: widget.animate,
+                child: DrawkitUnderline(
+                  text: widget.item.label,
+                  textStyle: widget.base,
+                  style: widget.style,
+                  seed: widget.seed,
+                  animate: widget.animate,
+                ),
               ),
             ),
           ),

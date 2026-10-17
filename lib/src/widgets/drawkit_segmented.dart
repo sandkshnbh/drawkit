@@ -273,20 +273,26 @@ class _DrawkitSegmentedButtonState<T> extends State<DrawkitSegmentedButton<T>> {
                     button: true,
                     selected: i == active,
                     enabled: enabled,
+                    onTap: enabled
+                        ? () => widget.onChanged!(widget.segments[i].value)
+                        : null,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
+                      excludeFromSemantics: true,
                       onTap: enabled
                           ? () => widget.onChanged!(widget.segments[i].value)
                           : null,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
-                        ),
-                        child: Text(
-                          widget.segments[i].label,
-                          style: text,
-                          textAlign: TextAlign.center,
+                      child: DrawkitTapTarget(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
+                          child: Text(
+                            widget.segments[i].label,
+                            style: text,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                     ),

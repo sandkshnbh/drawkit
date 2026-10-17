@@ -27,6 +27,35 @@ abstract final class DrawkitPalette {
   static const Color inkFaint = Color(0xFFA1A1AA);
 }
 
+/// WCAG contrast ratio between two opaque colors.
+double drawkitContrast(Color a, Color b) {
+  final la = a.computeLuminance();
+  final lb = b.computeLuminance();
+  final lighter = la > lb ? la : lb;
+  final darker = la > lb ? lb : la;
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/// [ink] nudged toward black until it reaches the WCAG AA contrast ratio
+/// ([minRatio], 4.5 by default) against [background]. Strokes keep the brand
+/// tone; text built from the same color goes through here so tone and state
+/// colors stay readable on the paper.
+Color drawkitReadableInk(
+  Color ink, [
+  Color background = DrawkitPalette.paper,
+  double minRatio = 4.5,
+]) {
+  var candidate = ink;
+  for (
+    var i = 0;
+    i < 40 && drawkitContrast(candidate, background) < minRatio;
+    i++
+  ) {
+    candidate = Color.lerp(candidate, const Color(0xFF000000), 0.05)!;
+  }
+  return candidate;
+}
+
 /// Visual configuration shared by every Drawkit widget.
 ///
 /// [width] is nullable on purpose: controls default to 2 and text decorations

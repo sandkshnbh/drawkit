@@ -250,34 +250,41 @@ class _DrawkitSliderState extends State<DrawkitSlider> {
           decreasedValue: _pretty(_snap(_fraction - _step / _range)),
           onIncrease: _enabled ? () => _nudge(_step) : null,
           onDecrease: _enabled ? () => _nudge(-_step) : null,
-          child: DrawkitSurface(
-            builder: (size, options) => _layers(size, options, style, ink, rtl),
-            style: style,
-            seed: widget.seed,
-            animate: widget.animate,
-            enabled: _enabled,
-            resketchOnPointer: true,
-            onHoverChanged: (v) => setState(() => _hovered = v),
-            onPressedChanged: (v) => setState(() => _pressed = v),
-            child: LayoutBuilder(
-              builder: (context, constraints) => GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTapDown: (details) => _setFromX(
-                  details.localPosition.dx,
-                  constraints.maxWidth,
-                  rtl,
+          child: LayoutBuilder(
+            builder: (context, constraints) => GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              excludeFromSemantics: true,
+              onTapDown: (details) => _setFromX(
+                details.localPosition.dx,
+                constraints.maxWidth,
+                rtl,
+              ),
+              onHorizontalDragStart: (details) => _setFromX(
+                details.localPosition.dx,
+                constraints.maxWidth,
+                rtl,
+              ),
+              onHorizontalDragUpdate: (details) => _setFromX(
+                details.localPosition.dx,
+                constraints.maxWidth,
+                rtl,
+              ),
+              child: DrawkitTapTarget(
+                child: DrawkitSurface(
+                  builder: (size, options) =>
+                      _layers(size, options, style, ink, rtl),
+                  style: style,
+                  seed: widget.seed,
+                  animate: widget.animate,
+                  enabled: _enabled,
+                  resketchOnPointer: true,
+                  onHoverChanged: (v) => setState(() => _hovered = v),
+                  onPressedChanged: (v) => setState(() => _pressed = v),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: widget.height,
+                  ),
                 ),
-                onHorizontalDragStart: (details) => _setFromX(
-                  details.localPosition.dx,
-                  constraints.maxWidth,
-                  rtl,
-                ),
-                onHorizontalDragUpdate: (details) => _setFromX(
-                  details.localPosition.dx,
-                  constraints.maxWidth,
-                  rtl,
-                ),
-                child: SizedBox(width: double.infinity, height: widget.height),
               ),
             ),
           ),

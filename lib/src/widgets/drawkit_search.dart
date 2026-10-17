@@ -187,7 +187,7 @@ class _DrawkitSearchFieldState extends State<DrawkitSearchField> {
                       Text(
                         hint,
                         style: textStyle.copyWith(
-                          color: DrawkitPalette.inkFaint,
+                          color: DrawkitPalette.inkMuted,
                         ),
                       ),
                     EditableText(

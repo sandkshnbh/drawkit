@@ -282,9 +282,14 @@ class _DrawkitFieldState extends State<_DrawkitField> {
               child: Stack(
                 children: [
                   if (hint != null && _controller.text.isEmpty)
-                    Text(
-                      hint,
-                      style: textStyle.copyWith(color: DrawkitPalette.inkFaint),
+                    Semantics(
+                      enabled: widget.enabled,
+                      child: Text(
+                        hint,
+                        style: textStyle.copyWith(
+                          color: DrawkitPalette.inkMuted,
+                        ),
+                      ),
                     ),
                   EditableText(
                     controller: _controller,

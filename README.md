@@ -60,6 +60,13 @@ Theming runs through `DrawkitTheme` + `DrawkitStyle` (`seed`, `roughness`,
 `boil`, `strokeColor`, `fillColor`, `width`, `ink`); brand defaults match the
 CSS custom properties.
 
+Every control meets the accessibility guidelines: touch boxes are at least
+48×48 (`DrawkitTapTarget`, `drawkitMinTapTarget`), tappable nodes carry
+labels and `onTap`, tone/state labels pass WCAG contrast on the paper
+(`drawkitReadableInk`, `drawkitContrast`), and reduced motion is honoured
+throughout. `test/a11y_test.dart` and the gallery-wide
+`example/test/a11y_gallery_test.dart` keep it that way.
+
 The optional **DrawkitPen** typeface ships with the package — nothing loads it
 unless a style asks for `fontFamily: 'DrawkitPen'`.
 
