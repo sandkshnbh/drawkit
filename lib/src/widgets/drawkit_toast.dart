@@ -118,9 +118,9 @@ class DrawkitToast extends StatelessWidget {
   Widget build(BuildContext context) {
     final resolved = style ?? DrawkitTheme.of(context);
     final ink = switch (tone) {
-      DrawkitTone.accent => resolved.ink ?? DrawkitPalette.pen,
-      DrawkitTone.neutral => DrawkitPalette.neutral,
-      DrawkitTone.danger => DrawkitPalette.error,
+      DrawkitTone.accent => resolved.ink ?? resolved.palette.pen,
+      DrawkitTone.neutral => resolved.palette.neutral,
+      DrawkitTone.danger => resolved.palette.error,
     };
     final body = Text(
       message,
@@ -232,7 +232,9 @@ class _DrawkitToastActionButtonState extends State<_DrawkitToastActionButton> {
                 child: DrawkitUnderline(
                   text: widget.action.label,
                   textStyle: base.copyWith(
-                    color: active ? DrawkitPalette.pen : DrawkitPalette.ink,
+                    color: active
+                        ? DrawkitTheme.of(context).palette.pen
+                        : DrawkitTheme.of(context).palette.ink,
                     fontWeight: FontWeight.w600,
                   ),
                   animate: widget.animate,

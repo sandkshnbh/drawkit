@@ -41,16 +41,13 @@ class DrawkitEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = (style ?? DrawkitTheme.of(context)).palette;
     final base = DefaultTextStyle.of(context).style;
     final titleStyle = base.merge(
-      const TextStyle(
-        color: DrawkitPalette.ink,
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-      ),
+      TextStyle(color: palette.ink, fontSize: 18, fontWeight: FontWeight.w600),
     );
     final messageStyle = base.merge(
-      const TextStyle(color: DrawkitPalette.inkMuted, height: 1.4),
+      TextStyle(color: palette.inkMuted, height: 1.4),
     );
 
     return Semantics(
@@ -62,7 +59,7 @@ class DrawkitEmpty extends StatelessWidget {
             DrawkitDoodle(
               kind: doodle,
               size: doodleSize,
-              color: DrawkitPalette.inkFaint,
+              color: palette.inkFaint,
               style: style,
               seed: seed,
               animate: animate,

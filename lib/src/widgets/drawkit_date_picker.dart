@@ -188,6 +188,7 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
   @override
   Widget build(BuildContext context) {
     final style = widget.style ?? DrawkitTheme.of(context);
+    final palette = style.palette;
     final textStyle = DefaultTextStyle.of(context).style;
     final today = widget.today ?? DateTime.now();
     final daysInMonth = DateTime(_month.year, _month.month + 1, 0).day;
@@ -219,7 +220,7 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
                   textAlign: TextAlign.center,
                   style: textStyle.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: DrawkitPalette.ink,
+                    color: palette.ink,
                   ),
                 ),
               ),
@@ -246,7 +247,7 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
                     textAlign: TextAlign.center,
                     style: textStyle.copyWith(
                       fontSize: (textStyle.fontSize ?? 14) - 2,
-                      color: DrawkitPalette.inkMuted,
+                      color: palette.inkMuted,
                     ),
                   ),
                 ),
@@ -355,8 +356,8 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
         '$day',
         style: textStyle.copyWith(
           color: enabled
-              ? (selected ? DrawkitPalette.ink : null)
-              : DrawkitPalette.inkFaint,
+              ? (selected ? style.palette.ink : null)
+              : style.palette.inkFaint,
           fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
         ),
       ),

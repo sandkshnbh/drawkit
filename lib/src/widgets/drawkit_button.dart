@@ -91,11 +91,11 @@ class _DrawkitButtonState extends State<DrawkitButton> {
 
   Color _resolvedInk(DrawkitStyle style) =>
       switch ((widget.state, widget.tone)) {
-        (DrawkitButtonState.error, _) => DrawkitPalette.error,
-        (DrawkitButtonState.success, _) => DrawkitPalette.success,
-        (_, DrawkitTone.accent) => style.ink ?? DrawkitPalette.pen,
-        (_, DrawkitTone.neutral) => DrawkitPalette.neutral,
-        (_, DrawkitTone.danger) => DrawkitPalette.error,
+        (DrawkitButtonState.error, _) => style.palette.error,
+        (DrawkitButtonState.success, _) => style.palette.success,
+        (_, DrawkitTone.accent) => style.ink ?? style.palette.pen,
+        (_, DrawkitTone.neutral) => style.palette.neutral,
+        (_, DrawkitTone.danger) => style.palette.error,
       };
 
   List<DrawkitLayer> _layers(
@@ -175,7 +175,7 @@ class _DrawkitButtonState extends State<DrawkitButton> {
     final style = themeStyle.copyWith(strokeColor: ink, fillColor: ink);
     final textColor = widget.variant == DrawkitButtonVariant.solid
         ? themeStyle.paperColor
-        : drawkitReadableInk(ink);
+        : drawkitReadableInk(ink, themeStyle.palette.paper);
     final reduceMotion = drawkitReduceMotion(context);
     final duration = widget.state == DrawkitButtonState.loading
         ? const Duration(milliseconds: 450)
@@ -385,9 +385,9 @@ class _DrawkitFabState extends State<DrawkitFab> {
   }
 
   Color _resolvedInk(DrawkitStyle style) => switch (widget.tone) {
-    DrawkitTone.accent => style.ink ?? DrawkitPalette.pen,
-    DrawkitTone.neutral => DrawkitPalette.neutral,
-    DrawkitTone.danger => DrawkitPalette.error,
+    DrawkitTone.accent => style.ink ?? style.palette.pen,
+    DrawkitTone.neutral => style.palette.neutral,
+    DrawkitTone.danger => style.palette.error,
   };
 
   List<DrawkitLayer> _layers(
@@ -491,7 +491,7 @@ class _DrawkitFabState extends State<DrawkitFab> {
                 onTap: widget.enabled ? widget.onPressed : null,
                 child: DefaultTextStyle(
                   style: DefaultTextStyle.of(context).style
-                      .copyWith(color: drawkitReadableInk(ink)),
+                      .copyWith(color: themeStyle.paperColor),
                   child: Center(child: widget.child),
                 ),
               ),

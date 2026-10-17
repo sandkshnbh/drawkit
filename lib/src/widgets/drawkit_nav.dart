@@ -170,8 +170,10 @@ class _NavTileState extends State<_NavTile> {
         height: 1.2,
         fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
         color: enabled
-            ? (widget.isSelected ? DrawkitPalette.ink : DrawkitPalette.inkMuted)
-            : DrawkitPalette.inkFaint,
+            ? (widget.isSelected
+                  ? resolved.palette.ink
+                  : resolved.palette.inkMuted)
+            : resolved.palette.inkFaint,
         decoration: TextDecoration.none,
       ),
       maxLines: 1,

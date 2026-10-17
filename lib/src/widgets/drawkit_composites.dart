@@ -623,7 +623,7 @@ class DrawkitQuote extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 8),
                   child: DefaultTextStyle(
                     style: DefaultTextStyle.of(context).style
-                        .copyWith(color: DrawkitPalette.inkMuted),
+                        .copyWith(color: resolved.palette.inkMuted),
                     child: footer!,
                   ),
                 ),

@@ -57,7 +57,7 @@ void main() {
       expect(find.text('That address looks off.'), findsOneWidget);
       expect(find.text('We never share it.'), findsNothing);
       final message = tester.widget<Text>(find.text('That address looks off.'));
-      expect(message.style?.color, DrawkitPalette.error);
+      expect(message.style?.color, DrawkitPalette.light.error);
     });
 
     testWidgets('a helper shows alone, muted', (tester) async {
@@ -71,7 +71,7 @@ void main() {
       );
 
       final message = tester.widget<Text>(find.text('We never share it.'));
-      expect(message.style?.color, DrawkitPalette.inkMuted);
+      expect(message.style?.color, DrawkitPalette.light.inkMuted);
     });
 
     testWidgets('the error message is a live region', (tester) async {

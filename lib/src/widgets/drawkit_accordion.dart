@@ -171,6 +171,7 @@ class _AccordionTileState extends State<_AccordionTile> {
   @override
   Widget build(BuildContext context) {
     final style = widget.style;
+    final palette = style.palette;
     final textStyle = DefaultTextStyle.of(context).style;
     final motion = widget.animate && !drawkitReduceMotion(context);
 
@@ -267,7 +268,7 @@ class _AccordionTileState extends State<_AccordionTile> {
                               widget.section.title,
                               style: textStyle.copyWith(
                                 fontWeight: FontWeight.w600,
-                                color: DrawkitPalette.ink,
+                                color: palette.ink,
                               ),
                             ),
                           ),

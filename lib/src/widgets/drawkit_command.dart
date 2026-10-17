@@ -177,62 +177,65 @@ class _CommandPaletteState<T> extends State<_CommandPalette<T>> {
             },
           ),
         },
-        child: DrawkitDialog(
-          maxWidth: widget.width,
-          padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
-          style: widget.style,
-          seed: widget.seed,
-          animate: widget.animate,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              DrawkitSearchField(
-                controller: _controller,
-                autofocus: true,
-                placeholder: widget.placeholder,
-                style: widget.style,
-                seed: widget.seed,
-                animate: widget.animate,
-                onChanged: (value) => setState(() {
-                  _query = value;
-                  _highlighted = 0;
-                }),
-                onSubmitted: (value) => _invokeHighlighted(),
-              ),
-              const SizedBox(height: 10),
-              if (filtered.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: Text(
-                    widget.emptyLabel,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: DrawkitPalette.inkFaint,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                )
-              else
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 280),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (var i = 0; i < filtered.length; i++)
-                          _CommandRow(
-                            command: filtered[i],
-                            highlighted: i == highlighted,
-                            ink: style.effectiveStroke,
-                            onPick: () => _invoke(filtered[i]),
-                          ),
-                      ],
-                    ),
-                  ),
+        child: DrawkitTheme(
+          data: style,
+          child: DrawkitDialog(
+            maxWidth: widget.width,
+            padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
+            style: widget.style,
+            seed: widget.seed,
+            animate: widget.animate,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                DrawkitSearchField(
+                  controller: _controller,
+                  autofocus: true,
+                  placeholder: widget.placeholder,
+                  style: widget.style,
+                  seed: widget.seed,
+                  animate: widget.animate,
+                  onChanged: (value) => setState(() {
+                    _query = value;
+                    _highlighted = 0;
+                  }),
+                  onSubmitted: (value) => _invokeHighlighted(),
                 ),
-            ],
+                const SizedBox(height: 10),
+                if (filtered.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Text(
+                      widget.emptyLabel,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: style.palette.inkFaint,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  )
+                else
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 280),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (var i = 0; i < filtered.length; i++)
+                            _CommandRow(
+                              command: filtered[i],
+                              highlighted: i == highlighted,
+                              ink: style.effectiveStroke,
+                              onPick: () => _invoke(filtered[i]),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -262,6 +265,7 @@ class _CommandRowState extends State<_CommandRow> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
     final wash = widget.highlighted || _hovered;
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -284,8 +288,8 @@ class _CommandRowState extends State<_CommandRow> {
                 Expanded(
                   child: Text(
                     widget.command.label,
-                    style: const TextStyle(
-                      color: DrawkitPalette.ink,
+                    style: TextStyle(
+                      color: palette.ink,
                       decoration: TextDecoration.none,
                     ),
                   ),
@@ -293,8 +297,8 @@ class _CommandRowState extends State<_CommandRow> {
                 if (widget.command.hint != null)
                   Text(
                     widget.command.hint!,
-                    style: const TextStyle(
-                      color: DrawkitPalette.inkFaint,
+                    style: TextStyle(
+                      color: palette.inkFaint,
                       fontSize: 12,
                       decoration: TextDecoration.none,
                     ),

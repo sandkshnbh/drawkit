@@ -38,8 +38,8 @@ class DrawkitAppBar extends StatelessWidget {
     final resolved = style ?? DrawkitTheme.of(context);
     final text = DefaultTextStyle.of(context).style
         .merge(
-          const TextStyle(
-            color: DrawkitPalette.ink,
+          TextStyle(
+            color: resolved.palette.ink,
             fontSize: 17,
             fontWeight: FontWeight.w600,
           ),

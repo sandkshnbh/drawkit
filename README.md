@@ -57,8 +57,11 @@ DrawkitButton(
 | Motion | `DrawkitSketchIn`, `DrawkitStagger`, `DrawkitShake` |
 
 Theming runs through `DrawkitTheme` + `DrawkitStyle` (`seed`, `roughness`,
-`boil`, `strokeColor`, `fillColor`, `width`, `ink`); brand defaults match the
-CSS custom properties.
+`boil`, `strokeColor`, `fillColor`, `width`, `ink`, `palette`); brand
+defaults match the CSS custom properties. `DrawkitPalette` ships a light and
+a dark preset — `DrawkitTheme(data: DrawkitPalette.dark.style, child: ...)`
+re-inks every control, and `drawkitReadableInk` follows the paper: darker on
+light, lighter on dark.
 
 Every control meets the accessibility guidelines: touch boxes are at least
 48×48 (`DrawkitTapTarget`, `drawkitMinTapTarget`), tappable nodes carry

@@ -427,8 +427,9 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
   @override
   Widget build(BuildContext context) {
     final style = widget.style ?? DrawkitTheme.of(context);
+    final palette = style.palette;
     final textStyle = DefaultTextStyle.of(context).style
-        .merge(const TextStyle(color: DrawkitPalette.ink));
+        .merge(TextStyle(color: palette.ink));
 
     return RawMenuAnchor(
       controller: _menu,
@@ -601,6 +602,7 @@ class _MenuRowState extends State<_MenuRow> {
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
+    final palette = widget.style.palette;
     final ink = widget.style.effectiveStroke;
     final wash = (_hovered || _focused) && item.active;
     return FocusableActionDetector(
@@ -663,7 +665,7 @@ class _MenuRowState extends State<_MenuRow> {
                         child: Text(
                           item.label,
                           style: widget.textStyle.copyWith(
-                            color: item.active ? null : DrawkitPalette.inkFaint,
+                            color: item.active ? null : palette.inkFaint,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -675,7 +677,7 @@ class _MenuRowState extends State<_MenuRow> {
                           item.hint!,
                           style: widget.textStyle.copyWith(
                             fontSize: (widget.textStyle.fontSize ?? 14) - 2,
-                            color: DrawkitPalette.inkMuted,
+                            color: palette.inkMuted,
                           ),
                         ),
                       ],

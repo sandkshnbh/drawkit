@@ -142,7 +142,7 @@ class _DrawkitSegmentedButtonState<T> extends State<DrawkitSegmentedButton<T>> {
     final enabled = _enabled;
     final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
     final text = DefaultTextStyle.of(context).style
-        .merge(const TextStyle(color: DrawkitPalette.ink, fontSize: 14))
+        .merge(TextStyle(color: resolvedStyle.palette.ink, fontSize: 14))
         .merge(widget.textStyle);
     final active = _active;
     final visual = rtl ? widget.segments.length - 1 - active : active;

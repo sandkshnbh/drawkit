@@ -41,10 +41,11 @@ class DrawkitBreadcrumb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = (style ?? DrawkitTheme.of(context)).palette;
     final base = DefaultTextStyle.of(context).style
         .merge(
-          const TextStyle(
-            color: DrawkitPalette.ink,
+          TextStyle(
+            color: palette.ink,
             fontSize: 14,
             decoration: TextDecoration.none,
           ),
@@ -63,7 +64,7 @@ class DrawkitBreadcrumb extends StatelessWidget {
                 child: ExcludeSemantics(
                   child: Text(
                     separator,
-                    style: base.copyWith(color: DrawkitPalette.inkFaint),
+                    style: base.copyWith(color: palette.inkFaint),
                   ),
                 ),
               ),

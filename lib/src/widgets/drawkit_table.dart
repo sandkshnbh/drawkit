@@ -53,6 +53,7 @@ class DrawkitTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final resolved = style ?? DrawkitTheme.of(context);
+    final palette = resolved.palette;
     final ink = resolved.effectiveStroke;
 
     return Column(
@@ -68,8 +69,8 @@ class DrawkitTable extends StatelessWidget {
                 columns[i].label,
                 style: DefaultTextStyle.of(context).style
                     .merge(
-                      const TextStyle(
-                        color: DrawkitPalette.ink,
+                      TextStyle(
+                        color: palette.ink,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         decoration: TextDecoration.none,

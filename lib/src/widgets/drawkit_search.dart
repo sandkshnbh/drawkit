@@ -113,7 +113,7 @@ class _DrawkitSearchFieldState extends State<DrawkitSearchField> {
   Widget build(BuildContext context) {
     final style = widget.style ?? DrawkitTheme.of(context);
     final textStyle = DefaultTextStyle.of(context).style
-        .merge(const TextStyle(color: DrawkitPalette.ink))
+        .merge(TextStyle(color: style.palette.ink))
         .merge(widget.textStyle);
     final hint = widget.placeholder;
     final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
@@ -187,7 +187,7 @@ class _DrawkitSearchFieldState extends State<DrawkitSearchField> {
                       Text(
                         hint,
                         style: textStyle.copyWith(
-                          color: DrawkitPalette.inkMuted,
+                          color: style.palette.inkMuted,
                         ),
                       ),
                     EditableText(

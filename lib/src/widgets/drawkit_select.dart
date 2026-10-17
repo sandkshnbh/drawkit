@@ -232,7 +232,7 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
         roughLine(x, y, x + _chevronW / 2, y + _chevronH, chevronOptions),
         drawkitStroke(
           style,
-          color: placeholder ? DrawkitPalette.inkMuted : null,
+          color: placeholder ? style.palette.inkMuted : null,
         ),
       ),
     );
@@ -251,7 +251,7 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
         ),
         drawkitStroke(
           style,
-          color: placeholder ? DrawkitPalette.inkMuted : null,
+          color: placeholder ? style.palette.inkMuted : null,
         ),
       ),
     );
@@ -271,9 +271,10 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
   @override
   Widget build(BuildContext context) {
     final style = widget.style ?? DrawkitTheme.of(context);
+    final palette = style.palette;
     final direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
     final textStyle = DefaultTextStyle.of(context).style
-        .merge(const TextStyle(color: DrawkitPalette.ink))
+        .merge(TextStyle(color: palette.ink))
         .merge(widget.textStyle);
     final isPlaceholder = _label == widget.placeholder;
 
@@ -355,7 +356,7 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
                       child: Text(
                         _label,
                         style: textStyle.copyWith(
-                          color: isPlaceholder ? DrawkitPalette.inkMuted : null,
+                          color: isPlaceholder ? palette.inkMuted : null,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

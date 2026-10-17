@@ -8,7 +8,7 @@ void main() {
   // here is a WidgetsApp; menus also need its TapRegionSurface.
   Widget host(Widget child, {TextDirection direction = TextDirection.ltr}) =>
       WidgetsApp(
-        color: DrawkitPalette.paper,
+        color: DrawkitPalette.light.paper,
         debugShowCheckedModeBanner: false,
         pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
             PageRouteBuilder<T>(

@@ -15,17 +15,117 @@ bool drawkitReduceMotion(BuildContext context) {
 }
 
 /// Brand palette, the Dart side of drawably's CSS custom properties.
-abstract final class DrawkitPalette {
-  static const Color pen = Color(0xFF2724D1);
-  static const Color paper = Color(0xFFE3E3E1);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color error = Color(0xFFD12724);
-  static const Color success = Color(0xFF188A42);
-  static const Color neutral = Color(0xFF6E675F);
-  static const Color ink = Color(0xFF18181B);
-  static const Color inkMuted = Color(0xFF474645);
-  static const Color inkFaint = Color(0xFFA1A1AA);
+///
+/// [light] holds the original values (the CSS defaults); [dark] is the
+/// paper-at-night preset. Widgets resolve the active palette from their
+/// [DrawkitStyle] (`style.palette`), so installing
+/// `DrawkitTheme(data: DrawkitPalette.dark.style)` re-inks a whole subtree —
+/// chrome colours come from the style's stroke/fill/paper, ink and tone
+/// colours from the palette.
+@immutable
+class DrawkitPalette {
+  const DrawkitPalette({
+    required this.pen,
+    required this.paper,
+    required this.surface,
+    required this.error,
+    required this.success,
+    required this.neutral,
+    required this.ink,
+    required this.inkMuted,
+    required this.inkFaint,
+  });
+
+  static const light = DrawkitPalette(
+    pen: _lightPen,
+    paper: _lightPaper,
+    surface: _lightSurface,
+    error: _lightError,
+    success: _lightSuccess,
+    neutral: _lightNeutral,
+    ink: _lightInk,
+    inkMuted: _lightInkMuted,
+    inkFaint: _lightInkFaint,
+  );
+
+  static const dark = DrawkitPalette(
+    pen: _darkPen,
+    paper: _darkPaper,
+    surface: _darkSurface,
+    error: _darkError,
+    success: _darkSuccess,
+    neutral: _darkNeutral,
+    ink: _darkInk,
+    inkMuted: _darkInkMuted,
+    inkFaint: _darkInkFaint,
+  );
+
+  final Color pen;
+  final Color paper;
+  final Color surface;
+  final Color error;
+  final Color success;
+  final Color neutral;
+  final Color ink;
+  final Color inkMuted;
+  final Color inkFaint;
+
+  /// A matching chrome style: strokes and fills in the palette's pen, drawn
+  /// boxes filled with its surface. Install both together:
+  /// `DrawkitTheme(data: DrawkitPalette.dark.style, child: ...)`.
+  DrawkitStyle get style => DrawkitStyle(
+    strokeColor: pen,
+    fillColor: pen,
+    paperColor: surface,
+    palette: this,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is DrawkitPalette &&
+      other.pen == pen &&
+      other.paper == paper &&
+      other.surface == surface &&
+      other.error == error &&
+      other.success == success &&
+      other.neutral == neutral &&
+      other.ink == ink &&
+      other.inkMuted == inkMuted &&
+      other.inkFaint == inkFaint;
+
+  @override
+  int get hashCode => Object.hash(
+    pen,
+    paper,
+    surface,
+    error,
+    success,
+    neutral,
+    ink,
+    inkMuted,
+    inkFaint,
+  );
 }
+
+const Color _lightPen = Color(0xFF2724D1);
+const Color _lightPaper = Color(0xFFE3E3E1);
+const Color _lightSurface = Color(0xFFFFFFFF);
+const Color _lightError = Color(0xFFD12724);
+const Color _lightSuccess = Color(0xFF188A42);
+const Color _lightNeutral = Color(0xFF6E675F);
+const Color _lightInk = Color(0xFF18181B);
+const Color _lightInkMuted = Color(0xFF474645);
+const Color _lightInkFaint = Color(0xFFA1A1AA);
+
+const Color _darkPen = Color(0xFF8B88FF);
+const Color _darkPaper = Color(0xFF1D1E21);
+const Color _darkSurface = Color(0xFF26282C);
+const Color _darkError = Color(0xFFFF8A85);
+const Color _darkSuccess = Color(0xFF6FD79B);
+const Color _darkNeutral = Color(0xFFC4BEB6);
+const Color _darkInk = Color(0xFFF1F1EF);
+const Color _darkInkMuted = Color(0xFFB4B3AF);
+const Color _darkInkFaint = Color(0xFF84837F);
 
 /// WCAG contrast ratio between two opaque colors.
 double drawkitContrast(Color a, Color b) {
@@ -36,22 +136,26 @@ double drawkitContrast(Color a, Color b) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-/// [ink] nudged toward black until it reaches the WCAG AA contrast ratio
-/// ([minRatio], 4.5 by default) against [background]. Strokes keep the brand
-/// tone; text built from the same color goes through here so tone and state
-/// colors stay readable on the paper.
+/// [ink] nudged until it reaches the WCAG AA contrast ratio ([minRatio],
+/// 4.5 by default) against [background] — toward black on a light paper,
+/// toward white on a dark one. Strokes keep the brand tone; text built from
+/// the same color goes through here so tone and state colors stay readable.
 Color drawkitReadableInk(
   Color ink, [
-  Color background = DrawkitPalette.paper,
+  Color? background,
   double minRatio = 4.5,
 ]) {
+  final against = background ?? DrawkitPalette.light.paper;
+  final toward = against.computeLuminance() > 0.5
+      ? const Color(0xFF000000)
+      : const Color(0xFFFFFFFF);
   var candidate = ink;
   for (
     var i = 0;
-    i < 40 && drawkitContrast(candidate, background) < minRatio;
+    i < 40 && drawkitContrast(candidate, against) < minRatio;
     i++
   ) {
-    candidate = Color.lerp(candidate, const Color(0xFF000000), 0.05)!;
+    candidate = Color.lerp(candidate, toward, 0.05)!;
   }
   return candidate;
 }
@@ -67,11 +171,12 @@ class DrawkitStyle {
     this.seed,
     this.roughness = 1,
     this.boil = 0.3,
-    this.strokeColor = DrawkitPalette.pen,
-    this.fillColor = DrawkitPalette.pen,
-    this.paperColor = DrawkitPalette.surface,
+    this.strokeColor = _lightPen,
+    this.fillColor = _lightPen,
+    this.paperColor = _lightSurface,
     this.width,
     this.ink,
+    this.palette = DrawkitPalette.light,
   }) : assert(roughness >= 0),
        assert(boil >= 0),
        assert(width == null || width >= 0);
@@ -86,6 +191,10 @@ class DrawkitStyle {
 
   /// State override: when set it wins over stroke and fill (button states).
   final Color? ink;
+
+  /// The ink and tone colors widgets dress their text with. Swap it with the
+  /// stroke/fill/paper colors for a full re-ink: `DrawkitPalette.dark.style`.
+  final DrawkitPalette palette;
 
   Color get effectiveStroke => ink ?? strokeColor;
 
@@ -104,6 +213,7 @@ class DrawkitStyle {
     double? width,
     Color? ink,
     bool clearInk = false,
+    DrawkitPalette? palette,
   }) => DrawkitStyle(
     seed: clearSeed ? null : seed ?? this.seed,
     roughness: roughness ?? this.roughness,
@@ -113,6 +223,7 @@ class DrawkitStyle {
     paperColor: paperColor ?? this.paperColor,
     width: width ?? this.width,
     ink: clearInk ? null : ink ?? this.ink,
+    palette: palette ?? this.palette,
   );
 
   static DrawkitStyle lerp(DrawkitStyle a, DrawkitStyle b, double t) =>
@@ -125,6 +236,7 @@ class DrawkitStyle {
         paperColor: Color.lerp(a.paperColor, b.paperColor, t)!,
         width: lerpDouble(a.width, b.width, t),
         ink: Color.lerp(a.ink, b.ink, t),
+        palette: t < 0.5 ? a.palette : b.palette,
       );
 
   @override
@@ -137,7 +249,8 @@ class DrawkitStyle {
       other.fillColor == fillColor &&
       other.paperColor == paperColor &&
       other.width == width &&
-      other.ink == ink;
+      other.ink == ink &&
+      other.palette == palette;
 
   @override
   int get hashCode => Object.hash(
@@ -149,6 +262,7 @@ class DrawkitStyle {
     paperColor,
     width,
     ink,
+    palette,
   );
 }
 

@@ -69,10 +69,11 @@ class DrawkitAvatarGroup extends StatelessWidget {
     final hidden = children.length - shown;
     final discs = shown + (hidden > 0 ? 1 : 0);
     final width = discs * (size - overlap) + overlap;
+    final palette = (style ?? DrawkitTheme.of(context)).palette;
     final text = TextStyle(
       fontSize: size * 0.32,
       fontWeight: FontWeight.w600,
-      color: DrawkitPalette.ink,
+      color: palette.ink,
       decoration: TextDecoration.none,
     );
 

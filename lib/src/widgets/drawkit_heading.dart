@@ -41,13 +41,14 @@ class DrawkitHeading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = (style ?? DrawkitTheme.of(context)).palette;
     final textStyle = DefaultTextStyle.of(context).style
         .merge(
           TextStyle(
             fontSize: _sizes[level - 1],
             height: 1.25,
             fontWeight: _weights[level - 1],
-            color: DrawkitPalette.ink,
+            color: palette.ink,
             decoration: TextDecoration.none,
           ),
         )

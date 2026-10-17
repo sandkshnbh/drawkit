@@ -13,7 +13,7 @@ const double _inset = 3;
 /// `.drawably-inputbox`.
 ///
 /// When [error] is non-null the outline (and focus ring) recolour to
-/// [DrawkitPalette.error] and the message below the field shows in the error
+/// error tone and the message below the field shows in the error
 /// tone as a semantic live region, announced when it appears. [helper] is the
 /// quiet counterpart; an error replaces it rather than stacking.
 class DrawkitInput extends StatelessWidget {
@@ -232,12 +232,13 @@ class _DrawkitFieldState extends State<_DrawkitField> {
   @override
   Widget build(BuildContext context) {
     final style = widget.style ?? DrawkitTheme.of(context);
+    final palette = style.palette;
     final textStyle = DefaultTextStyle.of(context).style
-        .merge(const TextStyle(color: DrawkitPalette.ink))
+        .merge(TextStyle(color: palette.ink))
         .merge(widget.textStyle);
     final hint = widget.placeholder;
     final hasError = widget.error != null;
-    final strokeColor = hasError ? DrawkitPalette.error : style.effectiveStroke;
+    final strokeColor = hasError ? palette.error : style.effectiveStroke;
     final message = widget.error ?? widget.helper;
 
     return Column(
@@ -286,9 +287,7 @@ class _DrawkitFieldState extends State<_DrawkitField> {
                       enabled: widget.enabled,
                       child: Text(
                         hint,
-                        style: textStyle.copyWith(
-                          color: DrawkitPalette.inkMuted,
-                        ),
+                        style: textStyle.copyWith(color: palette.inkMuted),
                       ),
                     ),
                   EditableText(
@@ -331,7 +330,7 @@ class _DrawkitFieldState extends State<_DrawkitField> {
                       style: textStyle.copyWith(
                         fontSize: 13,
                         height: 1.4,
-                        color: DrawkitPalette.error,
+                        color: palette.error,
                       ),
                     ),
                   )
@@ -340,7 +339,7 @@ class _DrawkitFieldState extends State<_DrawkitField> {
                     style: textStyle.copyWith(
                       fontSize: 13,
                       height: 1.4,
-                      color: DrawkitPalette.inkMuted,
+                      color: palette.inkMuted,
                     ),
                   ),
           ),

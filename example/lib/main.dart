@@ -6,24 +6,27 @@ import 'package:flutter/widgets.dart';
 
 void main() => runApp(const DrawkitGalleryApp());
 
-const _sidebarWidth = 210.0;
+final _sidebarWidth = 210.0;
 
 class DrawkitGalleryApp extends StatelessWidget {
   const DrawkitGalleryApp({super.key});
 
   @override
-  Widget build(BuildContext context) => WidgetsApp(
-    title: 'drawkit gallery',
-    color: DrawkitPalette.paper,
-    debugShowCheckedModeBanner: false,
-    pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
-        PageRouteBuilder<T>(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              builder(context),
-        ),
-    home: const Gallery(),
-  );
+  Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
+    return WidgetsApp(
+      title: 'drawkit gallery',
+      color: palette.paper,
+      debugShowCheckedModeBanner: false,
+      pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
+          PageRouteBuilder<T>(
+            settings: settings,
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                builder(context),
+          ),
+      home: const Gallery(),
+    );
+  }
 }
 
 class Gallery extends StatefulWidget {
@@ -36,66 +39,75 @@ class Gallery extends StatefulWidget {
 class _GalleryState extends State<Gallery> {
   int _page = 0;
   bool _rtl = false;
+  bool _dark = false;
 
   @override
-  Widget build(BuildContext context) => Directionality(
-    textDirection: _rtl ? TextDirection.rtl : TextDirection.ltr,
-    child: DefaultTextStyle(
-      style: const TextStyle(
-        color: DrawkitPalette.ink,
-        fontSize: 14,
-        height: 1.4,
-        decoration: TextDecoration.none,
-      ),
-      child: ColoredBox(
-        color: DrawkitPalette.paper,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _Sidebar(
-              pages: galleryPages,
-              selected: _page,
-              onSelect: (i) => setState(() => _page = i),
-              rtl: _rtl,
-              onToggleRtl: (v) => setState(() => _rtl = v),
-            ),
-            Expanded(
-              child: ScrollConfiguration(
-                behavior: const _DragScrollBehavior(),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(28),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        galleryPages[_page].title,
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w600,
-                          color: DrawkitPalette.ink,
-                          decoration: TextDecoration.none,
-                        ),
+  Widget build(BuildContext context) {
+    final palette = _dark ? DrawkitPalette.dark : DrawkitPalette.light;
+    return Directionality(
+      textDirection: _rtl ? TextDirection.rtl : TextDirection.ltr,
+      child: DrawkitTheme(
+        data: palette.style,
+        child: DefaultTextStyle(
+          style: TextStyle(
+            color: palette.ink,
+            fontSize: 14,
+            height: 1.4,
+            decoration: TextDecoration.none,
+          ),
+          child: ColoredBox(
+            color: palette.paper,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _Sidebar(
+                  pages: galleryPages,
+                  selected: _page,
+                  onSelect: (i) => setState(() => _page = i),
+                  rtl: _rtl,
+                  onToggleRtl: (v) => setState(() => _rtl = v),
+                  dark: _dark,
+                  onToggleDark: (v) => setState(() => _dark = v),
+                ),
+                Expanded(
+                  child: ScrollConfiguration(
+                    behavior: const _DragScrollBehavior(),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(28),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            galleryPages[_page].title,
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w600,
+                              color: palette.ink,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            galleryPages[_page].subtitle,
+                            style: TextStyle(
+                              color: palette.inkMuted,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          galleryPages[_page].builder(context),
+                        ],
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        galleryPages[_page].subtitle,
-                        style: const TextStyle(
-                          color: DrawkitPalette.inkMuted,
-                          decoration: TextDecoration.none,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      galleryPages[_page].builder(context),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class GalleryPage {
@@ -188,6 +200,11 @@ final List<GalleryPage> galleryPages = [
     'One ring on every control — Tab, arrows, Home/End, Enter, Escape.',
     (context) => const FocusPage(),
   ),
+  GalleryPage(
+    'Ink · Palette',
+    'Two papers side by side: the full palette, control by control.',
+    (context) => const PalettePage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -197,6 +214,8 @@ class _Sidebar extends StatelessWidget {
     required this.onSelect,
     required this.rtl,
     required this.onToggleRtl,
+    required this.dark,
+    required this.onToggleDark,
   });
 
   final List<GalleryPage> pages;
@@ -204,78 +223,108 @@ class _Sidebar extends StatelessWidget {
   final ValueChanged<int> onSelect;
   final bool rtl;
   final ValueChanged<bool> onToggleRtl;
+  final bool dark;
+  final ValueChanged<bool> onToggleDark;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: _sidebarWidth,
-    decoration: const BoxDecoration(
-      color: DrawkitPalette.surface,
-      border: BorderDirectional(
-        end: BorderSide(color: DrawkitPalette.inkFaint, width: 1),
+  Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
+    return Container(
+      width: _sidebarWidth,
+      decoration: BoxDecoration(
+        color: palette.surface,
+        border: BorderDirectional(
+          end: BorderSide(color: palette.inkFaint, width: 1),
+        ),
       ),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(18, 20, 18, 14),
-          child: Text(
-            'drawkit',
-            style: TextStyle(
-              fontSize: 26,
-              fontFamily: 'DrawkitPen',
-              color: DrawkitPalette.pen,
-              decoration: TextDecoration.none,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 20, 18, 14),
+            child: Text(
+              'drawkit',
+              style: TextStyle(
+                fontSize: 26,
+                fontFamily: 'DrawkitPen',
+                color: palette.pen,
+                decoration: TextDecoration.none,
+              ),
             ),
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: pages.length,
-            itemBuilder: (context, i) => GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => onSelect(i),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 9,
-                ),
-                color: i == selected ? DrawkitPalette.paper : null,
-                child: Text(
-                  pages[i].title,
-                  style: TextStyle(
-                    color: i == selected
-                        ? DrawkitPalette.pen
-                        : DrawkitPalette.inkMuted,
-                    fontWeight: i == selected
-                        ? FontWeight.w600
-                        : FontWeight.w400,
-                    decoration: TextDecoration.none,
+          Expanded(
+            child: ListView.builder(
+              itemCount: pages.length,
+              itemBuilder: (context, i) => GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onSelect(i),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 9,
+                  ),
+                  color: i == selected ? palette.paper : null,
+                  child: Text(
+                    pages[i].title,
+                    style: TextStyle(
+                      color: i == selected ? palette.pen : palette.inkMuted,
+                      fontWeight: i == selected
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                      decoration: TextDecoration.none,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
-          child: Row(
-            children: [
-              const Text(
-                'RTL',
-                style: TextStyle(
-                  color: DrawkitPalette.inkMuted,
-                  decoration: TextDecoration.none,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'RTL',
+                      style: TextStyle(
+                        color: palette.inkMuted,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    DrawkitToggle(
+                      value: rtl,
+                      semanticLabel: 'RTL',
+                      onChanged: onToggleRtl,
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 10),
-              DrawkitToggle(value: rtl, onChanged: onToggleRtl),
-            ],
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Text(
+                      'dark',
+                      style: TextStyle(
+                        color: palette.inkMuted,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    DrawkitToggle(
+                      value: dark,
+                      semanticLabel: 'dark ink',
+                      onChanged: onToggleDark,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }
 
 class _DragScrollBehavior extends ScrollBehavior {
@@ -305,74 +354,77 @@ class _SurfacePageState extends State<SurfacePage> {
   bool animate = true;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      SizedBox(
-        width: 360,
-        height: 130,
-        child: DrawkitSurface(
-          builder: (size, options) => [
-            DrawkitLayer(
-              roughRoundedRect(
-                3,
-                3,
-                size.width - 6,
-                size.height - 6,
-                10,
-                options,
+  Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 360,
+          height: 130,
+          child: DrawkitSurface(
+            builder: (size, options) => [
+              DrawkitLayer(
+                roughRoundedRect(
+                  3,
+                  3,
+                  size.width - 6,
+                  size.height - 6,
+                  10,
+                  options,
+                ),
+                Paint()
+                  ..color = palette.pen
+                  ..style = PaintingStyle.stroke
+                  ..strokeWidth = 2
+                  ..strokeCap = StrokeCap.round
+                  ..strokeJoin = StrokeJoin.round,
               ),
-              Paint()
-                ..color = DrawkitPalette.pen
-                ..style = PaintingStyle.stroke
-                ..strokeWidth = 2
-                ..strokeCap = StrokeCap.round
-                ..strokeJoin = StrokeJoin.round,
+            ],
+            style: DrawkitStyle(roughness: roughness, boil: boil, seed: seed),
+            seed: seed,
+            animate: animate,
+            resketchOnPointer: true,
+            child: const Center(child: Text('hover me — I am redrawn')),
+          ),
+        ),
+        const SizedBox(height: 24),
+        _NumberStepper(
+          label: 'roughness',
+          value: roughness,
+          step: 0.1,
+          min: 0,
+          max: 3,
+          onChanged: (v) => setState(() => roughness = v),
+        ),
+        _NumberStepper(
+          label: 'boil',
+          value: boil,
+          step: 0.1,
+          min: 0,
+          max: 1.5,
+          onChanged: (v) => setState(() => boil = v),
+        ),
+        _NumberStepper(
+          label: 'seed',
+          value: seed?.toDouble() ?? -1,
+          step: 1,
+          min: -1,
+          max: 1000000,
+          onChanged: (v) => setState(() => seed = v < 0 ? null : v.round()),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            DrawkitButton(
+              onPressed: () => setState(() => animate = !animate),
+              child: Text(animate ? 'boil: on' : 'boil: off'),
             ),
           ],
-          style: DrawkitStyle(roughness: roughness, boil: boil, seed: seed),
-          seed: seed,
-          animate: animate,
-          resketchOnPointer: true,
-          child: const Center(child: Text('hover me — I am redrawn')),
         ),
-      ),
-      const SizedBox(height: 24),
-      _NumberStepper(
-        label: 'roughness',
-        value: roughness,
-        step: 0.1,
-        min: 0,
-        max: 3,
-        onChanged: (v) => setState(() => roughness = v),
-      ),
-      _NumberStepper(
-        label: 'boil',
-        value: boil,
-        step: 0.1,
-        min: 0,
-        max: 1.5,
-        onChanged: (v) => setState(() => boil = v),
-      ),
-      _NumberStepper(
-        label: 'seed',
-        value: seed?.toDouble() ?? -1,
-        step: 1,
-        min: -1,
-        max: 1000000,
-        onChanged: (v) => setState(() => seed = v < 0 ? null : v.round()),
-      ),
-      const SizedBox(height: 10),
-      Row(
-        children: [
-          DrawkitButton(
-            onPressed: () => setState(() => animate = !animate),
-            child: Text(animate ? 'boil: on' : 'boil: off'),
-          ),
-        ],
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }
 
 class _NumberStepper extends StatelessWidget {
@@ -393,49 +445,52 @@ class _NumberStepper extends StatelessWidget {
   final ValueChanged<double> onChanged;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 5),
-    child: Row(
-      children: [
-        SizedBox(
-          width: 110,
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: DrawkitPalette.inkMuted,
-              decoration: TextDecoration.none,
-            ),
-          ),
-        ),
-        DrawkitButton(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-          onPressed: value <= min
-              ? null
-              : () => onChanged((value - step).clamp(min, max)),
-          child: const Text('−'),
-        ),
-        SizedBox(
-          width: 90,
-          child: Center(
+  Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 110,
             child: Text(
-              value < 0 ? 'random' : value.toStringAsFixed(step < 1 ? 1 : 0),
-              style: const TextStyle(
-                fontFeatures: [FontFeature.tabularFigures()],
+              label,
+              style: TextStyle(
+                color: palette.inkMuted,
                 decoration: TextDecoration.none,
               ),
             ),
           ),
-        ),
-        DrawkitButton(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-          onPressed: value >= max
-              ? null
-              : () => onChanged((value + step).clamp(min, max)),
-          child: const Text('+'),
-        ),
-      ],
-    ),
-  );
+          DrawkitButton(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+            onPressed: value <= min
+                ? null
+                : () => onChanged((value - step).clamp(min, max)),
+            child: const Text('−'),
+          ),
+          SizedBox(
+            width: 90,
+            child: Center(
+              child: Text(
+                value < 0 ? 'random' : value.toStringAsFixed(step < 1 ? 1 : 0),
+                style: const TextStyle(
+                  fontFeatures: [FontFeature.tabularFigures()],
+                  decoration: TextDecoration.none,
+                ),
+              ),
+            ),
+          ),
+          DrawkitButton(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+            onPressed: value >= max
+                ? null
+                : () => onChanged((value + step).clamp(min, max)),
+            child: const Text('+'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -452,87 +507,90 @@ class _ButtonPageState extends State<ButtonPage> {
   DrawkitButtonState state = DrawkitButtonState.idle;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Wrap(
-        spacing: 18,
-        runSpacing: 18,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          for (final variant in DrawkitButtonVariant.values)
-            DrawkitButton(
-              variant: variant,
-              onPressed: () {},
-              child: Text(variant.name),
-            ),
-        ],
-      ),
-      const SizedBox(height: 18),
-      Wrap(
-        spacing: 18,
-        runSpacing: 18,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          for (final tone in DrawkitTone.values)
-            DrawkitButton(
-              tone: tone,
-              onPressed: () {},
-              child: Text('tone: ${tone.name}'),
-            ),
-          const DrawkitButton(onPressed: null, child: Text('disabled')),
-        ],
-      ),
-      const SizedBox(height: 26),
-      Row(
-        children: [
-          for (final s in DrawkitButtonState.values)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: DrawkitButton(
-                state: s,
+  Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 18,
+          runSpacing: 18,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            for (final variant in DrawkitButtonVariant.values)
+              DrawkitButton(
+                variant: variant,
                 onPressed: () {},
-                child: Text('state: ${s.name}'),
+                child: Text(variant.name),
+              ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 18,
+          runSpacing: 18,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            for (final tone in DrawkitTone.values)
+              DrawkitButton(
+                tone: tone,
+                onPressed: () {},
+                child: Text('tone: ${tone.name}'),
+              ),
+            const DrawkitButton(onPressed: null, child: Text('disabled')),
+          ],
+        ),
+        const SizedBox(height: 26),
+        Row(
+          children: [
+            for (final s in DrawkitButtonState.values)
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: DrawkitButton(
+                  state: s,
+                  onPressed: () {},
+                  child: Text('state: ${s.name}'),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 26),
+        Wrap(
+          spacing: 18,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            DrawkitButton(
+              variant: DrawkitButtonVariant.solid,
+              state: state,
+              onPressed: () {
+                setState(() {
+                  state = switch (state) {
+                    DrawkitButtonState.idle => DrawkitButtonState.loading,
+                    DrawkitButtonState.loading => DrawkitButtonState.success,
+                    DrawkitButtonState.success => DrawkitButtonState.error,
+                    DrawkitButtonState.error => DrawkitButtonState.idle,
+                  };
+                });
+              },
+              child: Text('cycle state: ${state.name}'),
+            ),
+            Text(
+              'Tab to me for the focus ring →',
+              style: TextStyle(
+                color: palette.inkMuted,
+                decoration: TextDecoration.none,
               ),
             ),
-        ],
-      ),
-      const SizedBox(height: 26),
-      Wrap(
-        spacing: 18,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          DrawkitButton(
-            variant: DrawkitButtonVariant.solid,
-            state: state,
-            onPressed: () {
-              setState(() {
-                state = switch (state) {
-                  DrawkitButtonState.idle => DrawkitButtonState.loading,
-                  DrawkitButtonState.loading => DrawkitButtonState.success,
-                  DrawkitButtonState.success => DrawkitButtonState.error,
-                  DrawkitButtonState.error => DrawkitButtonState.idle,
-                };
-              });
-            },
-            child: Text('cycle state: ${state.name}'),
-          ),
-          const Text(
-            'Tab to me for the focus ring →',
-            style: TextStyle(
-              color: DrawkitPalette.inkMuted,
-              decoration: TextDecoration.none,
+            const DrawkitButton(
+              autofocus: false,
+              onPressed: _noop,
+              child: Text('focus me'),
             ),
-          ),
-          const DrawkitButton(
-            autofocus: false,
-            onPressed: _noop,
-            child: Text('focus me'),
-          ),
-        ],
-      ),
-    ],
-  );
+          ],
+        ),
+      ],
+    );
+  }
 }
 
 void _noop() {}
@@ -554,77 +612,80 @@ class _ChoicePageState extends State<ChoicePage> {
   String? fruit = 'apple';
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _ChoiceRow(
-        control: DrawkitCheckbox(
-          value: terms,
-          semanticLabel: 'accept the scribbles',
-          onChanged: (v) => setState(() => terms = v),
-        ),
-        text: 'I accept the scribbles (checked, with the check drawn on)',
-        onTap: () => setState(() => terms = !terms),
-      ),
-      _ChoiceRow(
-        control: DrawkitCheckbox(
-          value: newsletter,
-          semanticLabel: 'send me one doodle a week',
-          onChanged: (v) => setState(() => newsletter = v),
-        ),
-        text: 'Send me one doodle a week',
-        onTap: () => setState(() => newsletter = !newsletter),
-      ),
-      _ChoiceRow(
-        control: const DrawkitCheckbox(
-          value: false,
-          semanticLabel: 'disabled checkbox',
-          onChanged: null,
-        ),
-        text: 'Disabled checkbox — the ink stays, the hand stops',
-        onTap: null,
-      ),
-      const SizedBox(height: 26),
-      for (final f in const ['apple', 'banana', 'cherry'])
+  Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         _ChoiceRow(
-          control: DrawkitRadio<String>(
-            value: f,
-            groupValue: fruit,
-            semanticLabel: 'radio $f',
-            onChanged: (v) => setState(() => fruit = v),
+          control: DrawkitCheckbox(
+            value: terms,
+            semanticLabel: 'accept the scribbles',
+            onChanged: (v) => setState(() => terms = v),
           ),
-          text: 'Radio: $f',
-          onTap: () => setState(() => fruit = f),
+          text: 'I accept the scribbles (checked, with the check drawn on)',
+          onTap: () => setState(() => terms = !terms),
         ),
-      const SizedBox(height: 26),
-      _ChoiceRow(
-        control: DrawkitToggle(
-          value: darkInk,
-          semanticLabel: 'dark ink',
-          onChanged: (v) => setState(() => darkInk = v),
+        _ChoiceRow(
+          control: DrawkitCheckbox(
+            value: newsletter,
+            semanticLabel: 'send me one doodle a week',
+            onChanged: (v) => setState(() => newsletter = v),
+          ),
+          text: 'Send me one doodle a week',
+          onTap: () => setState(() => newsletter = !newsletter),
         ),
-        text: 'Dark ink (toggle — the knob travels 20px)',
-        onTap: () => setState(() => darkInk = !darkInk),
-      ),
-      _ChoiceRow(
-        control: const DrawkitToggle(
-          value: true,
-          semanticLabel: 'disabled toggle',
-          onChanged: null,
+        _ChoiceRow(
+          control: const DrawkitCheckbox(
+            value: false,
+            semanticLabel: 'disabled checkbox',
+            onChanged: null,
+          ),
+          text: 'Disabled checkbox — the ink stays, the hand stops',
+          onTap: null,
         ),
-        text: 'Disabled toggle',
-        onTap: null,
-      ),
-      const SizedBox(height: 18),
-      const Text(
-        'Tab moves focus, Space/Enter flips — the focus ring answers.',
-        style: TextStyle(
-          color: DrawkitPalette.inkMuted,
-          decoration: TextDecoration.none,
+        const SizedBox(height: 26),
+        for (final f in const ['apple', 'banana', 'cherry'])
+          _ChoiceRow(
+            control: DrawkitRadio<String>(
+              value: f,
+              groupValue: fruit,
+              semanticLabel: 'radio $f',
+              onChanged: (v) => setState(() => fruit = v),
+            ),
+            text: 'Radio: $f',
+            onTap: () => setState(() => fruit = f),
+          ),
+        const SizedBox(height: 26),
+        _ChoiceRow(
+          control: DrawkitToggle(
+            value: darkInk,
+            semanticLabel: 'dark ink',
+            onChanged: (v) => setState(() => darkInk = v),
+          ),
+          text: 'Dark ink (toggle — the knob travels 20px)',
+          onTap: () => setState(() => darkInk = !darkInk),
         ),
-      ),
-    ],
-  );
+        _ChoiceRow(
+          control: const DrawkitToggle(
+            value: true,
+            semanticLabel: 'disabled toggle',
+            onChanged: null,
+          ),
+          text: 'Disabled toggle',
+          onTap: null,
+        ),
+        const SizedBox(height: 18),
+        Text(
+          'Tab moves focus, Space/Enter flips — the focus ring answers.',
+          style: TextStyle(
+            color: palette.inkMuted,
+            decoration: TextDecoration.none,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _ChoiceRow extends StatelessWidget {
@@ -678,60 +739,63 @@ class _FieldPageState extends State<FieldPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text(
-        'Name',
-        style: TextStyle(
-          color: DrawkitPalette.inkMuted,
-          decoration: TextDecoration.none,
+  Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Name',
+          style: TextStyle(
+            color: palette.inkMuted,
+            decoration: TextDecoration.none,
+          ),
         ),
-      ),
-      const SizedBox(height: 6),
-      SizedBox(
-        width: 300,
-        child: DrawkitInput(
-          controller: name,
-          placeholder: 'e.g. Scribbly McPenface',
-          onChanged: (_) => setState(() {}),
+        const SizedBox(height: 6),
+        SizedBox(
+          width: 300,
+          child: DrawkitInput(
+            controller: name,
+            placeholder: 'e.g. Scribbly McPenface',
+            onChanged: (_) => setState(() {}),
+          ),
         ),
-      ),
-      const SizedBox(height: 22),
-      const Text(
-        'Notes',
-        style: TextStyle(
-          color: DrawkitPalette.inkMuted,
-          decoration: TextDecoration.none,
+        const SizedBox(height: 22),
+        Text(
+          'Notes',
+          style: TextStyle(
+            color: palette.inkMuted,
+            decoration: TextDecoration.none,
+          ),
         ),
-      ),
-      const SizedBox(height: 6),
-      SizedBox(
-        width: 420,
-        child: DrawkitTextarea(
-          controller: notes,
-          placeholder: 'What should the pen remember?',
-          onChanged: (_) => setState(() {}),
+        const SizedBox(height: 6),
+        SizedBox(
+          width: 420,
+          child: DrawkitTextarea(
+            controller: notes,
+            placeholder: 'What should the pen remember?',
+            onChanged: (_) => setState(() {}),
+          ),
         ),
-      ),
-      const SizedBox(height: 22),
-      const SizedBox(
-        width: 300,
-        child: DrawkitInput(
-          placeholder: 'disabled — no cursor, no edits',
-          enabled: false,
+        const SizedBox(height: 22),
+        const SizedBox(
+          width: 300,
+          child: DrawkitInput(
+            placeholder: 'disabled — no cursor, no edits',
+            enabled: false,
+          ),
         ),
-      ),
-      const SizedBox(height: 26),
-      Text(
-        'name: ${name.text.isEmpty ? '…' : name.text}\nnotes: ${notes.text.isEmpty ? '…' : notes.text.replaceAll('\n', ' ⏎ ')}',
-        style: const TextStyle(
-          color: DrawkitPalette.inkMuted,
-          decoration: TextDecoration.none,
+        const SizedBox(height: 26),
+        Text(
+          'name: ${name.text.isEmpty ? '…' : name.text}\nnotes: ${notes.text.isEmpty ? '…' : notes.text.replaceAll('\n', ' ⏎ ')}',
+          style: TextStyle(
+            color: palette.inkMuted,
+            decoration: TextDecoration.none,
+          ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -757,37 +821,40 @@ class _SelectPageState extends State<SelectPage> {
   ];
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      SizedBox(
-        width: 260,
-        child: DrawkitSelect<String>(
-          options: _fruits,
-          value: fruit,
-          onChanged: (v) => setState(() => fruit = v),
+  Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 260,
+          child: DrawkitSelect<String>(
+            options: _fruits,
+            value: fruit,
+            onChanged: (v) => setState(() => fruit = v),
+          ),
         ),
-      ),
-      const SizedBox(height: 22),
-      const SizedBox(
-        width: 260,
-        child: DrawkitSelect<String>(
-          options: _fruits,
-          value: null,
-          onChanged: null,
-          semanticLabel: 'disabled select',
+        const SizedBox(height: 22),
+        const SizedBox(
+          width: 260,
+          child: DrawkitSelect<String>(
+            options: _fruits,
+            value: null,
+            onChanged: null,
+            semanticLabel: 'disabled select',
+          ),
         ),
-      ),
-      const SizedBox(height: 26),
-      Text(
-        'picked: ${fruit ?? '—'}',
-        style: const TextStyle(
-          color: DrawkitPalette.inkMuted,
-          decoration: TextDecoration.none,
+        const SizedBox(height: 26),
+        Text(
+          'picked: ${fruit ?? '—'}',
+          style: TextStyle(
+            color: palette.inkMuted,
+            decoration: TextDecoration.none,
+          ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -804,83 +871,86 @@ class _DecorationsPageState extends State<DecorationsPage> {
   DrawkitListMarker marker = DrawkitListMarker.dash;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text(
-        'divider',
-        style: TextStyle(
-          color: DrawkitPalette.inkMuted,
-          decoration: TextDecoration.none,
+  Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'divider',
+          style: TextStyle(
+            color: palette.inkMuted,
+            decoration: TextDecoration.none,
+          ),
         ),
-      ),
-      const DrawkitDivider(),
-      const SizedBox(height: 18),
-      SizedBox(
-        width: 360,
-        child: DrawkitCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'A card',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  decoration: TextDecoration.none,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'The frame is one seeded stroke; put anything inside.',
-                style: TextStyle(
-                  color: DrawkitPalette.inkMuted,
-                  decoration: TextDecoration.none,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: const [
-                  DrawkitBadge(child: Text('outline')),
-                  SizedBox(width: 10),
-                  DrawkitBadge(
-                    variant: DrawkitBadgeVariant.scribble,
-                    child: Text('scribble'),
+        const DrawkitDivider(),
+        const SizedBox(height: 18),
+        SizedBox(
+          width: 360,
+          child: DrawkitCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'A card',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.none,
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'The frame is one seeded stroke; put anything inside.',
+                  style: TextStyle(
+                    color: palette.inkMuted,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: const [
+                    DrawkitBadge(child: Text('outline')),
+                    SizedBox(width: 10),
+                    DrawkitBadge(
+                      variant: DrawkitBadgeVariant.scribble,
+                      child: Text('scribble'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      const SizedBox(height: 24),
-      Row(
-        children: [
-          DrawkitButton(
-            onPressed: () => setState(() {
-              marker = marker == DrawkitListMarker.dash
-                  ? DrawkitListMarker.check
-                  : DrawkitListMarker.dash;
-            }),
-            child: Text('marker: ${marker.name}'),
-          ),
-          const SizedBox(width: 18),
-        ],
-      ),
-      const SizedBox(height: 12),
-      DrawkitList(
-        marker: marker,
-        children: const [
-          Text('Seeded randomness makes every mount a fresh sketch.'),
-          Text(
-            'Boil frames come from the variants generator, three per stroke.',
-          ),
-          Text('The marker gutter is 24px of reserved padding.'),
-        ],
-      ),
-    ],
-  );
+        const SizedBox(height: 24),
+        Row(
+          children: [
+            DrawkitButton(
+              onPressed: () => setState(() {
+                marker = marker == DrawkitListMarker.dash
+                    ? DrawkitListMarker.check
+                    : DrawkitListMarker.dash;
+              }),
+              child: Text('marker: ${marker.name}'),
+            ),
+            const SizedBox(width: 18),
+          ],
+        ),
+        SizedBox(height: 12),
+        DrawkitList(
+          marker: marker,
+          children: const [
+            Text('Seeded randomness makes every mount a fresh sketch.'),
+            Text(
+              'Boil frames come from the variants generator, three per stroke.',
+            ),
+            Text('The marker gutter is 24px of reserved padding.'),
+          ],
+        ),
+      ],
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -891,10 +961,11 @@ class TextPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const body = TextStyle(
+    final palette = DrawkitTheme.of(context).palette;
+    final body = TextStyle(
       fontSize: 16,
       height: 1.5,
-      color: DrawkitPalette.ink,
+      color: palette.ink,
       decoration: TextDecoration.none,
     );
     return SizedBox(
@@ -902,22 +973,22 @@ class TextPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const DrawkitUnderline(
+          DrawkitUnderline(
             text: 'Every wrapped line gets its own underline stroke, so a sentence that crosses lines stays ruled to the last word.',
             textStyle: body,
           ),
           const SizedBox(height: 22),
-          const DrawkitHighlight(
+          DrawkitHighlight(
             text: 'Important, but not shouting: the marker wash is one 6px scribble at 30% in multiply.',
             textStyle: body,
           ),
           const SizedBox(height: 22),
-          const DrawkitCircle(
+          DrawkitCircle(
             text: 'circled on arrival',
             textStyle: TextStyle(
               fontSize: 20,
               height: 1.5,
-              color: DrawkitPalette.ink,
+              color: palette.ink,
               decoration: TextDecoration.none,
             ),
           ),
@@ -951,15 +1022,15 @@ class _CompositePageState extends State<CompositePage> {
       DrawkitChip(
         selected: chip,
         onChanged: (v) => setState(() => chip = v),
-        child: const Text('dashed'),
+        child: Text('dashed'),
       ),
-      const SizedBox(height: 24),
+      SizedBox(height: 24),
       DrawkitTabs(
-        labels: const ['overview', 'details', 'notes'],
+        labels: ['overview', 'details', 'notes'],
         active: tab,
         onChanged: (i) => setState(() => tab = i),
       ),
-      const SizedBox(height: 24),
+      SizedBox(height: 24),
       SizedBox(
         height: 160,
         child: Stack(
@@ -989,39 +1060,39 @@ class _CompositePageState extends State<CompositePage> {
           ],
         ),
       ),
-      const SizedBox(height: 16),
-      const DrawkitAlert(
+      SizedBox(height: 16),
+      DrawkitAlert(
         tag: Text('rant'),
         child: Text('The sketch layer never lies, the browser sometimes does.'),
       ),
-      const SizedBox(height: 24),
-      const DrawkitSteps(
+      SizedBox(height: 24),
+      DrawkitSteps(
         children: [
           Text('Pick a seed'),
           Text('Watch the strokes boil'),
           Text('Ship the sketch'),
         ],
       ),
-      const SizedBox(height: 24),
-      const Row(
+      SizedBox(height: 24),
+      Row(
         children: [
           DrawkitKbd(child: Text('⌘K')),
           SizedBox(width: 10),
           DrawkitKbd(child: Text('⇧⏎')),
         ],
       ),
-      const SizedBox(height: 24),
-      const DrawkitQuote(
+      SizedBox(height: 24),
+      DrawkitQuote(
         text: 'Any sufficiently advanced CSS is indistinguishable from a canvas library.',
         footer: Text('— the internet, paraphrased'),
       ),
-      const SizedBox(height: 24),
+      SizedBox(height: 24),
       DrawkitPager(
         count: 5,
         page: page,
         onPage: (i) => setState(() => page = i),
       ),
-      const SizedBox(height: 26),
+      SizedBox(height: 26),
       SizedBox(
         height: 110,
         child: Stack(
@@ -1084,10 +1155,11 @@ class _MotionPageState extends State<MotionPage> {
 
   @override
   Widget build(BuildContext context) {
-    const body = TextStyle(
+    final palette = DrawkitTheme.of(context).palette;
+    final body = TextStyle(
       fontSize: 14,
       height: 1.5,
-      color: DrawkitPalette.ink,
+      color: palette.ink,
       decoration: TextDecoration.none,
     );
     return SizedBox(
@@ -1095,7 +1167,7 @@ class _MotionPageState extends State<MotionPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Sketch-in — every stroke below traces itself on mount',
             style: body,
           ),
@@ -1103,14 +1175,14 @@ class _MotionPageState extends State<MotionPage> {
           DrawkitSketchIn(
             key: ValueKey('sketch$_run'),
             child: DrawkitCard(
-              child: const Text(
+              child: Text(
                 'The frame draws first, the words were already written.',
                 style: body,
               ),
             ),
           ),
           const SizedBox(height: 22),
-          const Text('Stagger — one clock, a step apart', style: body),
+          Text('Stagger — one clock, a step apart', style: body),
           const SizedBox(height: 10),
           DrawkitStagger(
             key: ValueKey('stagger$_run'),
@@ -1128,7 +1200,7 @@ class _MotionPageState extends State<MotionPage> {
             ],
           ),
           const SizedBox(height: 22),
-          const Text('Shake — the wrong! wiggle', style: body),
+          Text('Shake — the wrong! wiggle', style: body),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -1172,10 +1244,11 @@ class _ActionsPageState extends State<ActionsPage> {
 
   @override
   Widget build(BuildContext context) {
-    const body = TextStyle(
+    final palette = DrawkitTheme.of(context).palette;
+    final body = TextStyle(
       fontSize: 14,
       height: 1.5,
-      color: DrawkitPalette.ink,
+      color: palette.ink,
       decoration: TextDecoration.none,
     );
     return SizedBox(
@@ -1183,7 +1256,7 @@ class _ActionsPageState extends State<ActionsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Segmented — one frame, a scribbled wash for the pick',
             style: body,
           ),
@@ -1251,21 +1324,18 @@ class _ActionsPageState extends State<ActionsPage> {
             ],
           ),
           const SizedBox(height: 22),
-          const Text(
-            'Search — the magnifier holds the leading gutter',
-            style: body,
-          ),
+          Text('Search — the magnifier holds the leading gutter', style: body),
           const SizedBox(height: 10),
           DrawkitSearchField(
             placeholder: 'search the sketchbook…',
             onChanged: (value) => setState(() => _query = value),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           Text(
             _query.isEmpty
                 ? 'nothing typed yet'
                 : 'you are looking for: $_query',
-            style: body.copyWith(color: DrawkitPalette.inkMuted),
+            style: body.copyWith(color: palette.inkMuted),
           ),
         ],
       ),
@@ -1286,10 +1356,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
   @override
   Widget build(BuildContext context) {
-    const body = TextStyle(
+    final palette = DrawkitTheme.of(context).palette;
+    final body = TextStyle(
       fontSize: 14,
       height: 1.5,
-      color: DrawkitPalette.ink,
+      color: palette.ink,
       decoration: TextDecoration.none,
     );
     return SizedBox(
@@ -1297,8 +1368,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Modals — the panel traces itself in', style: body),
-          const SizedBox(height: 10),
+          Text('Modals — the panel traces itself in', style: body),
+          SizedBox(height: 10),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -1312,17 +1383,17 @@ class _FeedbackPageState extends State<FeedbackPage> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Tear this page out?',
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
-                              color: DrawkitPalette.ink,
+                              color: palette.ink,
                               decoration: TextDecoration.none,
                             ),
                           ),
                           const SizedBox(height: 8),
-                          const Text(
+                          Text(
                             'The ink is still wet — nothing is saved yet.',
                             style: body,
                           ),
@@ -1351,7 +1422,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   if (!mounted) return;
                   setState(() => _last = 'dialog answered: $answer');
                 },
-                child: const Text('open dialog'),
+                child: Text('open dialog'),
               ),
               DrawkitButton(
                 onPressed: () => showDrawkitSheet(
@@ -1360,17 +1431,17 @@ class _FeedbackPageState extends State<FeedbackPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Sketchbook options',
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
-                          color: DrawkitPalette.ink,
+                          color: palette.ink,
                           decoration: TextDecoration.none,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'Drag the handle down or tap the scrim to fold it away.',
                         style: body,
                       ),
@@ -1383,24 +1454,21 @@ class _FeedbackPageState extends State<FeedbackPage> {
                     ],
                   ),
                 ),
-                child: const Text('bottom sheet'),
+                child: Text('bottom sheet'),
               ),
               DrawkitButton(
                 onPressed: () => showDrawkitSheet(
                   context: context,
                   edge: DrawkitSheetEdge.end,
-                  child: const Text('a quiet side drawer', style: body),
+                  child: Text('a quiet side drawer', style: body),
                 ),
-                child: const Text('side sheet'),
+                child: Text('side sheet'),
               ),
             ],
           ),
           const SizedBox(height: 22),
-          const Text(
-            'Toasts — bottom pills that excuse themselves',
-            style: body,
-          ),
-          const SizedBox(height: 10),
+          Text('Toasts — bottom pills that excuse themselves', style: body),
+          SizedBox(height: 10),
           Row(
             children: [
               DrawkitButton(
@@ -1448,7 +1516,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
             ],
           ),
           const SizedBox(height: 22),
-          Text(_last, style: body.copyWith(color: DrawkitPalette.inkMuted)),
+          Text(_last, style: body.copyWith(color: palette.inkMuted)),
         ],
       ),
     );
@@ -1468,22 +1536,23 @@ class _MenusPageState extends State<MenusPage> {
   DateTime? _date = DateTime(2026, 10, 16);
   String _last = 'nothing yet';
 
-  static const body = TextStyle(
+  TextStyle get body => TextStyle(
     fontSize: 14,
     height: 1.5,
-    color: DrawkitPalette.ink,
+    color: DrawkitTheme.of(context).palette.ink,
     decoration: TextDecoration.none,
   );
 
   @override
   Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
     return SizedBox(
       width: 460,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Menus — panels that fold away', style: body),
-          const SizedBox(height: 10),
+          Text('Menus — panels that fold away', style: body),
+          SizedBox(height: 10),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -1502,8 +1571,8 @@ class _MenusPageState extends State<MenusPage> {
                     checked: _graph,
                     onSelected: () => setState(() => _graph = true),
                   ),
-                  const DrawkitMenuItem.divider(),
-                  const DrawkitMenuItem(label: 'Tracing paper', hint: '⌘T'),
+                  DrawkitMenuItem.divider(),
+                  DrawkitMenuItem(label: 'Tracing paper', hint: '⌘T'),
                   DrawkitMenuItem(
                     label: 'Save sheet',
                     hint: '⌘S',
@@ -1511,15 +1580,15 @@ class _MenusPageState extends State<MenusPage> {
                         showDrawkitToast(context, message: 'sheet saved'),
                   ),
                 ],
-                child: const Text('view'),
+                child: Text('view'),
               ),
               DrawkitPopover(
                 semanticLabel: 'pen options',
-                trigger: const Text(
+                trigger: Text(
                   'pen options',
                   style: TextStyle(
                     fontSize: 14,
-                    color: DrawkitPalette.ink,
+                    color: palette.ink,
                     decoration: TextDecoration.underline,
                     decorationStyle: TextDecorationStyle.wavy,
                   ),
@@ -1528,8 +1597,8 @@ class _MenusPageState extends State<MenusPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Nib', style: body),
-                    const SizedBox(height: 8),
+                    Text('Nib', style: body),
+                    SizedBox(height: 8),
                     Row(
                       children: [
                         for (final nib in const [
@@ -1549,11 +1618,11 @@ class _MenusPageState extends State<MenusPage> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    const Text(
+                    Text(
                       'Any widget can open a popover.',
                       style: TextStyle(
                         fontSize: 12,
-                        color: DrawkitPalette.inkMuted,
+                        color: palette.inkMuted,
                         decoration: TextDecoration.none,
                       ),
                     ),
@@ -1606,12 +1675,9 @@ class _MenusPageState extends State<MenusPage> {
             ],
           ),
           const SizedBox(height: 22),
-          const Text(
-            'Accordion — headers unfold on a sketch line',
-            style: body,
-          ),
-          const SizedBox(height: 10),
-          const DrawkitAccordion(
+          Text('Accordion — headers unfold on a sketch line', style: body),
+          SizedBox(height: 10),
+          DrawkitAccordion(
             initiallyExpanded: {1},
             sections: [
               DrawkitAccordionSection(
@@ -1651,7 +1717,7 @@ class _MenusPageState extends State<MenusPage> {
             semanticLabel: 'sheet date',
           ),
           const SizedBox(height: 22),
-          Text(_last, style: body.copyWith(color: DrawkitPalette.inkMuted)),
+          Text(_last, style: body.copyWith(color: palette.inkMuted)),
         ],
       ),
     );
@@ -1669,10 +1735,10 @@ class _StructurePageState extends State<StructurePage> {
   int _rail = 0;
   int _bottom = 0;
 
-  static const body = TextStyle(
+  TextStyle get body => TextStyle(
     fontSize: 14,
     height: 1.5,
-    color: DrawkitPalette.ink,
+    color: DrawkitTheme.of(context).palette.ink,
     decoration: TextDecoration.none,
   );
 
@@ -1684,12 +1750,13 @@ class _StructurePageState extends State<StructurePage> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
     return SizedBox(
       width: 460,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const DrawkitAppBar(
+          DrawkitAppBar(
             leading: Text(
               '←',
               style: TextStyle(fontSize: 18, decoration: TextDecoration.none),
@@ -1700,7 +1767,7 @@ class _StructurePageState extends State<StructurePage> {
                 'save',
                 style: TextStyle(
                   fontSize: 14,
-                  color: DrawkitPalette.inkMuted,
+                  color: palette.inkMuted,
                   decoration: TextDecoration.none,
                 ),
               ),
@@ -1711,8 +1778,8 @@ class _StructurePageState extends State<StructurePage> {
             ],
           ),
           const SizedBox(height: 22),
-          const Text('Navigation — both bars mirror in RTL', style: body),
-          const SizedBox(height: 10),
+          Text('Navigation — both bars mirror in RTL', style: body),
+          SizedBox(height: 10),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1727,7 +1794,7 @@ class _StructurePageState extends State<StructurePage> {
                   padding: const EdgeInsets.only(top: 14),
                   child: Text(
                     'rail picked: ${destinations[_rail].label.toLowerCase()}',
-                    style: body.copyWith(color: DrawkitPalette.inkMuted),
+                    style: body.copyWith(color: palette.inkMuted),
                   ),
                 ),
               ),
@@ -1739,7 +1806,7 @@ class _StructurePageState extends State<StructurePage> {
             selected: _bottom,
             onChanged: (i) => setState(() => _bottom = i),
           ),
-          const SizedBox(height: 22),
+          SizedBox(height: 22),
           DrawkitBreadcrumb(
             items: [
               DrawkitBreadcrumbItem(
@@ -1752,22 +1819,19 @@ class _StructurePageState extends State<StructurePage> {
                 onTap: () =>
                     showDrawkitToast(context, message: 'pencil drawer'),
               ),
-              const DrawkitBreadcrumbItem(label: 'HB'),
+              DrawkitBreadcrumbItem(label: 'HB'),
             ],
           ),
-          const SizedBox(height: 22),
-          const Text(
-            'A ruled ledger — header line, faint row rules',
-            style: body,
-          ),
-          const SizedBox(height: 6),
+          SizedBox(height: 22),
+          Text('A ruled ledger — header line, faint row rules', style: body),
+          SizedBox(height: 6),
           DrawkitTable(
-            columns: const [
+            columns: [
               DrawkitTableColumn(label: 'Pencil', flex: 2),
               DrawkitTableColumn(label: 'Qty'),
               DrawkitTableColumn(label: 'Total'),
             ],
-            rows: const [
+            rows: [
               [
                 Text('HB', style: body),
                 Text('12', style: body),
@@ -1801,15 +1865,16 @@ class ContentPage extends StatefulWidget {
 class _ContentPageState extends State<ContentPage> {
   int _stars = 3;
 
-  static const body = TextStyle(
+  TextStyle get body => TextStyle(
     fontSize: 14,
     height: 1.5,
-    color: DrawkitPalette.ink,
+    color: DrawkitTheme.of(context).palette.ink,
     decoration: TextDecoration.none,
   );
 
   @override
   Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
     return SizedBox(
       width: 460,
       child: Column(
@@ -1817,18 +1882,15 @@ class _ContentPageState extends State<ContentPage> {
         children: [
           const DrawkitHeading(text: 'The Content Kit', underline: true),
           const SizedBox(height: 8),
-          const DrawkitHeading(
+          DrawkitHeading(
             text: 'display type, faces, plates, ink, and idle hands',
             level: 3,
-            textStyle: TextStyle(color: DrawkitPalette.inkMuted),
+            textStyle: TextStyle(color: palette.inkMuted),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'A crowd — discs overlap, the overflow confesses',
-            style: body,
-          ),
+          Text('A crowd — discs overlap, the overflow confesses', style: body),
           const SizedBox(height: 10),
-          const DrawkitAvatarGroup(
+          DrawkitAvatarGroup(
             max: 3,
             overlap: 14,
             size: 44,
@@ -1859,11 +1921,8 @@ class _ContentPageState extends State<ContentPage> {
             starSize: 30,
           ),
           const SizedBox(height: 22),
-          const Text(
-            'Doodles — decorative, silent, never interactive',
-            style: body,
-          ),
-          const SizedBox(height: 10),
+          Text('Doodles — decorative, silent, never interactive', style: body),
+          SizedBox(height: 10),
           Row(
             children: [
               for (final kind in DrawkitDoodleKind.values)
@@ -1874,9 +1933,9 @@ class _ContentPageState extends State<ContentPage> {
             ],
           ),
           const SizedBox(height: 22),
-          const Text('A ticker — hover to pause it', style: body),
-          const SizedBox(height: 8),
-          const DrawkitMarquee(
+          Text('A ticker — hover to pause it', style: body),
+          SizedBox(height: 8),
+          DrawkitMarquee(
             child: Text(
               'all work and no play makes the pen a dull tool',
               style: body,
@@ -1897,10 +1956,10 @@ class StatesPage extends StatefulWidget {
 }
 
 class _StatesPageState extends State<StatesPage> {
-  static const body = TextStyle(
+  TextStyle get body => TextStyle(
     fontSize: 14,
     height: 1.5,
-    color: DrawkitPalette.ink,
+    color: DrawkitTheme.of(context).palette.ink,
     decoration: TextDecoration.none,
   );
 
@@ -1942,13 +2001,14 @@ class _StatesPageState extends State<StatesPage> {
   }
 
   Future<void> _refresh() async {
-    await Future<void>.delayed(const Duration(milliseconds: 900));
+    await Future<void>.delayed(Duration(milliseconds: 900));
     if (!mounted) return;
     setState(() => _fetched.insert(0, _fetched.first + 1));
   }
 
   @override
   Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
     return SizedBox(
       width: 460,
       child: Column(
@@ -1956,17 +2016,17 @@ class _StatesPageState extends State<StatesPage> {
         children: [
           const DrawkitHeading(text: 'The States Kit', underline: true),
           const SizedBox(height: 8),
-          const DrawkitHeading(
+          DrawkitHeading(
             text: 'errors, empty margins, undo, and the pull',
             level: 3,
-            textStyle: TextStyle(color: DrawkitPalette.inkMuted),
+            textStyle: TextStyle(color: palette.inkMuted),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'Validation — the outline inks red, the message speaks',
             style: body,
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           SizedBox(
             width: 320,
             child: DrawkitInput(
@@ -1980,8 +2040,8 @@ class _StatesPageState extends State<StatesPage> {
           const SizedBox(height: 10),
           DrawkitButton(onPressed: _validate, child: const Text('Validate')),
           const SizedBox(height: 26),
-          const Text('Notes — deleting offers an Undo', style: body),
-          const SizedBox(height: 10),
+          Text('Notes — deleting offers an Undo', style: body),
+          SizedBox(height: 10),
           if (_notes.isEmpty)
             SizedBox(
               height: 220,
@@ -2015,11 +2075,11 @@ class _StatesPageState extends State<StatesPage> {
                 ),
               ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'Pull-to-refresh — drag the list down past the flip',
             style: body,
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           DrawkitCard(
             child: SizedBox(
               height: 200,
@@ -2056,17 +2116,17 @@ class FocusPage extends StatefulWidget {
 }
 
 class _FocusPageState extends State<FocusPage> {
-  static const body = TextStyle(
+  TextStyle get body => TextStyle(
     fontSize: 14,
     height: 1.5,
-    color: DrawkitPalette.ink,
+    color: DrawkitTheme.of(context).palette.ink,
     decoration: TextDecoration.none,
   );
 
-  static const hint = TextStyle(
+  TextStyle get hint => TextStyle(
     fontSize: 13,
     height: 1.5,
-    color: DrawkitPalette.inkMuted,
+    color: DrawkitTheme.of(context).palette.inkMuted,
     decoration: TextDecoration.none,
   );
 
@@ -2081,6 +2141,7 @@ class _FocusPageState extends State<FocusPage> {
   void _say(String note) => setState(() => _last = note);
 
   Future<void> _openDialog() async {
+    final palette = DrawkitTheme.of(context).palette;
     await showDrawkitDialog<void>(
       context: context,
       child: DrawkitDialog(
@@ -2088,22 +2149,22 @@ class _FocusPageState extends State<FocusPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'A page within the page',
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
-                color: DrawkitPalette.ink,
+                color: palette.ink,
                 decoration: TextDecoration.none,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Escape folds it away; Tab never wanders outside; focus '
               'returns to the button that opened it.',
               style: body,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -2124,6 +2185,7 @@ class _FocusPageState extends State<FocusPage> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
     return SizedBox(
       width: 460,
       child: Column(
@@ -2131,23 +2193,23 @@ class _FocusPageState extends State<FocusPage> {
         children: [
           const DrawkitHeading(text: 'The Focus Kit', underline: true),
           const SizedBox(height: 8),
-          const DrawkitHeading(
+          DrawkitHeading(
             text: 'one ring, drawn only while the keyboard is at work',
             level: 3,
-            textStyle: TextStyle(color: DrawkitPalette.inkMuted),
+            textStyle: TextStyle(color: palette.inkMuted),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Tab to walk the page · arrows to move · Home/End to jump · '
             'Enter/Space to choose · Escape to close',
             style: hint,
           ),
-          const SizedBox(height: 20),
-          const Text(
+          SizedBox(height: 20),
+          Text(
             'Slider — Home, End, PageUp and PageDown; RTL mirrors the arrows',
             style: body,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           DrawkitSlider(
             value: _inkLevel,
             onChanged: (v) => setState(() {
@@ -2156,13 +2218,13 @@ class _FocusPageState extends State<FocusPage> {
             }),
           ),
           const SizedBox(height: 22),
-          const Text(
+          Text(
             'Segments and tabs — the selection owns the single tab stop',
             style: body,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           DrawkitSegmentedButton<String>(
-            segments: const [
+            segments: [
               DrawkitSegment(value: 'pen', label: 'pen'),
               DrawkitSegment(value: 'pencil', label: 'pencil'),
               DrawkitSegment(value: 'brush', label: 'brush'),
@@ -2184,20 +2246,20 @@ class _FocusPageState extends State<FocusPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            const [
+            [
               'a rough start, all construction lines',
               'the damp layer, still catching light',
               'a clean file, corners folded shut',
             ][_tab],
             style: hint,
           ),
-          const SizedBox(height: 22),
-          const Text(
+          SizedBox(height: 22),
+          Text(
             'Accordion — Up/Down walk the headers, Enter folds a section',
             style: body,
           ),
-          const SizedBox(height: 8),
-          const DrawkitAccordion(
+          SizedBox(height: 8),
+          DrawkitAccordion(
             sections: [
               DrawkitAccordionSection(
                 title: 'What takes focus',
@@ -2216,12 +2278,12 @@ class _FocusPageState extends State<FocusPage> {
               ),
             ],
           ),
-          const SizedBox(height: 22),
-          const Text(
+          SizedBox(height: 22),
+          Text(
             'Select and menu — arrows walk, Escape hands focus back',
             style: body,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Wrap(
             spacing: 12,
             runSpacing: 12,
@@ -2256,16 +2318,16 @@ class _FocusPageState extends State<FocusPage> {
                   const DrawkitMenuItem.divider(),
                   const DrawkitMenuItem(label: 'Fold the page', enabled: false),
                 ],
-                child: const Text('maintenance', style: body),
+                child: Text('maintenance', style: body),
               ),
             ],
           ),
-          const SizedBox(height: 22),
-          const Text(
+          SizedBox(height: 22),
+          Text(
             'Date picker — arrows walk days, PageUp/Down change months',
             style: body,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           DrawkitDatePicker(
             value: _date,
             today: DateTime(2026, 6, 15),
@@ -2275,11 +2337,11 @@ class _FocusPageState extends State<FocusPage> {
             }),
           ),
           const SizedBox(height: 22),
-          const Text(
+          Text(
             'Breadcrumb and nav rail — plain Tab stops, Enter to choose',
             style: body,
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           DrawkitBreadcrumb(
             items: [
               DrawkitBreadcrumbItem(
@@ -2311,20 +2373,183 @@ class _FocusPageState extends State<FocusPage> {
             ),
           ),
           const SizedBox(height: 22),
-          const Text(
+          Text(
             'Dialog — Escape dismisses, Tab stays inside, focus comes home',
             style: body,
           ),
           const SizedBox(height: 8),
           DrawkitButton(
             onPressed: () => _openDialog(),
-            child: const Text('Open a dialog'),
+            child: Text('Open a dialog'),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Text('last action: $_last', style: hint),
           const SizedBox(height: 22),
         ],
       ),
+    );
+  }
+}
+
+class PalettePage extends StatelessWidget {
+  const PalettePage({super.key});
+
+  @override
+  Widget build(BuildContext context) => Wrap(
+    spacing: 22,
+    runSpacing: 22,
+    children: const [
+      _PalettePanel(name: 'paper light', palette: DrawkitPalette.light),
+      _PalettePanel(name: 'ink dark', palette: DrawkitPalette.dark),
+    ],
+  );
+}
+
+class _PalettePanel extends StatelessWidget {
+  const _PalettePanel({required this.name, required this.palette});
+
+  final String name;
+  final DrawkitPalette palette;
+
+  @override
+  Widget build(BuildContext context) => DrawkitTheme(
+    data: palette.style,
+    child: Container(
+      width: 520,
+      padding: const EdgeInsets.all(18),
+      color: palette.paper,
+      child: DefaultTextStyle(
+        style: TextStyle(
+          color: palette.ink,
+          fontSize: 14,
+          height: 1.4,
+          decoration: TextDecoration.none,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: palette.ink,
+                decoration: TextDecoration.none,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                _Swatch(name: 'pen', color: palette.pen, paper: palette.paper),
+                _Swatch(name: 'ink', color: palette.ink, paper: palette.paper),
+                _Swatch(
+                  name: 'muted',
+                  color: palette.inkMuted,
+                  paper: palette.paper,
+                ),
+                _Swatch(
+                  name: 'faint',
+                  color: palette.inkFaint,
+                  paper: palette.paper,
+                ),
+                _Swatch(
+                  name: 'error',
+                  color: palette.error,
+                  paper: palette.paper,
+                ),
+                _Swatch(
+                  name: 'success',
+                  color: palette.success,
+                  paper: palette.paper,
+                ),
+                _Swatch(
+                  name: 'neutral',
+                  color: palette.neutral,
+                  paper: palette.paper,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                DrawkitButton(onPressed: () {}, child: const Text('outline')),
+                DrawkitButton(
+                  variant: DrawkitButtonVariant.solid,
+                  onPressed: () {},
+                  child: const Text('solid'),
+                ),
+                DrawkitButton(
+                  tone: DrawkitTone.danger,
+                  onPressed: () {},
+                  child: const Text('danger'),
+                ),
+                const DrawkitCheckbox(
+                  value: true,
+                  semanticLabel: 'sample checkbox',
+                  onChanged: null,
+                ),
+                DrawkitToggle(
+                  value: true,
+                  semanticLabel: 'sample toggle',
+                  onChanged: (_) {},
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            DrawkitInput(placeholder: 'placeholder ink'),
+            const SizedBox(height: 10),
+            Text(
+              'tone text darkens (or lightens) until it clears 4.5:1',
+              style: TextStyle(
+                color: palette.inkMuted,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _Swatch extends StatelessWidget {
+  const _Swatch({required this.name, required this.color, required this.paper});
+
+  final String name;
+  final Color color;
+  final Color paper;
+
+  @override
+  Widget build(BuildContext context) {
+    final ratio = drawkitContrast(color, paper);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ExcludeSemantics(
+          child: Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              color: color,
+              border: Border.all(color: paper, width: 1),
+            ),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          '$name ${ratio.toStringAsFixed(1)}:1',
+          style: TextStyle(
+            fontSize: 12,
+            color: DrawkitTheme.of(context).palette.inkMuted,
+            decoration: TextDecoration.none,
+          ),
+        ),
+      ],
     );
   }
 }

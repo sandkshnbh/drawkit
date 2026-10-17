@@ -1,5 +1,22 @@
 ## Unreleased
 
+- **Themes & Dark Mode** — `DrawkitPalette` is a value type with two presets
+  now: `DrawkitPalette.light` (the CSS values, untouched) and
+  `DrawkitPalette.dark` (night paper `#1D1E21`, indigo pen `#8B88FF`).
+  `DrawkitStyle` carries a `palette` field and every widget resolves ink,
+  tone, paper, and chrome through it, so
+  `DrawkitTheme(data: DrawkitPalette.dark.style, child: …)` re-inks the
+  whole kit — text, strokes, popovers, dialogs, the command palette.
+  `drawkitReadableInk` is direction-aware: it darkens toward black on light
+  backgrounds and lightens toward white on dark ones (default background:
+  the light paper). The gallery gained an "Ink · Palette" page (both papers
+  side by side with live contrast ratios), the sidebar grew a dark toggle,
+  `test/dark_test.dart` locks the presets, the direction rule, and the dark
+  control sample against all four accessibility guidelines, and the gallery
+  audit now runs every page twice — light and dark. Breaking:
+  `DrawkitPalette.pen` and friends are instance fields now —
+  `DrawkitPalette.light.pen` reads the old value.
+
 - **Accessibility** — every control now answers the accessibility guidelines:
   a shared `DrawkitTapTarget` (`drawkitMinTapTarget` = 48) wraps the drawings
   inside their gesture layers, so touch boxes reach 48×48 (iOS 44 included)

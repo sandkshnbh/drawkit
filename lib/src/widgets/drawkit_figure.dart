@@ -39,7 +39,7 @@ class DrawkitFigure extends StatelessWidget {
           TextStyle(
             fontSize: 13,
             height: 1.4,
-            color: DrawkitPalette.inkMuted,
+            color: resolved.palette.inkMuted,
             decoration: TextDecoration.none,
           ),
         )

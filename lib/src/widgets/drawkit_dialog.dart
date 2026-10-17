@@ -93,7 +93,8 @@ Future<T?> showDrawkitDialog<T extends Object?>({
     context: context,
     barrierDismissible: barrierDismissible,
     barrierLabel: 'drawkit dialog',
-    barrierColor: scrimColor ?? DrawkitPalette.ink.withValues(alpha: 0.30),
+    barrierColor:
+        scrimColor ?? DrawkitPalette.light.ink.withValues(alpha: 0.30),
     transitionDuration: motion
         ? const Duration(milliseconds: 220)
         : Duration.zero,

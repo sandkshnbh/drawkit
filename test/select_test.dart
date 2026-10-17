@@ -11,7 +11,7 @@ void main() {
   ];
 
   Widget host(Widget child) => WidgetsApp(
-    color: DrawkitPalette.paper,
+    color: DrawkitPalette.light.paper,
     debugShowCheckedModeBanner: false,
     pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
         PageRouteBuilder<T>(

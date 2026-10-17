@@ -159,7 +159,8 @@ Future<T?> showDrawkitSheet<T extends Object?>({
     context: context,
     barrierDismissible: barrierDismissible,
     barrierLabel: 'drawkit sheet',
-    barrierColor: scrimColor ?? DrawkitPalette.ink.withValues(alpha: 0.30),
+    barrierColor:
+        scrimColor ?? DrawkitPalette.light.ink.withValues(alpha: 0.30),
     transitionDuration: motion
         ? const Duration(milliseconds: 240)
         : Duration.zero,

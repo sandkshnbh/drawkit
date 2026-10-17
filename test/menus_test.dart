@@ -10,7 +10,7 @@ void _noop() {}
 void main() {
   Widget host(Widget child, {TextDirection direction = TextDirection.ltr}) =>
       WidgetsApp(
-        color: DrawkitPalette.paper,
+        color: DrawkitPalette.light.paper,
         debugShowCheckedModeBanner: false,
         pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
             PageRouteBuilder<T>(
