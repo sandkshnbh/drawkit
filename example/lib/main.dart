@@ -205,6 +205,11 @@ final List<GalleryPage> galleryPages = [
     'Two papers side by side: the full palette, control by control.',
     (context) => const PalettePage(),
   ),
+  GalleryPage(
+    'Floating',
+    'A capsule nav bar that tucks away on scroll, and an unfolding fab menu.',
+    (context) => const FloatingPage(),
+  ),
 ];
 
 class _Sidebar extends StatelessWidget {
@@ -2550,6 +2555,154 @@ class _Swatch extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class FloatingPage extends StatefulWidget {
+  const FloatingPage({super.key});
+
+  @override
+  State<FloatingPage> createState() => _FloatingPageState();
+}
+
+class _FloatingPageState extends State<FloatingPage> {
+  int _labels = 0;
+  int _flexible = 0;
+  int _scrolling = 0;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  TextStyle get body => TextStyle(
+    fontSize: 14,
+    height: 1.5,
+    color: DrawkitTheme.of(context).palette.ink,
+    decoration: TextDecoration.none,
+  );
+
+  static const destinations = [
+    DrawkitNavDestination(label: 'Inbox', icon: Text('✉'), badge: 3),
+    DrawkitNavDestination(label: 'Drafts', icon: Text('✎')),
+    DrawkitNavDestination(label: 'Archive', icon: Text('▤')),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = DrawkitTheme.of(context).palette;
+    return SizedBox(
+      width: 460,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Floating — capsule bar and speed-dial fab', style: body),
+          const SizedBox(height: 10),
+          DrawkitFloatingNavBar(
+            destinations: destinations,
+            selected: _labels,
+            onChanged: (i) => setState(() => _labels = i),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'labelled capsule — picked: '
+            '${destinations[_labels].label.toLowerCase()}',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'flexible mood: only the pick opens into a label',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 10),
+          DrawkitFloatingNavBar(
+            destinations: destinations,
+            selected: _flexible,
+            showLabels: false,
+            onChanged: (i) => setState(() => _flexible = i),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'picked: ${destinations[_flexible].label.toLowerCase()}',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'scroll-aware: drag the list down — the bar tucks away, '
+            'the first upward flick brings it back',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 220,
+            child: Column(
+              children: [
+                Expanded(
+                  child: DrawkitCard(
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      itemCount: 40,
+                      itemBuilder: (context, i) => SizedBox(
+                        height: 34,
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Text('row $i', style: body),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                DrawkitFloatingNavBar(
+                  destinations: destinations,
+                  selected: _scrolling,
+                  hideOnScroll: true,
+                  scrollController: _scrollController,
+                  onChanged: (i) => setState(() => _scrolling = i),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'fab menu: the circle unfolds labelled actions',
+            style: body.copyWith(color: palette.inkMuted),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 230,
+            child: Align(
+              alignment: AlignmentDirectional.bottomEnd,
+              child: DrawkitFabMenu(
+                semanticLabel: 'quick actions',
+                items: [
+                  DrawkitFabMenuItem(
+                    label: 'New note',
+                    icon: Text('✎'),
+                    onPressed: () =>
+                        showDrawkitToast(context, message: 'a fresh note'),
+                  ),
+                  DrawkitFabMenuItem(
+                    label: 'New sketch',
+                    icon: Text('✏'),
+                    onPressed: () =>
+                        showDrawkitToast(context, message: 'a blank page'),
+                  ),
+                  DrawkitFabMenuItem(
+                    label: 'Import',
+                    icon: Text('⌤'),
+                    onPressed: () =>
+                        showDrawkitToast(context, message: 'importing…'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

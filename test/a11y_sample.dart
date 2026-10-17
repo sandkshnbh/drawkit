@@ -159,6 +159,24 @@ Widget a11ySample({DrawkitPalette palette = DrawkitPalette.light}) => a11yHost(
           today: DateTime(2026, 6, 15),
           onChanged: (_) {},
         ),
+        const SizedBox(height: 10),
+        DrawkitFloatingNavBar(
+          destinations: const [
+            DrawkitNavDestination(label: 'Feeds', icon: Text('✉'), badge: 2),
+            DrawkitNavDestination(label: 'Notes', icon: Text('✎')),
+            DrawkitNavDestination(label: 'Files', icon: Text('▤')),
+          ],
+          selected: 0,
+          onChanged: (_) {},
+        ),
+        const SizedBox(height: 10),
+        DrawkitFabMenu(
+          semanticLabel: 'quick actions',
+          items: [
+            DrawkitFabMenuItem(label: 'New note', onPressed: () {}),
+            DrawkitFabMenuItem(label: 'New sketch', onPressed: () {}),
+          ],
+        ),
       ],
     ),
   ),
@@ -169,7 +187,7 @@ Future<SemanticsHandle> pumpA11ySample(
   WidgetTester tester, {
   DrawkitPalette palette = DrawkitPalette.light,
 }) async {
-  tester.view.physicalSize = const Size(1500, 2600);
+  tester.view.physicalSize = const Size(1500, 2900);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
   final semantics = tester.ensureSemantics();

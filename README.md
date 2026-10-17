@@ -48,10 +48,10 @@ DrawkitButton(
 | Surfaces | `DrawkitDivider`, `DrawkitCard`, `DrawkitBadge`, `DrawkitList` |
 | Text | `DrawkitUnderline`, `DrawkitHighlight`, `DrawkitCircle` |
 | Composites | `DrawkitArrow`, `DrawkitChip`, `DrawkitTabs`, `DrawkitTooltip`, `DrawkitAlert`, `DrawkitSteps`, `DrawkitKbd`, `DrawkitQuote`, `DrawkitPager` |
-| Actions | `DrawkitSegmentedButton`, `DrawkitSlider`, `DrawkitStepper`, `DrawkitSearchField`, `DrawkitIconButton`, `DrawkitFab` |
+| Actions | `DrawkitSegmentedButton`, `DrawkitSlider`, `DrawkitStepper`, `DrawkitSearchField`, `DrawkitIconButton`, `DrawkitFab`, `DrawkitFabMenu` + `DrawkitFabMenuItem` |
 | Feedback | `DrawkitDialog` + `showDrawkitDialog`, `DrawkitSheet` + `showDrawkitSheet`, `DrawkitToast` + `showDrawkitToast` + `DrawkitToastAction`, `DrawkitProgressBar`, `DrawkitSpinner`, `DrawkitSkeleton` |
 | Menus | `DrawkitMenu`, `DrawkitMenuItem`, `DrawkitPopover`, `DrawkitAccordion`, `showDrawkitCommandPalette`, `DrawkitDatePicker` + `showDrawkitDatePicker` |
-| Structure | `DrawkitAppBar`, `DrawkitNavRail` + `DrawkitNavDestination`, `DrawkitBottomNav`, `DrawkitBreadcrumb`, `DrawkitTable` |
+| Structure | `DrawkitAppBar`, `DrawkitNavRail` + `DrawkitNavDestination`, `DrawkitBottomNav`, `DrawkitFloatingNavBar`, `DrawkitBreadcrumb`, `DrawkitTable` |
 | Content | `DrawkitHeading`, `DrawkitAvatar` + `DrawkitAvatarGroup`, `DrawkitFigure`, `DrawkitRating`, `DrawkitDoodle`, `DrawkitMarquee` |
 | States | `DrawkitEmpty`, `DrawkitRefresh` (`DrawkitInput`/`DrawkitTextarea` take `error` + `helper`) |
 | Motion | `DrawkitSketchIn`, `DrawkitStagger`, `DrawkitShake` |

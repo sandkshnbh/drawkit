@@ -1,5 +1,22 @@
 ## Unreleased
 
+- **Floating navigation** — `DrawkitFloatingNavBar` floats a paper capsule
+  above the content (directional margin + bottom safe area) with the picked
+  destination wearing a soft ink blob. Two label moods: `showLabels: true`
+  keeps every label beside its glyph, `false` lets only the pick open into
+  a label (flexible, `AnimatedSize`). `hideOnScroll` plus a
+  `ScrollController` tuck the bar below the fold while the list moves down
+  and slide it back on the first upward flick (reduced motion snaps).
+  `DrawkitNavDestination` grew a `badge` count — a small error-ink disc on
+  the icon's corner, folded into the announced label ("Inbox, 3
+  notifications") and drawn by the new `DrawkitNavBadge` in the floating
+  bar, the rail, and the bottom bar alike. `DrawkitFabMenu` is the
+  speed-dial sibling of `DrawkitFab`: labelled pills unfold above the
+  circle (nearest action leads the stagger), the face turns 45°, Escape
+  and outside taps fold it back, and focus walks from the top pill into
+  the trigger. The gallery gained a "Floating" page (both label moods, a
+  scroll-aware list, and the speed dial). 249 tests.
+
 - **Internal cleanup** — the keyboard intents the focusable controls share
   moved into `src/core/intents.dart` (one definition instead of fifteen
   private copies per widget), the popup panels (`DrawkitMenu`,

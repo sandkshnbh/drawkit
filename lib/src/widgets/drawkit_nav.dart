@@ -6,15 +6,86 @@ import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
 
-/// One stop in a [DrawkitNavRail] or [DrawkitBottomNav].
+/// One stop in a [DrawkitNavRail], [DrawkitBottomNav] or
+/// [DrawkitFloatingNavBar].
 @immutable
 class DrawkitNavDestination {
-  const DrawkitNavDestination({required this.label, this.icon});
+  const DrawkitNavDestination({required this.label, this.icon, this.badge});
 
   final String label;
 
   /// Decorative — excluded from semantics; the label is what gets announced.
   final Widget? icon;
+
+  /// Unread counter drawn as a small ink disc on the icon's corner. Folded
+  /// into the announced label ("Inbox, 3 notifications"); the disc itself is
+  /// decorative.
+  final int? badge;
+
+  String get announcement => badge == null
+      ? label
+      : '$label, $badge notification${badge == 1 ? '' : 's'}';
+}
+
+/// The count disc riding a destination's icon. Shared internal: the rail,
+/// bottom bar and floating bar all draw it the same way.
+class DrawkitNavBadge extends StatelessWidget {
+  const DrawkitNavBadge({
+    required this.count,
+    this.style,
+    this.seed,
+    this.animate = true,
+    super.key,
+  });
+
+  final int count;
+  final DrawkitStyle? style;
+  final int? seed;
+  final bool animate;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolved = style ?? DrawkitTheme.of(context);
+    final text = count > 99 ? '99+' : '$count';
+    return DrawkitSurface(
+      builder: (size, options) => [
+        DrawkitLayer(
+          roughCircle(size.width / 2, size.height / 2, size.width / 2, options),
+          drawkitFillPaint(resolved.palette.error),
+        ),
+        DrawkitLayer(
+          roughCircle(
+            size.width / 2,
+            size.height / 2,
+            size.width / 2 + 0.5,
+            options,
+          ),
+          drawkitStroke(resolved),
+        ),
+      ],
+      style: resolved,
+      seed: seed,
+      animate: animate,
+      child: ExcludeSemantics(
+        child: SizedBox(
+          width: text.length > 2 ? 22 : 16,
+          height: 16,
+          child: Center(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 10,
+                height: 1,
+                fontWeight: FontWeight.w600,
+                color: resolved.paperColor,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Vertical navigation rail: destinations stack start-edge top down, the
@@ -187,7 +258,25 @@ class _NavTileState extends State<_NavTile> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (widget.destination.icon != null) ...[
-            widget.destination.icon!,
+            if (widget.destination.badge == null)
+              widget.destination.icon!
+            else
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  widget.destination.icon!,
+                  Positioned(
+                    top: -7,
+                    right: -10,
+                    child: DrawkitNavBadge(
+                      count: widget.destination.badge!,
+                      style: resolved,
+                      seed: widget.seed,
+                      animate: widget.animate,
+                    ),
+                  ),
+                ],
+              ),
             const SizedBox(height: 4),
           ],
           label,
@@ -256,7 +345,7 @@ class _NavTileState extends State<_NavTile> {
         button: true,
         selected: widget.isSelected,
         enabled: enabled,
-        label: widget.destination.label,
+        label: widget.destination.announcement,
         onTap: widget.onTap,
         child: ExcludeSemantics(
           child: GestureDetector(
