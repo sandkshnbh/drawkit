@@ -9,6 +9,8 @@ Animated hand-drawn UI for Flutter. Real widgets on top, seeded pen strokes
 behind, one shared boil clock — a Dart port of [drawably](https://github.com/danielwh2/drawably)
 with **zero dependencies beyond the Flutter SDK** (no Material, no Cupertino).
 
+**Live demo:** <https://sandkshnbh.github.io/drawkit/> — the full gallery, including the RTL/Arabic switch.
+
 ![drawkit buttons](doc/images/gallery-buttons.png)
 
 ## Install
@@ -177,6 +179,10 @@ throughout. `test/a11y_test.dart` and the gallery-wide
 `example/test/a11y_gallery_test.dart` keep it that way.
 
 ## Try the gallery
+
+Live: <https://sandkshnbh.github.io/drawkit/>
+
+Or run it locally:
 
 ```sh
 cd example
