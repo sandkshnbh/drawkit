@@ -38,6 +38,32 @@ void main() {
     await tester.pump();
   }
 
+  bool focusInside(Element context, Element root) {
+    var found = false;
+    context.visitAncestorElements((element) {
+      if (element == root) {
+        found = true;
+        return false;
+      }
+      return true;
+    });
+    return found;
+  }
+
+  /// Tabs until the focused element sits inside [finder], so traversal-order
+  /// changes never silently retarget the next key press.
+  Future<void> tabTo(WidgetTester tester, Finder finder, {int max = 10}) async {
+    for (var i = 0; i < max; i++) {
+      final context = FocusManager.instance.primaryFocus?.context as Element?;
+      if (context != null &&
+          finder.evaluate().any((root) => focusInside(context, root))) {
+        return;
+      }
+      await tab(tester);
+    }
+    fail('focus never reached $finder within $max tabs');
+  }
+
   group('DrawkitSlider keyboard', () {
     Future<double?> slide(
       WidgetTester tester,
@@ -319,7 +345,9 @@ void main() {
   });
 
   group('DrawkitNavRail keyboard', () {
-    testWidgets('destinations activate with Enter', (tester) async {
+    testWidgets('destinations activate with Enter and rove with arrows', (
+      tester,
+    ) async {
       final picks = <int>[];
       await tester.pumpWidget(
         host(
@@ -337,9 +365,10 @@ void main() {
       await key(tester, LogicalKeyboardKey.enter);
       expect(picks, [0]);
 
-      await tab(tester);
-      await key(tester, LogicalKeyboardKey.enter);
+      await key(tester, LogicalKeyboardKey.arrowDown);
       expect(picks, [0, 1]);
+      await key(tester, LogicalKeyboardKey.enter);
+      expect(picks, [0, 1, 1]);
     });
   });
 
@@ -618,7 +647,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('inside'), findsOneWidget);
 
-      await tab(tester, 3);
+      await tabTo(tester, find.widgetWithText(DrawkitButton, 'inside'));
       await key(tester, LogicalKeyboardKey.enter);
       expect(inner, greaterThan(0));
       expect(outside, 0);
@@ -631,6 +660,17 @@ void main() {
   });
 
   group('DrawkitDatePicker keyboard', () {
+    final grid = find.byWidgetPredicate(
+      (widget) =>
+          widget is FocusableActionDetector &&
+          widget.shortcuts?.keys.any(
+                (shortcut) =>
+                    shortcut is SingleActivator &&
+                    shortcut.trigger == LogicalKeyboardKey.arrowRight,
+              ) ==
+              true,
+    );
+
     testWidgets('arrows walk the grid and Enter picks', (tester) async {
       DateTime? picked;
       await tester.pumpWidget(
@@ -642,7 +682,7 @@ void main() {
           ),
         ),
       );
-      await tab(tester, 3);
+      await tabTo(tester, grid);
       await key(tester, LogicalKeyboardKey.arrowRight);
       await key(tester, LogicalKeyboardKey.enter);
       expect(picked, DateTime(2026, 6, 16));
@@ -659,7 +699,7 @@ void main() {
           ),
         ),
       );
-      await tab(tester, 3);
+      await tabTo(tester, grid);
       expect(find.text('June 2026'), findsOneWidget);
       await key(tester, LogicalKeyboardKey.arrowRight);
       expect(find.text('July 2026'), findsOneWidget);
@@ -680,7 +720,7 @@ void main() {
           ),
         ),
       );
-      await tab(tester, 3);
+      await tabTo(tester, grid);
       await key(tester, LogicalKeyboardKey.pageDown);
       expect(find.text('July 2026'), findsOneWidget);
       await key(tester, LogicalKeyboardKey.pageUp);
@@ -707,7 +747,7 @@ void main() {
           direction: TextDirection.rtl,
         ),
       );
-      await tab(tester, 3);
+      await tabTo(tester, grid);
       await key(tester, LogicalKeyboardKey.arrowRight);
       await key(tester, LogicalKeyboardKey.enter);
       expect(picked, DateTime(2026, 6, 14));

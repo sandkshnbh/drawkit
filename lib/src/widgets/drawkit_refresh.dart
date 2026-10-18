@@ -84,6 +84,9 @@ class _DrawkitRefreshState extends State<DrawkitRefresh>
 
   bool _onNotification(ScrollNotification notification) {
     if (_refreshing) return false;
+    // Only the primary scroller may arm a refresh; a nested horizontal
+    // list pinned at its start must not.
+    if (notification.depth != 0) return false;
     if (notification is ScrollStartNotification) {
       if (notification.dragDetails != null) _settle.stop();
       return false;

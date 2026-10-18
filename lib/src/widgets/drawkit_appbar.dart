@@ -45,6 +45,7 @@ class DrawkitAppBar extends StatelessWidget {
           ),
         )
         .merge(titleStyle);
+    final topPadding = MediaQuery.viewPaddingOf(context).top;
 
     return Semantics(
       header: true,
@@ -69,30 +70,33 @@ class DrawkitAppBar extends StatelessWidget {
         style: resolved,
         seed: seed,
         animate: animate,
-        child: SizedBox(
-          height: height,
-          child: Padding(
-            padding: padding,
-            child: Row(
-              children: [
-                if (leading != null) ...[leading!, const SizedBox(width: 10)],
-                Expanded(
-                  child: DefaultTextStyle.merge(
-                    style: text,
-                    child: Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: title,
+        child: Padding(
+          padding: EdgeInsets.only(top: topPadding),
+          child: SizedBox(
+            height: height,
+            child: Padding(
+              padding: padding,
+              child: Row(
+                children: [
+                  if (leading != null) ...[leading!, const SizedBox(width: 10)],
+                  Expanded(
+                    child: DefaultTextStyle.merge(
+                      style: text,
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: title,
+                      ),
                     ),
                   ),
-                ),
-                if (actions.isNotEmpty) ...[
-                  const SizedBox(width: 10),
-                  for (var i = 0; i < actions.length; i++) ...[
-                    if (i > 0) const SizedBox(width: 6),
-                    actions[i],
+                  if (actions.isNotEmpty) ...[
+                    const SizedBox(width: 10),
+                    for (var i = 0; i < actions.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 6),
+                      actions[i],
+                    ],
                   ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

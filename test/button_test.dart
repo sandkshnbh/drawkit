@@ -31,7 +31,21 @@ void main() {
       find.bySemanticsLabel(RegExp('save')),
     );
     expect(semantics.flagsCollection.isEnabled, Tristate.isFalse);
+    final detectors = tester.widgetList<GestureDetector>(
+      find.descendant(
+        of: find.byType(DrawkitButton),
+        matching: find.byType(GestureDetector),
+      ),
+    );
+    expect(detectors, isNotEmpty);
+    expect(
+      detectors.every((detector) => detector.onTap == null),
+      isTrue,
+      reason: 'a disabled button registers no tap handler',
+    );
     await tester.tap(find.text('save'), warnIfMissed: false);
+    await tester.pump();
+    expect(tester.takeException(), isNull);
     semanticsHandle.dispose();
   });
 

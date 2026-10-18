@@ -42,6 +42,7 @@ class DrawkitHeading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = (style ?? DrawkitTheme.of(context)).palette;
+    final level = this.level.clamp(1, 3);
     final textStyle = DefaultTextStyle.of(context).style
         .merge(
           TextStyle(
@@ -54,16 +55,18 @@ class DrawkitHeading extends StatelessWidget {
         )
         .merge(this.textStyle);
 
-    if (!underline) {
-      return Text(text, style: textStyle, textAlign: textAlign);
-    }
-    return DrawkitUnderline(
-      text: text,
-      textStyle: textStyle,
-      textAlign: textAlign,
-      style: style,
-      seed: seed,
-      animate: animate,
+    return Semantics(
+      header: true,
+      child: underline
+          ? DrawkitUnderline(
+              text: text,
+              textStyle: textStyle,
+              textAlign: textAlign,
+              style: style,
+              seed: seed,
+              animate: animate,
+            )
+          : Text(text, style: textStyle, textAlign: textAlign),
     );
   }
 }

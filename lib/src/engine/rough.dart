@@ -55,10 +55,13 @@ List<Offset> ellipsePoints(
   double a0,
   double a1,
   int n,
-) => List<Offset>.generate(n + 1, (i) {
-  final a = a0 + (a1 - a0) * i / n;
-  return Offset(cx + rx * math.cos(a), cy + ry * math.sin(a));
-}, growable: false);
+) {
+  n = math.max(1, n);
+  return List<Offset>.generate(n + 1, (i) {
+    final a = a0 + (a1 - a0) * i / n;
+    return Offset(cx + rx * math.cos(a), cy + ry * math.sin(a));
+  }, growable: false);
+}
 
 List<Offset> arcPoints(
   double cx,
@@ -254,11 +257,14 @@ List<T> variants<T>(
   T Function(RoughOptions o) gen,
   RoughOptions o, [
   int n = 3,
-]) => List<T>.generate(
-  n,
-  (i) => gen(o.copyWith(boilSeed: o.seed + (i + 1) * 7919)),
-  growable: false,
-);
+]) {
+  n = math.max(1, n);
+  return List<T>.generate(
+    n,
+    (i) => gen(o.copyWith(boilSeed: o.seed + (i + 1) * 7919)),
+    growable: false,
+  );
+}
 
 /// Serializes points with the JS pen's `toFixed(2)` formatting. Exists for
 /// fixture tests that prove the port draws exactly what `rough.ts` draws.

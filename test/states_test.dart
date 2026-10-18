@@ -289,10 +289,16 @@ void main() {
         action: DrawkitToastAction(label: 'Undo', onPressed: () {}),
       );
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 2600));
+      await tester.pump(
+        DrawkitToast.plainLinger + const Duration(milliseconds: 200),
+      );
       expect(find.text('deleted'), findsOneWidget);
 
-      await tester.pump(const Duration(milliseconds: 2800));
+      await tester.pump(
+        DrawkitToast.actionLinger -
+            DrawkitToast.plainLinger +
+            const Duration(milliseconds: 600),
+      );
       await tester.pumpAndSettle();
       expect(find.text('deleted'), findsNothing);
     });

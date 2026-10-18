@@ -71,6 +71,7 @@ class DrawkitHighlight extends StatelessWidget {
     seed: seed,
     animate: animate,
     resketchOnPointer: false,
+    repaintBoundary: false,
     layer: (box, options, style) => DrawkitLayer(
       scribbleFill(box.left, box.top, box.width, box.height, options),
       Paint()
@@ -141,6 +142,7 @@ class _TextChrome extends StatelessWidget {
     required this.animate,
     required this.resketchOnPointer,
     required this.layer,
+    this.repaintBoundary = true,
   });
 
   final String text;
@@ -150,6 +152,7 @@ class _TextChrome extends StatelessWidget {
   final int? seed;
   final bool animate;
   final bool resketchOnPointer;
+  final bool repaintBoundary;
   final _BoxLayer layer;
 
   @override
@@ -207,6 +210,7 @@ class _TextChrome extends StatelessWidget {
           seed: seed,
           animate: animate,
           resketchOnPointer: resketchOnPointer,
+          repaintBoundary: repaintBoundary,
           child: Text(
             text,
             style: effective,

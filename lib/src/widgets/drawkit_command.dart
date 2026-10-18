@@ -13,6 +13,9 @@ class DrawkitCommand<T> {
     required this.value,
     this.hint,
     this.keywords = const [],
+    this.leading,
+    this.group,
+    this.enabled = true,
   });
 
   final String label;
@@ -23,6 +26,17 @@ class DrawkitCommand<T> {
 
   /// Extra words the filter may match, beyond [label].
   final List<String> keywords;
+
+  /// Optional glyph shown before the label.
+  final Widget? leading;
+
+  /// Optional section title; consecutive commands sharing a group sit under
+  /// one header.
+  final String? group;
+
+  /// Disabled commands render faint, the arrow walk steps over them, and
+  /// Enter refuses to run them.
+  final bool enabled;
 
   bool matches(String query) {
     final q = query.trim().toLowerCase();
@@ -44,6 +58,8 @@ Future<T?> showDrawkitCommandPalette<T extends Object?>({
   DrawkitStyle? style,
   int? seed,
   bool animate = true,
+  bool Function(DrawkitCommand<T> command, String query)? filterCallback,
+  T? initialSelection,
 }) => showDrawkitDialog<T>(
   context: context,
   style: style,
@@ -58,6 +74,8 @@ Future<T?> showDrawkitCommandPalette<T extends Object?>({
     style: style,
     seed: seed,
     animate: animate,
+    filterCallback: filterCallback,
+    initialSelection: initialSelection,
   ),
 );
 
@@ -69,6 +87,8 @@ class _CommandPalette<T> extends StatefulWidget {
     required this.style,
     required this.seed,
     required this.animate,
+    required this.filterCallback,
+    required this.initialSelection,
   });
 
   final List<DrawkitCommand<T>> commands;
@@ -77,6 +97,8 @@ class _CommandPalette<T> extends StatefulWidget {
   final DrawkitStyle? style;
   final int? seed;
   final bool animate;
+  final bool Function(DrawkitCommand<T> command, String query)? filterCallback;
+  final T? initialSelection;
 
   @override
   State<_CommandPalette<T>> createState() => _CommandPaletteState<T>();
@@ -84,32 +106,83 @@ class _CommandPalette<T> extends StatefulWidget {
 
 class _CommandPaletteState<T> extends State<_CommandPalette<T>> {
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scroll = ScrollController();
+  final Map<DrawkitCommand<T>, GlobalKey> _rowKeys = {};
   String _query = '';
   int _highlighted = 0;
+  bool _invoked = false;
 
   @override
   void dispose() {
     _controller.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
-  List<DrawkitCommand<T>> get _filtered =>
-      widget.commands.where((c) => c.matches(_query)).toList();
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initialSelection;
+    if (initial == null) return;
+    final index = widget.commands.indexWhere(
+      (command) => command.value == initial,
+    );
+    if (index >= 0) _highlighted = index;
+  }
+
+  List<DrawkitCommand<T>> get _filtered {
+    final filter = widget.filterCallback;
+    if (filter == null) {
+      return widget.commands.where((c) => c.matches(_query)).toList();
+    }
+    return widget.commands.where((c) => filter(c, _query)).toList();
+  }
 
   void _move(int delta) {
-    final count = _filtered.length;
-    if (count == 0) return;
-    setState(() => _highlighted = (_highlighted + delta) % count);
+    final filtered = _filtered;
+    if (filtered.isEmpty) return;
+    var index = _highlighted.clamp(0, filtered.length - 1);
+    for (var step = 0; step < filtered.length; step++) {
+      index = (index + delta) % filtered.length;
+      if (filtered[index].enabled) break;
+    }
+    if (!filtered[index].enabled) return;
+    setState(() => _highlighted = index);
+    _revealHighlighted();
   }
 
   void _edge(bool end) {
-    final count = _filtered.length;
-    if (count == 0) return;
-    setState(() => _highlighted = end ? count - 1 : 0);
+    final filtered = _filtered;
+    if (filtered.isEmpty) return;
+    var index = end ? filtered.length - 1 : 0;
+    final step = end ? -1 : 1;
+    while (index >= 0 && index < filtered.length && !filtered[index].enabled) {
+      index += step;
+    }
+    if (index < 0 || index >= filtered.length) return;
+    setState(() => _highlighted = index);
+    _revealHighlighted();
   }
 
-  void _invoke(DrawkitCommand<T> command) =>
-      Navigator.of(context).pop(command.value);
+  /// Keeps the keyboard cursor visible when the arrows walk past the 280px
+  /// viewport, instead of moving an invisible selection.
+  void _revealHighlighted() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final filtered = _filtered;
+      if (filtered.isEmpty) return;
+      final index = _highlighted.clamp(0, filtered.length - 1);
+      final rowContext = _rowKeys[filtered[index]]?.currentContext;
+      if (rowContext == null) return;
+      Scrollable.ensureVisible(rowContext, alignment: 0.5);
+    });
+  }
+
+  void _invoke(DrawkitCommand<T> command) {
+    if (_invoked || !command.enabled) return;
+    _invoked = true;
+    Navigator.of(context).pop(command.value);
+  }
 
   void _invokeHighlighted() {
     final filtered = _filtered;
@@ -156,7 +229,9 @@ class _CommandPaletteState<T> extends State<_CommandPalette<T>> {
           ),
           DrawkitDismissIntent: CallbackAction<DrawkitDismissIntent>(
             onInvoke: (intent) {
-              Navigator.of(context).pop();
+              if (_invoked) return null;
+              _invoked = true;
+              Navigator.maybePop(context);
               return null;
             },
           ),
@@ -195,17 +270,43 @@ class _CommandPaletteState<T> extends State<_CommandPalette<T>> {
               ConstrainedBox(
                 constraints: const BoxConstraints(maxHeight: 280),
                 child: SingleChildScrollView(
+                  controller: _scroll,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      for (var i = 0; i < filtered.length; i++)
+                      for (var i = 0; i < filtered.length; i++) ...[
+                        if (filtered[i].group != null &&
+                            (i == 0 ||
+                                filtered[i - 1].group != filtered[i].group))
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(
+                              10,
+                              i == 0 ? 2 : 10,
+                              10,
+                              4,
+                            ),
+                            child: Text(
+                              filtered[i].group!,
+                              style: TextStyle(
+                                fontSize: 11,
+                                letterSpacing: 0.4,
+                                color: style.palette.inkFaint,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ),
                         _CommandRow(
+                          key: _rowKeys.putIfAbsent(
+                            filtered[i],
+                            () => GlobalKey(),
+                          ),
                           command: filtered[i],
                           highlighted: i == highlighted,
                           ink: style.effectiveStroke,
                           onPick: () => _invoke(filtered[i]),
                         ),
+                      ],
                     ],
                   ),
                 ),
@@ -223,6 +324,7 @@ class _CommandRow extends StatefulWidget {
     required this.highlighted,
     required this.ink,
     required this.onPick,
+    super.key,
   });
 
   final DrawkitCommand<Object?> command;
@@ -240,14 +342,15 @@ class _CommandRowState extends State<_CommandRow> {
   @override
   Widget build(BuildContext context) {
     final palette = DrawkitTheme.of(context).palette;
-    final wash = widget.highlighted || _hovered;
+    final enabled = widget.command.enabled;
+    final wash = enabled && (widget.highlighted || _hovered);
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
-      cursor: SystemMouseCursors.click,
+      cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: widget.onPick,
+        onTap: enabled ? widget.onPick : null,
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: wash
@@ -259,11 +362,16 @@ class _CommandRowState extends State<_CommandRow> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
             child: Row(
               children: [
+                if (widget.command.leading != null)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 8),
+                    child: widget.command.leading!,
+                  ),
                 Expanded(
                   child: Text(
                     widget.command.label,
                     style: TextStyle(
-                      color: palette.ink,
+                      color: enabled ? palette.ink : palette.inkFaint,
                       decoration: TextDecoration.none,
                     ),
                   ),

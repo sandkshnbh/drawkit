@@ -199,7 +199,7 @@ class _DrawkitToggleState extends State<DrawkitToggle>
         excludeFromSemantics: true,
         onTap: widget.enabled ? _toggle : null,
         child: Semantics(
-          checked: widget.value,
+          toggled: widget.value,
           enabled: widget.enabled,
           label: widget.semanticLabel,
           onTap: widget.enabled ? _toggle : null,

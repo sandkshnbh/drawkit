@@ -118,29 +118,32 @@ class _DrawkitFabMenuState extends State<DrawkitFabMenu> {
         ? const Duration(milliseconds: 260)
         : Duration.zero;
 
-    final trigger = DrawkitFab(
-      onPressed: _open ? _close : _openMenu,
-      tone: widget.tone,
-      size: widget.size,
-      style: widget.style,
-      seed: widget.seed,
-      animate: widget.animate,
-      semanticLabel: widget.semanticLabel,
-      focusNode: _triggerNode,
-      child: AnimatedRotation(
-        turns: _open ? 0.125 : 0,
-        duration: duration,
-        curve: drawkitEase,
-        child:
-            widget.child ??
-            const Text(
-              '＋',
-              style: TextStyle(
-                fontSize: 22,
-                height: 1,
-                decoration: TextDecoration.none,
+    final trigger = Semantics(
+      expanded: _open,
+      child: DrawkitFab(
+        onPressed: _open ? _close : _openMenu,
+        tone: widget.tone,
+        size: widget.size,
+        style: widget.style,
+        seed: widget.seed,
+        animate: widget.animate,
+        semanticLabel: widget.semanticLabel,
+        focusNode: _triggerNode,
+        child: AnimatedRotation(
+          turns: _open ? 0.125 : 0,
+          duration: duration,
+          curve: drawkitEase,
+          child:
+              widget.child ??
+              const Text(
+                '＋',
+                style: TextStyle(
+                  fontSize: 22,
+                  height: 1,
+                  decoration: TextDecoration.none,
+                ),
               ),
-            ),
+        ),
       ),
     );
 
@@ -246,12 +249,14 @@ class _DialItem extends StatelessWidget {
                 ExcludeSemantics(child: item.icon!),
                 const SizedBox(width: 8),
               ],
-              Text(
-                item.label,
-                style: const TextStyle(
-                  fontSize: 13,
-                  height: 1.2,
-                  decoration: TextDecoration.none,
+              ExcludeSemantics(
+                child: Text(
+                  item.label,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    height: 1.2,
+                    decoration: TextDecoration.none,
+                  ),
                 ),
               ),
             ],

@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:drawkit/drawkit.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -17,6 +20,20 @@ void main() {
     child: Center(child: SizedBox(width: 120, height: 36, child: child)),
   );
 
+  Future<Uint8List> pixels(WidgetTester tester) async {
+    final boundary = tester.renderObject<RenderRepaintBoundary>(
+      find
+          .descendant(
+            of: find.byType(DrawkitSurface),
+            matching: find.byType(RepaintBoundary),
+          )
+          .first,
+    );
+    final image = await boundary.toImage();
+    final data = await image.toByteData();
+    return data!.buffer.asUint8List();
+  }
+
   testWidgets('paints three boil frames through one shared clock', (
     tester,
   ) async {
@@ -26,7 +43,22 @@ void main() {
         DrawkitSurface(
           builder: (size, options) {
             seeds.add(options.seed);
-            return layers(size, options);
+            // A real pen stroke, so each prebuilt frame's boil seed shows.
+            return [
+              DrawkitLayer(
+                roughLine(
+                  4,
+                  size.height / 2,
+                  size.width - 4,
+                  size.height / 2,
+                  options,
+                ),
+                Paint()
+                  ..color = const Color(0xFF2724D1)
+                  ..style = PaintingStyle.stroke
+                  ..strokeWidth = 2,
+              ),
+            ];
           },
           child: const SizedBox.expand(),
         ),
@@ -34,8 +66,13 @@ void main() {
     );
     expect(seeds.length, 1, reason: 'all three frames share the sketch seed');
     expect(find.byType(CustomPaint), findsWidgets);
-    await tester.pump(const Duration(milliseconds: 400));
-    await tester.pump(const Duration(milliseconds: 400));
+
+    // The three prebuilt frames really do swap over the clock: pixels half a
+    // cycle apart cannot match unless the painter repaints.
+    final first = await tester.runAsync(() => pixels(tester));
+    await tester.pump(const Duration(milliseconds: 500));
+    final second = await tester.runAsync(() => pixels(tester));
+    expect(second, isNot(equals(first)));
   });
 
   testWidgets('reduced motion freezes on a single frame', (tester) async {

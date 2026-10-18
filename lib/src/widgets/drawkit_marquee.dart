@@ -54,15 +54,35 @@ class _DrawkitMarqueeState extends State<DrawkitMarquee>
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(DrawkitMarquee oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.speed != widget.speed || oldWidget.gap != widget.gap) {
+      _refreshDuration();
+    }
+  }
+
+  Duration? _durationFor(double width) {
+    if (!(widget.speed > 0)) return null;
+    return Duration(
+      milliseconds: (((width + widget.gap) / widget.speed) * 1000).round(),
+    );
+  }
+
+  void _refreshDuration() {
+    final width = _childWidth;
+    if (width == null) return;
+    final duration = _durationFor(width);
+    if (duration != null) _controller.duration = duration;
+  }
+
   void _measure(Duration _) {
     if (!mounted) return;
     final width = _childKey.currentContext?.size?.width;
     if (width != null && width != _childWidth) {
       setState(() {
         _childWidth = width;
-        _controller.duration = Duration(
-          milliseconds: (((width + widget.gap) / widget.speed) * 1000).round(),
-        );
+        _refreshDuration();
       });
     }
   }
@@ -73,7 +93,10 @@ class _DrawkitMarqueeState extends State<DrawkitMarquee>
     final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
     final reduceMotion = drawkitReduceMotion(context);
     final running =
-        widget.animate && !reduceMotion && !(widget.pauseOnHover && _paused);
+        widget.animate &&
+        widget.speed > 0 &&
+        !reduceMotion &&
+        !(widget.pauseOnHover && _paused);
 
     if (running && !_controller.isAnimating) {
       _controller.repeat();

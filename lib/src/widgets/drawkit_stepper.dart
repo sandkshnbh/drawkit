@@ -20,6 +20,8 @@ class DrawkitStepper extends StatelessWidget {
     this.max = 100,
     this.step = 1,
     this.semanticLabel,
+    this.decreaseLabel = 'decrease',
+    this.increaseLabel = 'increase',
     this.style,
     this.seed,
     this.animate = true,
@@ -35,6 +37,8 @@ class DrawkitStepper extends StatelessWidget {
   final int max;
   final int step;
   final String? semanticLabel;
+  final String decreaseLabel;
+  final String increaseLabel;
   final DrawkitStyle? style;
   final int? seed;
   final bool animate;
@@ -52,7 +56,7 @@ class DrawkitStepper extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         DrawkitIconButton(
-          semanticLabel: 'decrease',
+          semanticLabel: decreaseLabel,
           size: 30,
           variant: DrawkitButtonVariant.outline,
           style: resolvedStyle,
@@ -65,6 +69,12 @@ class DrawkitStepper extends StatelessWidget {
         Semantics(
           label: semanticLabel,
           value: '$value',
+          enabled: enabled,
+          liveRegion: true,
+          increasedValue: '$max',
+          decreasedValue: '$min',
+          onIncrease: canIncrease ? () => _report(value + step) : null,
+          onDecrease: canDecrease ? () => _report(value - step) : null,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minWidth: 52),
             child: DrawkitSurface(
@@ -97,7 +107,7 @@ class DrawkitStepper extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         DrawkitIconButton(
-          semanticLabel: 'increase',
+          semanticLabel: increaseLabel,
           size: 30,
           variant: DrawkitButtonVariant.outline,
           style: resolvedStyle,

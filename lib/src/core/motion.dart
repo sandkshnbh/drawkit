@@ -74,13 +74,24 @@ class _DrawkitSketchInState extends State<DrawkitSketchIn>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_started) return;
-    _started = true;
-    if (drawkitReduceMotion(context)) {
-      _controller.value = 1;
-    } else {
-      _controller.forward();
+    final reduced = drawkitReduceMotion(context);
+    if (!_started) {
+      _started = true;
+      if (reduced) {
+        _controller.value = 1;
+      } else {
+        _controller.forward();
+      }
+      return;
     }
+    if (reduced && _controller.value < 1) _controller.value = 1;
+  }
+
+  @override
+  void didUpdateWidget(DrawkitSketchIn oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _controller.duration = widget.duration;
+    _progress.curve = widget.curve;
   }
 
   @override
@@ -173,13 +184,17 @@ class _DrawkitStaggerState extends State<DrawkitStagger>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_started) return;
-    _started = true;
-    if (drawkitReduceMotion(context)) {
-      _controller.value = 1;
-    } else {
-      _controller.forward();
+    final reduced = drawkitReduceMotion(context);
+    if (!_started) {
+      _started = true;
+      if (reduced) {
+        _controller.value = 1;
+      } else {
+        _controller.forward();
+      }
+      return;
     }
+    if (reduced && _controller.value < 1) _controller.value = 1;
   }
 
   void _disposeProgress() {
@@ -269,6 +284,7 @@ class _DrawkitShakeState extends State<DrawkitShake>
   @override
   void didUpdateWidget(DrawkitShake oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _controller.duration = widget.duration;
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_onShake);
       _seen = widget.controller.ticks;

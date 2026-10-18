@@ -54,8 +54,10 @@ class DrawkitBreadcrumb extends StatelessWidget {
 
     return Semantics(
       container: true,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Wrap(
+        spacing: 0,
+        runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           for (var i = 0; i < items.length; i++) ...[
             if (i > 0)

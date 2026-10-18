@@ -309,12 +309,14 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
         child: Semantics(
           button: true,
           enabled: widget.enabled,
+          expanded: _menu.isOpen,
+          value: _label,
           label: widget.semanticLabel,
-          onTap: _toggleMenu,
+          onTap: widget.enabled ? _toggleMenu : null,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             excludeFromSemantics: true,
-            onTap: _toggleMenu,
+            onTap: widget.enabled ? _toggleMenu : null,
             child: ConstrainedBox(
               constraints: BoxConstraints(minWidth: widget.minWidth),
               child: DrawkitSurface(

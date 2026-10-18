@@ -1,3 +1,4 @@
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -178,6 +179,7 @@ class DrawkitTabs extends StatefulWidget {
 
 class _DrawkitTabsState extends State<DrawkitTabs> {
   late List<FocusNode> _nodes;
+  late int _seed = widget.seed ?? randomSeed();
   int? _focused;
 
   bool get _enabled => widget.onChanged != null;
@@ -200,6 +202,9 @@ class _DrawkitTabsState extends State<DrawkitTabs> {
   @override
   void didUpdateWidget(DrawkitTabs oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.seed != null && widget.seed != oldWidget.seed) {
+      _seed = widget.seed!;
+    }
     if (widget.labels.length != _nodes.length) {
       for (final node in _nodes) {
         node.dispose();
@@ -251,120 +256,124 @@ class _DrawkitTabsState extends State<DrawkitTabs> {
     final enabled = _enabled;
     final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
     final horizontal = rtl ? -1 : 1;
-    final base = widget.seed ?? randomSeed();
+    final base = _seed;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 0; i < widget.labels.length; i++)
-          Padding(
-            padding: EdgeInsetsDirectional.only(
-              end: i == widget.labels.length - 1 ? 0 : 18,
-            ),
-            child: FocusableActionDetector(
-              focusNode: _nodes[i],
-              enabled: enabled,
-              onShowFocusHighlight: (value) => setState(() {
-                if (value) {
-                  _focused = i;
-                } else if (_focused == i) {
-                  _focused = null;
-                }
-              }),
-              shortcuts: {
-                SingleActivator(LogicalKeyboardKey.arrowRight):
-                    DrawkitMoveIntent(horizontal),
-                SingleActivator(LogicalKeyboardKey.arrowLeft):
-                    DrawkitMoveIntent(-horizontal),
-                const SingleActivator(LogicalKeyboardKey.arrowDown):
-                    const DrawkitMoveIntent(1),
-                const SingleActivator(LogicalKeyboardKey.arrowUp):
-                    const DrawkitMoveIntent(-1),
-                const SingleActivator(LogicalKeyboardKey.home):
-                    const DrawkitEdgeIntent(false),
-                const SingleActivator(LogicalKeyboardKey.end):
-                    const DrawkitEdgeIntent(true),
-                const SingleActivator(LogicalKeyboardKey.space):
-                    const ActivateIntent(),
-                const SingleActivator(LogicalKeyboardKey.enter):
-                    const ActivateIntent(),
-              },
-              actions: {
-                DrawkitMoveIntent: CallbackAction<DrawkitMoveIntent>(
-                  onInvoke: (intent) {
-                    _move(intent.delta);
-                    return null;
-                  },
-                ),
-                DrawkitEdgeIntent: CallbackAction<DrawkitEdgeIntent>(
-                  onInvoke: (intent) {
-                    _edge(intent.end);
-                    return null;
-                  },
-                ),
-                ActivateIntent: CallbackAction<ActivateIntent>(
-                  onInvoke: (intent) {
-                    _pick(i);
-                    return null;
-                  },
-                ),
-              },
-              mouseCursor: enabled
-                  ? SystemMouseCursors.click
-                  : SystemMouseCursors.basic,
-              child: Semantics(
-                selected: i == widget.active,
-                button: true,
+    return Semantics(
+      container: true,
+      role: SemanticsRole.tabBar,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < widget.labels.length; i++)
+            Padding(
+              padding: EdgeInsetsDirectional.only(
+                end: i == widget.labels.length - 1 ? 0 : 18,
+              ),
+              child: FocusableActionDetector(
+                focusNode: _nodes[i],
                 enabled: enabled,
-                onTap: enabled ? () => widget.onChanged!(i) : null,
-                child: GestureDetector(
-                  excludeFromSemantics: true,
+                onShowFocusHighlight: (value) => setState(() {
+                  if (value) {
+                    _focused = i;
+                  } else if (_focused == i) {
+                    _focused = null;
+                  }
+                }),
+                shortcuts: {
+                  SingleActivator(LogicalKeyboardKey.arrowRight):
+                      DrawkitMoveIntent(horizontal),
+                  SingleActivator(LogicalKeyboardKey.arrowLeft):
+                      DrawkitMoveIntent(-horizontal),
+                  const SingleActivator(LogicalKeyboardKey.arrowDown):
+                      const DrawkitMoveIntent(1),
+                  const SingleActivator(LogicalKeyboardKey.arrowUp):
+                      const DrawkitMoveIntent(-1),
+                  const SingleActivator(LogicalKeyboardKey.home):
+                      const DrawkitEdgeIntent(false),
+                  const SingleActivator(LogicalKeyboardKey.end):
+                      const DrawkitEdgeIntent(true),
+                  const SingleActivator(LogicalKeyboardKey.space):
+                      const ActivateIntent(),
+                  const SingleActivator(LogicalKeyboardKey.enter):
+                      const ActivateIntent(),
+                },
+                actions: {
+                  DrawkitMoveIntent: CallbackAction<DrawkitMoveIntent>(
+                    onInvoke: (intent) {
+                      _move(intent.delta);
+                      return null;
+                    },
+                  ),
+                  DrawkitEdgeIntent: CallbackAction<DrawkitEdgeIntent>(
+                    onInvoke: (intent) {
+                      _edge(intent.end);
+                      return null;
+                    },
+                  ),
+                  ActivateIntent: CallbackAction<ActivateIntent>(
+                    onInvoke: (intent) {
+                      _pick(i);
+                      return null;
+                    },
+                  ),
+                },
+                mouseCursor: enabled
+                    ? SystemMouseCursors.click
+                    : SystemMouseCursors.basic,
+                child: Semantics(
+                  role: SemanticsRole.tab,
+                  selected: i == widget.active,
+                  enabled: enabled,
                   onTap: enabled ? () => widget.onChanged!(i) : null,
-                  child: DrawkitTapTarget(
-                    child: DrawkitSurface(
-                      builder: (size, options) => [
-                        if (_focused == i && enabled)
-                          drawkitFocusRingRect(
-                            size: size,
-                            radius: 8,
-                            gapX: 6,
-                            gapY: 4,
-                            options: options,
-                            style: resolvedStyle,
+                  child: GestureDetector(
+                    excludeFromSemantics: true,
+                    onTap: enabled ? () => widget.onChanged!(i) : null,
+                    child: DrawkitTapTarget(
+                      child: DrawkitSurface(
+                        builder: (size, options) => [
+                          if (_focused == i && enabled)
+                            drawkitFocusRingRect(
+                              size: size,
+                              radius: 8,
+                              gapX: 6,
+                              gapY: 4,
+                              options: options,
+                              style: resolvedStyle,
+                            ),
+                        ],
+                        style: resolvedStyle,
+                        seed: base + 31 * (i + 1),
+                        animate: widget.animate,
+                        enabled: enabled,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 2,
                           ),
-                      ],
-                      style: resolvedStyle,
-                      seed: base + 31 * (i + 1),
-                      animate: widget.animate,
-                      enabled: enabled,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 2,
-                        ),
-                        child: i == widget.active
-                            ? DrawkitUnderline(
-                                text: widget.labels[i],
-                                textStyle: widget.textStyle,
-                                style: widget.style,
-                                seed: base,
-                                animate: widget.animate,
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.only(bottom: 2),
-                                child: Text(
-                                  widget.labels[i],
-                                  style: widget.textStyle,
+                          child: i == widget.active
+                              ? DrawkitUnderline(
+                                  text: widget.labels[i],
+                                  textStyle: widget.textStyle,
+                                  style: widget.style,
+                                  seed: base,
+                                  animate: widget.animate,
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.only(bottom: 2),
+                                  child: Text(
+                                    widget.labels[i],
+                                    style: widget.textStyle,
+                                  ),
                                 ),
-                              ),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -375,6 +384,7 @@ class DrawkitTooltip extends StatefulWidget {
   const DrawkitTooltip({
     required this.target,
     required this.child,
+    this.semanticLabel,
     this.style,
     this.seed,
     this.animate = true,
@@ -383,6 +393,9 @@ class DrawkitTooltip extends StatefulWidget {
 
   final GlobalKey target;
   final Widget child;
+
+  /// Announced as the tip's tooltip text; omit for purely decorative tips.
+  final String? semanticLabel;
   final DrawkitStyle? style;
   final int? seed;
   final bool animate;
@@ -393,21 +406,38 @@ class DrawkitTooltip extends StatefulWidget {
 
 class _DrawkitTooltipState extends State<DrawkitTooltip> {
   final GlobalKey _tipKey = GlobalKey();
+  late int _seed = widget.seed ?? randomSeed();
+
+  @override
+  void didUpdateWidget(DrawkitTooltip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.seed != null && widget.seed != oldWidget.seed) {
+      _seed = widget.seed!;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final base = widget.seed ?? randomSeed();
+    final base = _seed;
+    Widget card = DrawkitCard(
+      key: _tipKey,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+      style: widget.style,
+      seed: base,
+      animate: widget.animate,
+      child: widget.child,
+    );
+    if (widget.semanticLabel != null) {
+      card = Semantics(
+        container: true,
+        tooltip: widget.semanticLabel,
+        child: card,
+      );
+    }
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        DrawkitCard(
-          key: _tipKey,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-          style: widget.style,
-          seed: base,
-          animate: widget.animate,
-          child: widget.child,
-        ),
+        card,
         Positioned.fill(
           child: IgnorePointer(
             child: DrawkitArrow(
@@ -425,7 +455,7 @@ class _DrawkitTooltipState extends State<DrawkitTooltip> {
 }
 
 /// Card around the alert, badge on an optional tag.
-class DrawkitAlert extends StatelessWidget {
+class DrawkitAlert extends StatefulWidget {
   const DrawkitAlert({
     required this.child,
     this.tag,
@@ -442,27 +472,42 @@ class DrawkitAlert extends StatelessWidget {
   final bool animate;
 
   @override
+  State<DrawkitAlert> createState() => _DrawkitAlertState();
+}
+
+class _DrawkitAlertState extends State<DrawkitAlert> {
+  late int _seed = widget.seed ?? randomSeed();
+
+  @override
+  void didUpdateWidget(DrawkitAlert oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.seed != null && widget.seed != oldWidget.seed) {
+      _seed = widget.seed!;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final base = seed ?? randomSeed();
+    final base = _seed;
     return DrawkitCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      style: style,
+      style: widget.style,
       seed: base,
-      animate: animate,
+      animate: widget.animate,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (tag != null) ...[
+          if (widget.tag != null) ...[
             DrawkitBadge(
-              style: style,
+              style: widget.style,
               seed: base + 1,
-              animate: animate,
+              animate: widget.animate,
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-              child: tag!,
+              child: widget.tag!,
             ),
             const SizedBox(width: 8),
           ],
-          Flexible(child: child),
+          Flexible(child: widget.child),
         ],
       ),
     );
@@ -542,7 +587,7 @@ class DrawkitKbd extends StatelessWidget {
 /// The rule spans the quote's block width (the `drawablyDivider` contract:
 /// a line at the middle of a 10px-tall footer box), with the attribution
 /// starting 8px into that band — `roughLine` at `y=5` clears the text.
-class DrawkitQuote extends StatelessWidget {
+class DrawkitQuote extends StatefulWidget {
   const DrawkitQuote({
     required this.text,
     this.textStyle,
@@ -561,21 +606,36 @@ class DrawkitQuote extends StatelessWidget {
   final bool animate;
 
   @override
+  State<DrawkitQuote> createState() => _DrawkitQuoteState();
+}
+
+class _DrawkitQuoteState extends State<DrawkitQuote> {
+  late int _seed = widget.seed ?? randomSeed();
+
+  @override
+  void didUpdateWidget(DrawkitQuote oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.seed != null && widget.seed != oldWidget.seed) {
+      _seed = widget.seed!;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final base = seed ?? randomSeed();
-    final resolved = style ?? DrawkitTheme.of(context);
+    final base = _seed;
+    final resolved = widget.style ?? DrawkitTheme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
         DrawkitHighlight(
-          text: text,
-          textStyle: textStyle,
+          text: widget.text,
+          textStyle: widget.textStyle,
           style: resolved,
           seed: base,
-          animate: animate,
+          animate: widget.animate,
         ),
-        if (footer != null)
+        if (widget.footer != null)
           Padding(
             padding: const EdgeInsets.only(top: 10),
             child: Stack(
@@ -601,7 +661,7 @@ class DrawkitQuote extends StatelessWidget {
                     ],
                     style: resolved,
                     seed: base + 1,
-                    animate: animate,
+                    animate: widget.animate,
                     resketchOnPointer: false,
                     child: const SizedBox(height: 10),
                   ),
@@ -611,7 +671,7 @@ class DrawkitQuote extends StatelessWidget {
                   child: DefaultTextStyle(
                     style: DefaultTextStyle.of(context).style
                         .copyWith(color: resolved.palette.inkMuted),
-                    child: footer!,
+                    child: widget.footer!,
                   ),
                 ),
               ],
@@ -623,7 +683,7 @@ class DrawkitQuote extends StatelessWidget {
 }
 
 /// Page buttons: the current page is solid, the rest outlined.
-class DrawkitPager extends StatelessWidget {
+class DrawkitPager extends StatefulWidget {
   const DrawkitPager({
     required this.count,
     required this.page,
@@ -644,27 +704,48 @@ class DrawkitPager extends StatelessWidget {
   final bool animate;
 
   @override
+  State<DrawkitPager> createState() => _DrawkitPagerState();
+}
+
+class _DrawkitPagerState extends State<DrawkitPager> {
+  late int _seed = widget.seed ?? randomSeed();
+
+  @override
+  void didUpdateWidget(DrawkitPager oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.seed != null && widget.seed != oldWidget.seed) {
+      _seed = widget.seed!;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final base = seed ?? randomSeed();
+    final base = _seed;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < widget.count; i++)
           Padding(
-            padding: EdgeInsetsDirectional.only(end: i == count - 1 ? 0 : 6),
+            padding: EdgeInsetsDirectional.only(
+              end: i == widget.count - 1 ? 0 : 6,
+            ),
             child: Semantics(
-              selected: i == page,
+              selected: i == widget.page,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(minWidth: 34),
                 child: DrawkitButton(
-                  variant: i == page
+                  variant: i == widget.page
                       ? DrawkitButtonVariant.solid
                       : DrawkitButtonVariant.outline,
-                  style: style,
+                  style: widget.style,
                   seed: base + i,
-                  animate: animate,
-                  onPressed: onPage == null ? null : () => onPage!(i),
-                  child: Center(child: Text(labels?[i] ?? '${i + 1}')),
+                  animate: widget.animate,
+                  semanticLabel:
+                      widget.labels?[i] ?? 'page ${i + 1} of ${widget.count}',
+                  onPressed: widget.onPage == null
+                      ? null
+                      : () => widget.onPage!(i),
+                  child: Center(child: Text(widget.labels?[i] ?? '${i + 1}')),
                 ),
               ),
             ),

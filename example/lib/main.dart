@@ -1967,7 +1967,10 @@ class _MenusPageState extends State<MenusPage> {
             ],
           ),
           const SizedBox(height: 22),
-          Text('Tooltip — after 300 ms of hover or focus', style: body),
+          Text(
+            'Tooltip — a sketched card with an arrow to its target',
+            style: body,
+          ),
           const SizedBox(height: 10),
           SizedBox(
             height: 130,
@@ -2144,8 +2147,8 @@ class _NavigationPageState extends State<NavigationPage> {
           ),
           const SizedBox(height: 22),
           Text(
-            'Scroll-aware — drag the list down: the bar tucks away, the '
-            'first upward flick brings it back',
+            'Scroll-aware — scrolling forward tucks the bar away, the '
+            'first pull back brings it home',
             style: body.copyWith(color: palette.inkMuted),
           ),
           const SizedBox(height: 10),
@@ -2243,7 +2246,7 @@ class _TabsPageState extends State<TabsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Tabs — the underline slides to the pick',
+            'Tabs — the pick gets a drawn underline of its own',
             style: body.copyWith(color: palette.inkMuted),
           ),
           const SizedBox(height: 10),

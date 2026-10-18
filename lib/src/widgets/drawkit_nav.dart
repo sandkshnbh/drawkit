@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../core/focus.dart';
+import '../core/intents.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -95,7 +96,8 @@ class DrawkitNavBadge extends StatelessWidget {
 
 /// Vertical navigation rail: destinations stack start-edge top down, the
 /// chosen tile wears a scribble wash and redraws itself on every pick.
-class DrawkitNavRail extends StatelessWidget {
+/// Arrow keys walk the focus from tile to tile, Home/End jump to the edges.
+class DrawkitNavRail extends StatefulWidget {
   const DrawkitNavRail({
     required this.destinations,
     required this.selected,
@@ -119,22 +121,103 @@ class DrawkitNavRail extends StatelessWidget {
   final bool animate;
 
   @override
+  State<DrawkitNavRail> createState() => _DrawkitNavRailState();
+}
+
+class _DrawkitNavRailState extends State<DrawkitNavRail> {
+  late List<FocusNode> _nodes;
+  int? _focused;
+
+  bool get _enabled => widget.onChanged != null;
+
+  int get _tabStop =>
+      widget.selected >= 0 && widget.selected < widget.destinations.length
+      ? widget.selected
+      : 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _nodes = _createNodes();
+  }
+
+  List<FocusNode> _createNodes() => [
+    for (var i = 0; i < widget.destinations.length; i++)
+      FocusNode(skipTraversal: i != _tabStop),
+  ];
+
+  @override
+  void didUpdateWidget(DrawkitNavRail oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.destinations.length != _nodes.length) {
+      for (final node in _nodes) {
+        node.dispose();
+      }
+      _nodes = _createNodes();
+      _focused = null;
+    } else if (widget.selected != oldWidget.selected ||
+        widget.onChanged != oldWidget.onChanged) {
+      _syncTraversal();
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final node in _nodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  void _syncTraversal() {
+    final stop = _tabStop;
+    for (var i = 0; i < _nodes.length; i++) {
+      _nodes[i].skipTraversal = !_enabled || i != stop;
+    }
+  }
+
+  void _pick(int index) {
+    if (!_enabled || widget.destinations.isEmpty) return;
+    if (index != widget.selected) widget.onChanged!(index);
+    _nodes[index].requestFocus();
+  }
+
+  void _move(int delta) {
+    final count = widget.destinations.length;
+    if (count == 0) return;
+    final from = _focused ?? _tabStop;
+    _pick((from + delta + count) % count);
+  }
+
+  void _edge(bool end) => _pick(end ? widget.destinations.length - 1 : 0);
+
+  @override
   Widget build(BuildContext context) {
-    final enabled = onChanged != null;
+    final enabled = _enabled;
     return Semantics(
       container: true,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (var i = 0; i < destinations.length; i++)
+          for (var i = 0; i < widget.destinations.length; i++)
             _NavTile(
-              destination: destinations[i],
-              isSelected: i == selected && enabled,
-              width: width,
-              onTap: enabled ? () => onChanged!(i) : null,
-              style: style,
-              seed: seed == null ? null : seed! + i,
-              animate: animate,
+              destination: widget.destinations[i],
+              isSelected: i == widget.selected && enabled,
+              width: widget.width,
+              onTap: enabled ? () => widget.onChanged!(i) : null,
+              focusNode: _nodes[i],
+              onFocusChanged: (value) => setState(() {
+                if (value) {
+                  _focused = i;
+                } else if (_focused == i) {
+                  _focused = null;
+                }
+              }),
+              move: _move,
+              edge: _edge,
+              style: widget.style,
+              seed: widget.seed == null ? null : widget.seed! + i,
+              animate: widget.animate,
             ),
         ],
       ),
@@ -170,6 +253,7 @@ class DrawkitBottomNav extends StatelessWidget {
     final resolved = style ?? DrawkitTheme.of(context);
     final enabled = onChanged != null;
     final barHeight = MediaQuery.textScalerOf(context).scale(height);
+    final viewPadding = MediaQuery.viewPaddingOf(context);
     return Semantics(
       container: true,
       child: DrawkitSurface(
@@ -186,23 +270,26 @@ class DrawkitBottomNav extends StatelessWidget {
         style: resolved,
         seed: seed,
         animate: animate,
-        child: SizedBox(
-          height: barHeight,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (var i = 0; i < destinations.length; i++)
-                Expanded(
-                  child: _NavTile(
-                    destination: destinations[i],
-                    isSelected: i == selected && enabled,
-                    onTap: enabled ? () => onChanged!(i) : null,
-                    style: style,
-                    seed: seed == null ? null : seed! + i,
-                    animate: animate,
+        child: Padding(
+          padding: EdgeInsets.only(bottom: viewPadding.bottom),
+          child: SizedBox(
+            height: barHeight,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < destinations.length; i++)
+                  Expanded(
+                    child: _NavTile(
+                      destination: destinations[i],
+                      isSelected: i == selected && enabled,
+                      onTap: enabled ? () => onChanged!(i) : null,
+                      style: style,
+                      seed: seed == null ? null : seed! + i,
+                      animate: animate,
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -216,6 +303,10 @@ class _NavTile extends StatefulWidget {
     required this.isSelected,
     required this.onTap,
     this.width,
+    this.focusNode,
+    this.onFocusChanged,
+    this.move,
+    this.edge,
     this.style,
     this.seed,
     this.animate = true,
@@ -225,6 +316,12 @@ class _NavTile extends StatefulWidget {
   final bool isSelected;
   final VoidCallback? onTap;
   final double? width;
+  final FocusNode? focusNode;
+  final ValueChanged<bool>? onFocusChanged;
+
+  /// Roving-arrow hooks; null keeps the tile to Enter/Space only.
+  final ValueChanged<int>? move;
+  final ValueChanged<bool>? edge;
   final DrawkitStyle? style;
   final int? seed;
   final bool animate;
@@ -271,9 +368,9 @@ class _NavTileState extends State<_NavTile> {
                 clipBehavior: Clip.none,
                 children: [
                   widget.destination.icon!,
-                  Positioned(
+                  PositionedDirectional(
                     top: -7,
-                    right: -10,
+                    end: -10,
                     child: DrawkitNavBadge(
                       count: widget.destination.badge!,
                       style: resolved,
@@ -330,11 +427,29 @@ class _NavTileState extends State<_NavTile> {
     }
 
     return FocusableActionDetector(
+      focusNode: widget.focusNode,
       enabled: enabled,
-      onShowFocusHighlight: (value) => setState(() => _focused = value),
+      onShowFocusHighlight: (value) {
+        setState(() => _focused = value);
+        widget.onFocusChanged?.call(value);
+      },
       shortcuts: {
         const SingleActivator(LogicalKeyboardKey.space): const ActivateIntent(),
         const SingleActivator(LogicalKeyboardKey.enter): const ActivateIntent(),
+        if (widget.move != null) ...{
+          const SingleActivator(LogicalKeyboardKey.arrowUp):
+              const DrawkitMoveIntent(-1),
+          const SingleActivator(LogicalKeyboardKey.arrowDown):
+              const DrawkitMoveIntent(1),
+          const SingleActivator(LogicalKeyboardKey.arrowLeft):
+              const DrawkitMoveIntent(-1),
+          const SingleActivator(LogicalKeyboardKey.arrowRight):
+              const DrawkitMoveIntent(1),
+          const SingleActivator(LogicalKeyboardKey.home):
+              const DrawkitEdgeIntent(false),
+          const SingleActivator(LogicalKeyboardKey.end):
+              const DrawkitEdgeIntent(true),
+        },
       },
       actions: {
         ActivateIntent: CallbackAction<ActivateIntent>(
@@ -343,6 +458,20 @@ class _NavTileState extends State<_NavTile> {
             return null;
           },
         ),
+        if (widget.move != null) ...{
+          DrawkitMoveIntent: CallbackAction<DrawkitMoveIntent>(
+            onInvoke: (intent) {
+              widget.move!(intent.delta);
+              return null;
+            },
+          ),
+          DrawkitEdgeIntent: CallbackAction<DrawkitEdgeIntent>(
+            onInvoke: (intent) {
+              widget.edge?.call(intent.end);
+              return null;
+            },
+          ),
+        },
       },
       mouseCursor: enabled
           ? SystemMouseCursors.click

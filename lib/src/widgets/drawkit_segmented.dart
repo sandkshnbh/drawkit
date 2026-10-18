@@ -32,6 +32,9 @@ class DrawkitSegmentedButton<T> extends StatefulWidget {
     required this.segments,
     required this.selected,
     required this.onChanged,
+    this.focusNode,
+    this.autofocus = false,
+    this.semanticLabel,
     this.textStyle,
     this.style,
     this.seed,
@@ -44,6 +47,14 @@ class DrawkitSegmentedButton<T> extends StatefulWidget {
 
   /// Null disables the whole control.
   final ValueChanged<T>? onChanged;
+
+  /// External node for the segment that is the Tab stop (the selected one,
+  /// or the first while the selection matches nothing).
+  final FocusNode? focusNode;
+  final bool autofocus;
+
+  /// Group label announced before the segment labels.
+  final String? semanticLabel;
 
   final TextStyle? textStyle;
   final DrawkitStyle? style;
@@ -71,24 +82,43 @@ class _DrawkitSegmentedButtonState<T> extends State<DrawkitSegmentedButton<T>> {
   @override
   void initState() {
     super.initState();
-    _nodes = [
-      for (var i = 0; i < widget.segments.length; i++)
-        FocusNode(skipTraversal: i != _tabStop),
-    ];
+    _nodes = _makeNodes();
+  }
+
+  List<FocusNode> _makeNodes() => [
+    for (var i = 0; i < widget.segments.length; i++)
+      i == _tabStop && widget.focusNode != null
+          ? widget.focusNode!
+          : FocusNode(skipTraversal: i != _tabStop),
+  ];
+
+  void _disposeNodes() {
+    for (final node in _nodes) {
+      if (!identical(node, widget.focusNode)) node.dispose();
+    }
+  }
+
+  void _rebuildNodes() {
+    final focusedIndex = _nodes.indexWhere((node) => node.hasFocus);
+    final hadFocus = _nodes.any((node) => node.hasFocus);
+    _disposeNodes();
+    _nodes = _makeNodes();
+    _syncTraversal();
+    _focused = null;
+    if (hadFocus && focusedIndex >= 0 && focusedIndex < _nodes.length) {
+      final node = _nodes[focusedIndex];
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) node.requestFocus();
+      });
+    }
   }
 
   @override
   void didUpdateWidget(DrawkitSegmentedButton<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.segments.length != _nodes.length) {
-      for (final node in _nodes) {
-        node.dispose();
-      }
-      _nodes = [
-        for (var i = 0; i < widget.segments.length; i++)
-          FocusNode(skipTraversal: i != _tabStop),
-      ];
-      _focused = null;
+    if (widget.segments.length != _nodes.length ||
+        widget.focusNode != oldWidget.focusNode) {
+      _rebuildNodes();
     } else if (widget.selected != oldWidget.selected ||
         widget.onChanged != oldWidget.onChanged) {
       _syncTraversal();
@@ -97,9 +127,7 @@ class _DrawkitSegmentedButtonState<T> extends State<DrawkitSegmentedButton<T>> {
 
   @override
   void dispose() {
-    for (final node in _nodes) {
-      node.dispose();
-    }
+    _disposeNodes();
     super.dispose();
   }
 
@@ -139,6 +167,7 @@ class _DrawkitSegmentedButtonState<T> extends State<DrawkitSegmentedButton<T>> {
 
     return Semantics(
       container: true,
+      label: widget.semanticLabel,
       child: DrawkitSurface(
         builder: (size, options) {
           final layers = <DrawkitLayer>[
@@ -210,6 +239,7 @@ class _DrawkitSegmentedButtonState<T> extends State<DrawkitSegmentedButton<T>> {
               Expanded(
                 child: FocusableActionDetector(
                   focusNode: _nodes[i],
+                  autofocus: widget.autofocus && i == _tabStop,
                   enabled: enabled,
                   onShowFocusHighlight: (value) => setState(() {
                     if (value) {
@@ -263,15 +293,11 @@ class _DrawkitSegmentedButtonState<T> extends State<DrawkitSegmentedButton<T>> {
                     button: true,
                     selected: i == active,
                     enabled: enabled,
-                    onTap: enabled
-                        ? () => widget.onChanged!(widget.segments[i].value)
-                        : null,
+                    onTap: enabled ? () => _pick(i) : null,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       excludeFromSemantics: true,
-                      onTap: enabled
-                          ? () => widget.onChanged!(widget.segments[i].value)
-                          : null,
+                      onTap: enabled ? () => _pick(i) : null,
                       child: DrawkitTapTarget(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(

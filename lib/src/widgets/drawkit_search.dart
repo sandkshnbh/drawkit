@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../core/focus.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -24,6 +25,7 @@ class DrawkitSearchField extends StatefulWidget {
     this.enabled = true,
     this.autofocus = false,
     this.placeholder,
+    this.clearLabel = 'clear',
     this.textStyle,
     this.style,
     this.seed,
@@ -39,6 +41,9 @@ class DrawkitSearchField extends StatefulWidget {
   final bool enabled;
   final bool autofocus;
   final String? placeholder;
+
+  /// Announced by the clear control (and its tooltip text).
+  final String clearLabel;
   final TextStyle? textStyle;
   final DrawkitStyle? style;
   final int? seed;
@@ -213,56 +218,122 @@ class _DrawkitSearchFieldState extends State<DrawkitSearchField> {
                 ),
               ),
               if (widget.enabled)
-                SizedBox(
-                  width: 18,
-                  child: _controller.text.isEmpty
-                      ? null
-                      : Semantics(
-                          button: true,
-                          label: 'clear',
-                          child: MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: _clear,
-                              child: Center(
-                                child: DrawkitSurface(
-                                  builder: (size, options) => [
-                                    DrawkitLayer(
-                                      roughLine(
-                                        2,
-                                        2,
-                                        size.width - 2,
-                                        size.height - 2,
-                                        options,
-                                      ),
-                                      drawkitStroke(style, fallbackWidth: 1.5),
-                                    ),
-                                    DrawkitLayer(
-                                      roughLine(
-                                        size.width - 2,
-                                        2,
-                                        2,
-                                        size.height - 2,
-                                        options,
-                                      ),
-                                      drawkitStroke(style, fallbackWidth: 1.5),
-                                    ),
-                                  ],
-                                  style: style,
-                                  seed: widget.seed,
-                                  animate: false,
-                                  size: const Size(13, 13),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                _DrawkitSearchClearButton(
+                  label: widget.clearLabel,
+                  onPressed: _controller.text.isEmpty ? null : _clear,
+                  style: style,
+                  seed: widget.seed,
                 ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The drawn ✕ trailing the field: a full 48px target that Tab reaches and
+/// Enter/Space activate, sitting invisible until there is text to clear.
+class _DrawkitSearchClearButton extends StatefulWidget {
+  const _DrawkitSearchClearButton({
+    required this.label,
+    required this.onPressed,
+    required this.style,
+    required this.seed,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final DrawkitStyle style;
+  final int? seed;
+
+  @override
+  State<_DrawkitSearchClearButton> createState() =>
+      _DrawkitSearchClearButtonState();
+}
+
+class _DrawkitSearchClearButtonState extends State<_DrawkitSearchClearButton> {
+  bool _focused = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = widget.onPressed != null;
+    return SizedBox(
+      width: 48,
+      child: !visible
+          ? null
+          : FocusableActionDetector(
+              enabled: true,
+              onShowFocusHighlight: (value) => setState(() => _focused = value),
+              shortcuts: {
+                const SingleActivator(LogicalKeyboardKey.space):
+                    const ActivateIntent(),
+                const SingleActivator(LogicalKeyboardKey.enter):
+                    const ActivateIntent(),
+              },
+              actions: {
+                ActivateIntent: CallbackAction<ActivateIntent>(
+                  onInvoke: (intent) {
+                    widget.onPressed?.call();
+                    return null;
+                  },
+                ),
+              },
+              mouseCursor: SystemMouseCursors.click,
+              child: Semantics(
+                button: true,
+                label: widget.label,
+                onTap: widget.onPressed,
+                child: ExcludeSemantics(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: widget.onPressed,
+                    child: DrawkitTapTarget(
+                      child: DrawkitSurface(
+                        builder: (size, options) => [
+                          DrawkitLayer(
+                            roughLine(
+                              2,
+                              2,
+                              size.width - 2,
+                              size.height - 2,
+                              options,
+                            ),
+                            drawkitStroke(widget.style, fallbackWidth: 1.5),
+                          ),
+                          DrawkitLayer(
+                            roughLine(
+                              size.width - 2,
+                              2,
+                              2,
+                              size.height - 2,
+                              options,
+                            ),
+                            drawkitStroke(widget.style, fallbackWidth: 1.5),
+                          ),
+                          if (_focused)
+                            DrawkitLayer(
+                              roughRoundedRect(
+                                -3,
+                                -3,
+                                size.width + 6,
+                                size.height + 6,
+                                4,
+                                options,
+                              ),
+                              drawkitStroke(widget.style, fallbackWidth: 1),
+                            ),
+                        ],
+                        style: widget.style,
+                        seed: widget.seed,
+                        animate: false,
+                        size: const Size(13, 13),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }

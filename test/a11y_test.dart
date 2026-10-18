@@ -35,13 +35,13 @@ void main() {
   });
 
   testWidgets('large text scales the sample without overflow', (tester) async {
-    tester.view.physicalSize = const Size(1500, 2600);
+    tester.view.physicalSize = const Size(1500, 6500);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       MediaQuery(
         data: const MediaQueryData(textScaler: TextScaler.linear(2)),
-        child: SingleChildScrollView(child: a11ySample()),
+        child: a11ySample(),
       ),
     );
     await tester.pump();

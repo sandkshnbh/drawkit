@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../core/focus.dart';
+import '../core/intents.dart';
 import '../core/motion.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
@@ -25,6 +26,7 @@ class DrawkitRadio<T> extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     this.semanticLabel,
+    this.onNavigate,
     super.key,
   });
 
@@ -37,6 +39,12 @@ class DrawkitRadio<T> extends StatefulWidget {
   final FocusNode? focusNode;
   final bool autofocus;
   final String? semanticLabel;
+
+  /// Called with -1/+1 when an arrow key is pressed while this radio is
+  /// focused (Left/Right follow the reading direction). Wire it to move
+  /// focus and pick the sibling radio that many steps away, implementing
+  /// the roving behaviour screen readers expect from a radio group.
+  final ValueChanged<int>? onNavigate;
 
   bool get selected => value == groupValue;
 
@@ -167,6 +175,13 @@ class _DrawkitRadioState<T> extends State<DrawkitRadio<T>>
   Widget build(BuildContext context) {
     final style = widget.style ?? DrawkitTheme.of(context);
     _reduceMotion = drawkitReduceMotion(context);
+    final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
+    final forward = rtl
+        ? LogicalKeyboardKey.arrowLeft
+        : LogicalKeyboardKey.arrowRight;
+    final backward = rtl
+        ? LogicalKeyboardKey.arrowRight
+        : LogicalKeyboardKey.arrowLeft;
 
     final boil = widget.animate && style.boil > 0 && !_reduceMotion;
     if (boil && !_boil.isAnimating) _boil.repeat();
@@ -183,11 +198,23 @@ class _DrawkitRadioState<T> extends State<DrawkitRadio<T>>
       shortcuts: {
         const SingleActivator(LogicalKeyboardKey.space): const ActivateIntent(),
         const SingleActivator(LogicalKeyboardKey.enter): const ActivateIntent(),
+        const SingleActivator(LogicalKeyboardKey.arrowUp):
+            const DrawkitMoveIntent(-1),
+        const SingleActivator(LogicalKeyboardKey.arrowDown):
+            const DrawkitMoveIntent(1),
+        SingleActivator(forward): const DrawkitMoveIntent(1),
+        SingleActivator(backward): const DrawkitMoveIntent(-1),
       },
       actions: {
         ActivateIntent: CallbackAction<ActivateIntent>(
           onInvoke: (intent) {
             _select();
+            return null;
+          },
+        ),
+        DrawkitMoveIntent: CallbackAction<DrawkitMoveIntent>(
+          onInvoke: (intent) {
+            widget.onNavigate?.call(intent.delta);
             return null;
           },
         ),

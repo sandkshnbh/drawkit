@@ -55,13 +55,10 @@ class _DrawkitSkeletonState extends State<DrawkitSkeleton>
     vsync: this,
     duration: const Duration(milliseconds: 1800),
   );
-  bool _started = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_started) return;
-    _started = true;
     _syncMotion();
   }
 

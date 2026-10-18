@@ -78,7 +78,9 @@ class DrawkitAvatarGroup extends StatelessWidget {
     );
 
     return Semantics(
-      label: semanticLabel,
+      label:
+          semanticLabel ??
+          (children.length == 1 ? '1 avatar' : '${children.length} avatars'),
       child: ExcludeSemantics(
         child: SizedBox(
           width: width,

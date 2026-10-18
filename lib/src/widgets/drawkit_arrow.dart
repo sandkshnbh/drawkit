@@ -80,14 +80,16 @@ class _DrawkitArrowState extends State<DrawkitArrow> {
   @override
   Widget build(BuildContext context) {
     final style = widget.style ?? DrawkitTheme.of(context);
-    return DrawkitSurface(
-      key: _selfKey,
-      builder: (size, options) => [_arrowLayer(size, options, style)],
-      style: style,
-      seed: _seed,
-      animate: widget.animate,
-      resketchOnPointer: false,
-      child: const SizedBox.expand(),
+    return IgnorePointer(
+      child: DrawkitSurface(
+        key: _selfKey,
+        builder: (size, options) => [_arrowLayer(size, options, style)],
+        style: style,
+        seed: _seed,
+        animate: widget.animate,
+        resketchOnPointer: false,
+        child: const SizedBox.expand(),
+      ),
     );
   }
 

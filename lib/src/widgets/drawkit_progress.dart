@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 
 import '../core/motion.dart';
@@ -44,15 +45,12 @@ class _DrawkitProgressBarState extends State<DrawkitProgressBar>
     vsync: this,
     duration: const Duration(milliseconds: 1600),
   );
-  bool _started = false;
 
   bool get _indeterminate => widget.value == null;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_started) return;
-    _started = true;
     _syncMotion();
   }
 
@@ -164,8 +162,16 @@ class _DrawkitProgressBarState extends State<DrawkitProgressBar>
     final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
     final fraction = widget.value?.clamp(0.0, 1.0);
     return Semantics(
-      label: widget.semanticLabel,
+      // The progressBar role demands a value; the indeterminate band is an
+      // activity indicator instead, so it gets the spinner role and a beat.
+      role: _indeterminate
+          ? SemanticsRole.loadingSpinner
+          : SemanticsRole.progressBar,
+      liveRegion: _indeterminate,
+      label: widget.semanticLabel ?? 'progress',
       value: fraction == null ? null : '${(fraction * 100).round()}%',
+      minValue: _indeterminate ? null : '0',
+      maxValue: _indeterminate ? null : '100',
       child: DrawkitSurface(
         builder: (size, options) => _layers(size, options, resolved, rtl),
         style: resolved,
@@ -207,13 +213,10 @@ class _DrawkitSpinnerState extends State<DrawkitSpinner>
     vsync: this,
     duration: const Duration(milliseconds: 1400),
   );
-  bool _started = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_started) return;
-    _started = true;
     _syncMotion();
   }
 
@@ -280,6 +283,8 @@ class _DrawkitSpinnerState extends State<DrawkitSpinner>
   Widget build(BuildContext context) {
     final resolved = widget.style ?? DrawkitTheme.of(context);
     return Semantics(
+      role: SemanticsRole.loadingSpinner,
+      liveRegion: true,
       label: widget.semanticLabel,
       child: DrawkitSurface(
         builder: (size, options) => _layers(size, options, resolved),

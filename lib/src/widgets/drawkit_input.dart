@@ -27,6 +27,7 @@ class DrawkitInput extends StatelessWidget {
     this.placeholder,
     this.error,
     this.helper,
+    this.semanticLabel,
     this.textStyle,
     this.style,
     this.seed,
@@ -44,6 +45,9 @@ class DrawkitInput extends StatelessWidget {
   final String? placeholder;
   final String? error;
   final String? helper;
+
+  /// Announced as the field's label; the placeholder is announced as its hint.
+  final String? semanticLabel;
   final TextStyle? textStyle;
   final DrawkitStyle? style;
   final int? seed;
@@ -61,6 +65,7 @@ class DrawkitInput extends StatelessWidget {
     placeholder: placeholder,
     error: error,
     helper: helper,
+    semanticLabel: semanticLabel,
     textStyle: textStyle,
     style: style,
     seed: seed,
@@ -81,11 +86,13 @@ class DrawkitTextarea extends StatelessWidget {
     this.controller,
     this.focusNode,
     this.onChanged,
+    this.onSubmitted,
     this.enabled = true,
     this.autofocus = false,
     this.placeholder,
     this.error,
     this.helper,
+    this.semanticLabel,
     this.textStyle,
     this.style,
     this.seed,
@@ -98,11 +105,15 @@ class DrawkitTextarea extends StatelessWidget {
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
   final bool enabled;
   final bool autofocus;
   final String? placeholder;
   final String? error;
   final String? helper;
+
+  /// Announced as the field's label; the placeholder is announced as its hint.
+  final String? semanticLabel;
   final TextStyle? textStyle;
   final DrawkitStyle? style;
   final int? seed;
@@ -115,11 +126,13 @@ class DrawkitTextarea extends StatelessWidget {
     controller: controller,
     focusNode: focusNode,
     onChanged: onChanged,
+    onSubmitted: onSubmitted,
     enabled: enabled,
     autofocus: autofocus,
     placeholder: placeholder,
     error: error,
     helper: helper,
+    semanticLabel: semanticLabel,
     textStyle: textStyle,
     style: style,
     seed: seed,
@@ -142,6 +155,7 @@ class _DrawkitField extends StatefulWidget {
     required this.placeholder,
     required this.error,
     required this.helper,
+    this.semanticLabel,
     required this.textStyle,
     required this.style,
     required this.seed,
@@ -161,6 +175,7 @@ class _DrawkitField extends StatefulWidget {
   final String? placeholder;
   final String? error;
   final String? helper;
+  final String? semanticLabel;
   final TextStyle? textStyle;
   final DrawkitStyle? style;
   final int? seed;
@@ -288,36 +303,40 @@ class _DrawkitFieldState extends State<_DrawkitField> {
               child: Stack(
                 children: [
                   if (hint != null && _controller.text.isEmpty)
-                    Semantics(
-                      enabled: widget.enabled,
+                    ExcludeSemantics(
                       child: Text(
                         hint,
                         style: textStyle.copyWith(color: palette.inkMuted),
                       ),
                     ),
-                  EditableText(
-                    controller: _controller,
-                    focusNode: _focusNode,
-                    style: textStyle,
-                    cursorColor: strokeColor,
-                    backgroundCursorColor: const Color(0x00000000),
-                    cursorWidth: 1.5,
-                    selectionColor: style.effectiveStroke.withValues(
-                      alpha: 0.20,
+                  Semantics(
+                    enabled: widget.enabled,
+                    label: widget.semanticLabel,
+                    hint: hint,
+                    child: EditableText(
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      style: textStyle,
+                      cursorColor: strokeColor,
+                      backgroundCursorColor: const Color(0x00000000),
+                      cursorWidth: 1.5,
+                      selectionColor: style.effectiveStroke.withValues(
+                        alpha: 0.20,
+                      ),
+                      autofocus: widget.autofocus,
+                      readOnly: !widget.enabled,
+                      showCursor: widget.enabled,
+                      maxLines: widget.maxLines,
+                      minLines: widget.minLines,
+                      onChanged: widget.onChanged,
+                      onSubmitted: widget.onSubmitted,
+                      keyboardType: widget.multiline
+                          ? TextInputType.multiline
+                          : TextInputType.text,
+                      textInputAction: widget.multiline
+                          ? TextInputAction.newline
+                          : TextInputAction.done,
                     ),
-                    autofocus: widget.autofocus,
-                    readOnly: !widget.enabled,
-                    showCursor: widget.enabled,
-                    maxLines: widget.maxLines,
-                    minLines: widget.minLines,
-                    onChanged: widget.onChanged,
-                    onSubmitted: widget.onSubmitted,
-                    keyboardType: widget.multiline
-                        ? TextInputType.multiline
-                        : TextInputType.text,
-                    textInputAction: widget.multiline
-                        ? TextInputAction.newline
-                        : TextInputAction.done,
                   ),
                 ],
               ),

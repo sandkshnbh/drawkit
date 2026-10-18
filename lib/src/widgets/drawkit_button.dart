@@ -33,6 +33,7 @@ class DrawkitButton extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     this.semanticLabel,
+    this.loadingLabel = 'loading',
     super.key,
   });
 
@@ -48,6 +49,11 @@ class DrawkitButton extends StatefulWidget {
   final FocusNode? focusNode;
   final bool autofocus;
   final String? semanticLabel;
+
+  /// Appended to the (possibly absent) [semanticLabel] while [state] is
+  /// [DrawkitButtonState.loading] and announced as a live region, so screen
+  /// readers hear that the press was accepted instead of losing the control.
+  final String loadingLabel;
 
   bool get enabled => onPressed != null && state != DrawkitButtonState.loading;
 
@@ -225,7 +231,12 @@ class _DrawkitButtonState extends State<DrawkitButton> {
             child: Semantics(
               button: true,
               enabled: widget.enabled,
-              label: widget.semanticLabel,
+              liveRegion: widget.state == DrawkitButtonState.loading,
+              label: widget.state == DrawkitButtonState.loading
+                  ? widget.semanticLabel == null
+                        ? widget.loadingLabel
+                        : '${widget.semanticLabel}, ${widget.loadingLabel}'
+                  : widget.semanticLabel,
               onTap: widget.enabled ? widget.onPressed : null,
               child: DrawkitTapTarget(
                 child: DrawkitSurface(
@@ -317,17 +328,20 @@ class DrawkitIconButton extends StatelessWidget {
 
 /// The round sibling of [DrawkitButton]: a floating pen circle for the one
 /// action that never scrolls away. Same lift, sink, hover wash, and focus
-/// ring, drawn around a circle instead of a rounded rect.
+/// ring, drawn around a circle instead of a rounded rect — and the same
+/// [DrawkitButtonState] vocabulary, so async FABs can block duplicate presses.
 class DrawkitFab extends StatefulWidget {
   const DrawkitFab({
     required this.child,
     this.onPressed,
+    this.state = DrawkitButtonState.idle,
     this.tone = DrawkitTone.accent,
     this.style,
     this.seed,
     this.animate = true,
     this.size = 56,
     this.semanticLabel,
+    this.loadingLabel = 'loading',
     this.focusNode,
     this.autofocus = false,
     super.key,
@@ -335,16 +349,21 @@ class DrawkitFab extends StatefulWidget {
 
   final Widget child;
   final VoidCallback? onPressed;
+  final DrawkitButtonState state;
   final DrawkitTone tone;
   final DrawkitStyle? style;
   final int? seed;
   final bool animate;
   final double size;
   final String? semanticLabel;
+
+  /// Appended to the (possibly absent) [semanticLabel] while [state] is
+  /// [DrawkitButtonState.loading], announced as a live region.
+  final String loadingLabel;
   final FocusNode? focusNode;
   final bool autofocus;
 
-  bool get enabled => onPressed != null;
+  bool get enabled => onPressed != null && state != DrawkitButtonState.loading;
 
   @override
   State<DrawkitFab> createState() => _DrawkitFabState();
@@ -383,11 +402,14 @@ class _DrawkitFabState extends State<DrawkitFab> {
     super.dispose();
   }
 
-  Color _resolvedInk(DrawkitStyle style) => switch (widget.tone) {
-    DrawkitTone.accent => style.ink ?? style.palette.pen,
-    DrawkitTone.neutral => style.palette.neutral,
-    DrawkitTone.danger => style.palette.error,
-  };
+  Color _resolvedInk(DrawkitStyle style) =>
+      switch ((widget.state, widget.tone)) {
+        (DrawkitButtonState.error, _) => style.palette.error,
+        (DrawkitButtonState.success, _) => style.palette.success,
+        (_, DrawkitTone.accent) => style.ink ?? style.palette.pen,
+        (_, DrawkitTone.neutral) => style.palette.neutral,
+        (_, DrawkitTone.danger) => style.palette.error,
+      };
 
   List<DrawkitLayer> _layers(
     Size size,
@@ -433,12 +455,15 @@ class _DrawkitFabState extends State<DrawkitFab> {
     final ink = _resolvedInk(themeStyle);
     final style = themeStyle.copyWith(strokeColor: ink, fillColor: ink);
     final reduceMotion = drawkitReduceMotion(context);
+    final duration = widget.state == DrawkitButtonState.loading
+        ? const Duration(milliseconds: 450)
+        : const Duration(milliseconds: 1200);
 
     final offsetY = !widget.enabled
         ? 0.0
         : _pressed
         ? 1.0
-        : _hovered
+        : _hovered && widget.state != DrawkitButtonState.loading
         ? -1.0
         : 0.0;
 
@@ -477,7 +502,12 @@ class _DrawkitFabState extends State<DrawkitFab> {
             child: Semantics(
               button: true,
               enabled: widget.enabled,
-              label: widget.semanticLabel,
+              liveRegion: widget.state == DrawkitButtonState.loading,
+              label: widget.state == DrawkitButtonState.loading
+                  ? widget.semanticLabel == null
+                        ? widget.loadingLabel
+                        : '${widget.semanticLabel}, ${widget.loadingLabel}'
+                  : widget.semanticLabel,
               child: DrawkitSurface(
                 builder: (size, options) => _layers(size, options, style, ink),
                 style: style,
@@ -485,6 +515,7 @@ class _DrawkitFabState extends State<DrawkitFab> {
                 animate: widget.animate,
                 enabled: widget.enabled,
                 resketchOnPointer: true,
+                duration: duration,
                 onHoverChanged: (v) => setState(() => _hovered = v),
                 onPressedChanged: (v) => setState(() => _pressed = v),
                 onTap: widget.enabled ? widget.onPressed : null,

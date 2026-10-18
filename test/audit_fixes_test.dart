@@ -55,6 +55,327 @@ void main() {
     test('sampleLine survives a zero step', () {
       expect(sampleLine(0, 0, 10, 0, 0).length, 3);
     });
+
+    test('doubleStrokePoints draws two seeded passes', () {
+      const options = RoughOptions(seed: 4);
+      final line = sampleLine(0, 0, 100, 0);
+      final strokes = doubleStrokePoints(line, options);
+      expect(strokes.length, 2);
+      expect(strokes[0].length, line.length);
+      expect(strokes[1].length, line.length);
+      expect(strokes[0], isNot(equals(line)));
+      expect(strokes[1], isNot(equals(strokes[0])));
+      expect(doubleStrokePoints(line, options)[1], equals(strokes[1]));
+    });
+
+    test('arrowStrokes draws the shaft plus two head wings', () {
+      final strokes = arrowStrokes(0, 0, 100, 0, const RoughOptions(seed: 3));
+      expect(strokes.length, 4);
+      expect(strokes[2].last.dy, lessThan(0));
+      expect(strokes[3].last.dy, greaterThan(0));
+      expect(strokes[2].last.dx, closeTo(100 - 12 * 0.866, 3));
+    });
+
+    test('smooth closes only when asked', () {
+      final points = [
+        const Offset(0, 0),
+        const Offset(10, 0),
+        const Offset(10, 10),
+      ];
+      final open = smooth(points, close: false).computeMetrics().first;
+      final closed = smooth(points, close: true).computeMetrics().first;
+      expect(open.isClosed, isFalse);
+      expect(closed.isClosed, isTrue);
+    });
+  });
+
+  testWidgets('the nav badge clamps past ninety-nine', (tester) async {
+    await tester.pumpWidget(host(const DrawkitNavBadge(count: 150)));
+    expect(find.text('99+'), findsOneWidget);
+    await tester.pumpWidget(host(const DrawkitNavBadge(count: 42)));
+    expect(find.text('42'), findsOneWidget);
+  });
+
+  testWidgets('the popover mirrors its anchor edge in RTL', (tester) async {
+    Future<void> openAndCheck(TextDirection direction) async {
+      await tester.pumpWidget(
+        host(
+          DrawkitPopover(trigger: const Text('view'), child: const Text('cut')),
+          direction: direction,
+        ),
+      );
+      await tester.tap(find.text('view'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 250));
+      final anchor = tester.getRect(find.byType(DrawkitTapTarget));
+      final panel = tester.getRect(find.byType(DrawkitSurface));
+      if (direction == TextDirection.rtl) {
+        expect((panel.right - anchor.right).abs(), lessThan(1.5));
+      } else {
+        expect((panel.left - anchor.left).abs(), lessThan(1.5));
+      }
+      await tester.tap(find.text('view'));
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+
+    await openAndCheck(TextDirection.ltr);
+    await openAndCheck(TextDirection.rtl);
+  });
+
+  testWidgets('the popover flips above an anchor with no room below', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(
+        SizedBox(
+          height: 560,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: DrawkitPopover(
+              trigger: const Text('view'),
+              child: const Text('cut'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('view'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+    final anchor = tester.getRect(find.byType(DrawkitTapTarget));
+    final panel = tester.getRect(find.byType(DrawkitSurface));
+    expect(panel.bottom, lessThanOrEqualTo(anchor.top));
+  });
+
+  testWidgets('the grab handle follows the finger and settles back', (
+    tester,
+  ) async {
+    late BuildContext ctx;
+    await tester.pumpWidget(
+      routeHost((context) {
+        ctx = context;
+        return const SizedBox.expand();
+      }),
+    );
+    final future = showDrawkitSheet<Object>(
+      context: ctx,
+      child: const SizedBox(height: 160, child: Text('sheet body')),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    final rest = tester.getTopLeft(find.byType(DrawkitSurface));
+    final grab = Offset(
+      tester.getRect(find.byType(DrawkitSurface)).center.dx,
+      rest.dy + 12,
+    );
+
+    final gesture = await tester.startGesture(grab);
+    await gesture.moveBy(const Offset(0, 20));
+    await tester.pump(const Duration(milliseconds: 150));
+    await gesture.moveBy(const Offset(0, 20));
+    await tester.pump(const Duration(milliseconds: 150));
+    expect(
+      tester.getTopLeft(find.byType(DrawkitSurface)).dy,
+      greaterThan(rest.dy),
+      reason: 'the panel follows the finger',
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    await gesture.up();
+    await tester.pump();
+    expect(tester.getTopLeft(find.byType(DrawkitSurface)).dy, rest.dy);
+
+    await tester.flingFrom(grab, const Offset(0, 300), 1200);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(await future, isNull);
+  });
+
+  testWidgets('dialog focus returns to the trigger on close', (tester) async {
+    final node = FocusNode();
+    addTearDown(node.dispose);
+    await tester.pumpWidget(
+      host(
+        DrawkitButton(
+          focusNode: node,
+          onPressed: () async {
+            await showDrawkitDialog<void>(
+              context: tester.element(find.text('open')),
+              child: const Text('panel'),
+            );
+          },
+          child: const Text('open'),
+        ),
+      ),
+    );
+    node.requestFocus();
+    await tester.pump();
+    await tester.tap(find.text('open'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('panel'), findsOneWidget);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text('panel'), findsNothing);
+    expect(node.hasFocus, isTrue);
+  });
+
+  testWidgets('the command palette skips disabled rows', (tester) async {
+    late BuildContext ctx;
+    await tester.pumpWidget(
+      routeHost((context) {
+        ctx = context;
+        return const SizedBox.expand();
+      }),
+    );
+    final future = showDrawkitCommandPalette<String>(
+      context: ctx,
+      initialSelection: 'open',
+      commands: const [
+        DrawkitCommand(label: 'Open sketch', value: 'open'),
+        DrawkitCommand(label: 'Delete', value: 'delete', enabled: false),
+        DrawkitCommand(label: 'Export', value: 'export'),
+      ],
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(find.text('Open sketch'), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pump();
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(await future, 'export');
+  });
+
+  testWidgets('the date picker honours a selectable-day predicate', (
+    tester,
+  ) async {
+    DateTime? picked;
+    var months = 0;
+    await tester.pumpWidget(
+      host(
+        DrawkitDatePicker(
+          value: DateTime(2026, 6, 15),
+          today: DateTime(2026, 6, 15),
+          selectableDayPredicate: (day) => day.day != 16,
+          onDisplayedMonthChanged: (_) => months++,
+          onChanged: (date) => picked = date,
+        ),
+      ),
+    );
+    await tester.tap(find.text('16'));
+    await tester.pump();
+    expect(picked, isNull);
+    await tester.tap(find.text('17'));
+    await tester.pump();
+    expect(picked, DateTime(2026, 6, 17));
+
+    await tester.tap(find.bySemanticsLabel(RegExp('next month')));
+    await tester.pump();
+    expect(months, 1);
+  });
+
+  testWidgets('the date picker input mode parses a typed date', (tester) async {
+    late BuildContext ctx;
+    await tester.pumpWidget(
+      routeHost((context) {
+        ctx = context;
+        return const SizedBox.expand();
+      }),
+    );
+    final future = showDrawkitDatePicker(
+      context: ctx,
+      initialEntryMode: DrawkitDatePickerMode.input,
+      firstDate: DateTime(2026, 1, 1),
+      lastDate: DateTime(2026, 12, 31),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.enterText(find.byType(EditableText), '2026-06-20');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(await future, DateTime(2026, 6, 20));
+  });
+
+  Widget reducedMotion(Widget child) => Builder(
+    builder: (context) => MediaQuery(
+      data: MediaQuery.of(context).copyWith(disableAnimations: true),
+      child: child,
+    ),
+  );
+
+  testWidgets('reduced motion freezes the skeleton shimmer', (tester) async {
+    await tester.pumpWidget(
+      host(reducedMotion(const DrawkitSkeleton(lines: 2))),
+    );
+    await tester.pump();
+    expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('reduced motion skips the toggle draw-on', (tester) async {
+    var value = false;
+    await tester.pumpWidget(
+      host(
+        reducedMotion(
+          DrawkitToggle(value: false, onChanged: (next) => value = next),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.byType(DrawkitToggle));
+    await tester.pump();
+    expect(value, isTrue);
+    expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('reduced motion skips the checkbox draw-on', (tester) async {
+    var value = false;
+    await tester.pumpWidget(
+      host(
+        reducedMotion(
+          DrawkitCheckbox(value: false, onChanged: (next) => value = next),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.byType(DrawkitCheckbox));
+    await tester.pump();
+    expect(value, isTrue);
+    expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('reduced motion skips the radio draw-on', (tester) async {
+    String? value;
+    await tester.pumpWidget(
+      host(
+        reducedMotion(
+          DrawkitRadio<String>(
+            value: 'a',
+            groupValue: 'b',
+            onChanged: (next) => value = next,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.byType(DrawkitRadio<String>));
+    await tester.pump();
+    expect(value, 'a');
+    expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('reduced motion lands the stagger instantly', (tester) async {
+    await tester.pumpWidget(
+      host(
+        reducedMotion(const DrawkitStagger(children: [Text('a'), Text('b')])),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('a'), findsOneWidget);
+    expect(tester.binding.hasScheduledFrame, isFalse);
   });
 
   testWidgets('a longer stagger child list re-keys without throwing', (

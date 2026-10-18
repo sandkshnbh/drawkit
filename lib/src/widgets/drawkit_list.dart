@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 
 import '../core/style.dart';
@@ -9,12 +11,15 @@ import '../engine/rough.dart';
 /// `.drawably-list { padding-left: 24px }` and the marker constants.
 const double _markerLeft = -18;
 const double _markerW = 10;
-const double _markerLine = 22;
 
 enum DrawkitListMarker { dash, check }
 
 /// A sketch-marked list: each item carries its own pen stroke (seed + index,
 /// like the JS attacher's per-`li` sketches) drawn in the 24px gutter.
+///
+/// Markers centre on the item's first line box, measured from the inherited
+/// text style and the system text scale; pass [lineHeight] to pin a box
+/// instead of measuring.
 class DrawkitList extends StatefulWidget {
   const DrawkitList({
     required this.children,
@@ -22,7 +27,7 @@ class DrawkitList extends StatefulWidget {
     this.style,
     this.seed,
     this.animate = true,
-    this.lineHeight = _markerLine,
+    this.lineHeight,
     super.key,
   });
 
@@ -31,7 +36,9 @@ class DrawkitList extends StatefulWidget {
   final DrawkitStyle? style;
   final int? seed;
   final bool animate;
-  final double lineHeight;
+
+  /// Pins the marker's line box; measured from the text when null.
+  final double? lineHeight;
 
   @override
   State<DrawkitList> createState() => _DrawkitListState();
@@ -54,6 +61,12 @@ class _DrawkitListState extends State<DrawkitList> {
   Widget build(BuildContext context) {
     final style = widget.style ?? DrawkitTheme.of(context);
     final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
+    final baseStyle = DefaultTextStyle.of(context).style;
+    final scaler =
+        MediaQuery.maybeTextScalerOf(context) ?? TextScaler.noScaling;
+    final lineBox =
+        widget.lineHeight ??
+        scaler.scale(baseStyle.fontSize ?? 14) * (baseStyle.height ?? 1.4);
     return Padding(
       padding: const EdgeInsetsDirectional.only(start: 24),
       child: Column(
@@ -67,21 +80,22 @@ class _DrawkitListState extends State<DrawkitList> {
                 final markerX = rtl
                     ? size.width - _markerLeft - _markerW
                     : _markerLeft;
+                final centreY = math.min(size.height, lineBox) / 2;
                 return [
                   DrawkitLayer(
                     widget.marker == DrawkitListMarker.check
                         ? roughCheckmark(
                             markerX,
-                            widget.lineHeight / 2 - _markerW / 2,
+                            centreY - _markerW / 2,
                             _markerW,
                             _markerW,
                             options,
                           )
                         : roughLine(
                             markerX,
-                            widget.lineHeight / 2,
+                            centreY,
                             markerX + _markerW,
-                            widget.lineHeight / 2,
+                            centreY,
                             options,
                           ),
                     drawkitStroke(style),

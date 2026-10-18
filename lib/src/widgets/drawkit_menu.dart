@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import '../core/focus.dart';
 import '../core/intents.dart';
+import '../core/motion.dart';
 import '../core/style.dart';
 import '../core/surface.dart';
 import '../engine/rough.dart';
@@ -60,7 +61,13 @@ class DrawkitPopover extends StatefulWidget {
     this.animate = true,
     this.focusNode,
     this.autofocus = false,
+    this.onOpen,
+    this.onClose,
     this.semanticLabel,
+    this.controller,
+    this.useRootOverlay = false,
+    this.alignmentOffset = Offset.zero,
+    this.maxWidth = 360,
     super.key,
   });
 
@@ -76,17 +83,36 @@ class DrawkitPopover extends StatefulWidget {
   final bool animate;
   final FocusNode? focusNode;
   final bool autofocus;
+
+  /// Fired after the panel opens / folds away.
+  final VoidCallback? onOpen;
+  final VoidCallback? onClose;
+
+  /// The trigger's accessible name; defaults to `'menu'`.
   final String? semanticLabel;
+
+  /// External controller; one is created when null.
+  final MenuController? controller;
+
+  /// Builds the panel into the root overlay instead of the nearest one.
+  final bool useRootOverlay;
+
+  /// Nudges the parked panel position, in physical pixels.
+  final Offset alignmentOffset;
+
+  /// The widest the panel may grow when matching the trigger.
+  final double maxWidth;
 
   @override
   State<DrawkitPopover> createState() => _DrawkitPopoverState();
 }
 
 class _DrawkitPopoverState extends State<DrawkitPopover> {
-  final MenuController _menu = MenuController();
+  late final MenuController _menu = widget.controller ?? MenuController();
   final GlobalKey _anchorKey = GlobalKey();
   late FocusNode _focusNode;
   late bool _ownsFocusNode;
+  bool _open = false;
 
   @override
   void initState() {
@@ -122,13 +148,26 @@ class _DrawkitPopoverState extends State<DrawkitPopover> {
     }
   }
 
+  void _opened() {
+    setState(() => _open = true);
+    widget.onOpen?.call();
+  }
+
+  void _closed() {
+    setState(() => _open = false);
+    widget.onClose?.call();
+  }
+
   @override
   Widget build(BuildContext context) {
     final style = widget.style ?? DrawkitTheme.of(context);
     return RawMenuAnchor(
       controller: _menu,
       consumeOutsideTaps: true,
+      useRootOverlay: widget.useRootOverlay,
       childFocusNode: _focusNode,
+      onOpen: _opened,
+      onClose: _closed,
       overlayBuilder: (context, info) => TapRegion(
         groupId: info.tapRegionGroupId,
         onTapOutside: (event) => _menu.close(),
@@ -139,13 +178,17 @@ class _DrawkitPopoverState extends State<DrawkitPopover> {
             width: widget.width,
             gap: widget.gap,
             maxHeight: _panelMaxHeight,
+            maxWidth: widget.maxWidth,
+            alignmentOffset: widget.alignmentOffset,
           ),
-          child: _PopoverPanel(
-            style: style,
-            seed: widget.seed,
-            animate: widget.animate,
-            padding: widget.padding,
-            child: widget.child,
+          child: FocusTraversalGroup(
+            child: _PopoverPanel(
+              style: style,
+              seed: widget.seed,
+              animate: widget.animate,
+              padding: widget.padding,
+              child: widget.child,
+            ),
           ),
         ),
       ),
@@ -169,7 +212,8 @@ class _DrawkitPopoverState extends State<DrawkitPopover> {
         mouseCursor: SystemMouseCursors.click,
         child: Semantics(
           button: true,
-          label: widget.semanticLabel,
+          expanded: _open,
+          label: widget.semanticLabel ?? 'menu',
           onTap: _toggle,
           child: ExcludeSemantics(
             child: GestureDetector(
@@ -228,11 +272,17 @@ class DrawkitMenu extends StatefulWidget {
     required this.items,
     this.semanticLabel,
     this.minWidth = 180,
+    this.maxWidth = 360,
     this.style,
     this.seed,
     this.animate = true,
     this.focusNode,
     this.autofocus = false,
+    this.onOpen,
+    this.onClose,
+    this.controller,
+    this.useRootOverlay = false,
+    this.alignmentOffset = Offset.zero,
     super.key,
   });
 
@@ -240,18 +290,32 @@ class DrawkitMenu extends StatefulWidget {
   final List<DrawkitMenuItem> items;
   final String? semanticLabel;
   final double minWidth;
+  final double maxWidth;
   final DrawkitStyle? style;
   final int? seed;
   final bool animate;
   final FocusNode? focusNode;
   final bool autofocus;
 
+  /// Fired after the panel opens / folds away.
+  final VoidCallback? onOpen;
+  final VoidCallback? onClose;
+
+  /// External controller; one is created when null.
+  final MenuController? controller;
+
+  /// Builds the panel into the root overlay instead of the nearest one.
+  final bool useRootOverlay;
+
+  /// Nudges the parked panel position, in physical pixels.
+  final Offset alignmentOffset;
+
   @override
   State<DrawkitMenu> createState() => _DrawkitMenuState();
 }
 
 class _DrawkitMenuState extends State<DrawkitMenu> {
-  final MenuController _menu = MenuController();
+  late final MenuController _menu = widget.controller ?? MenuController();
   final GlobalKey _anchorKey = GlobalKey();
   late FocusNode _triggerNode;
   late bool _ownsTriggerNode;
@@ -277,8 +341,27 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
       if (_ownsTriggerNode) _triggerNode.dispose();
       _attachTriggerNode();
     }
-    if (widget.items.length != _rowNodes.length) _syncRowNodes();
+    if (widget.items.length != _rowNodes.length ||
+        _dividerSignature(widget.items) != _dividerSignature(oldWidget.items)) {
+      final hadRowFocus = _rowNodes.any((n) => n?.hasFocus ?? false);
+      _syncRowNodes();
+      if (_open && hadRowFocus) {
+        final targets = _targets;
+        if (targets.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted &&
+                !_rowNodes.any((n) => n?.hasFocus ?? false) &&
+                _menu.isOpen) {
+              _focusRow(targets.first);
+            }
+          });
+        }
+      }
+    }
   }
+
+  static String _dividerSignature(List<DrawkitMenuItem> items) =>
+      items.map((item) => item.divider ? '1' : '0').join();
 
   @override
   void dispose() {
@@ -337,6 +420,7 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
 
   void _opened() {
     setState(() => _open = true);
+    widget.onOpen?.call();
     final targets = _targets;
     if (targets.isEmpty) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -347,6 +431,7 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
   void _closed() {
     final hadRowFocus = _rowNodes.any((n) => n?.hasFocus ?? false);
     setState(() => _open = false);
+    widget.onClose?.call();
     if (!hadRowFocus) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _triggerNode.requestFocus();
@@ -357,12 +442,14 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
   Widget build(BuildContext context) {
     final style = widget.style ?? DrawkitTheme.of(context);
     final palette = style.palette;
+    final reduce = drawkitReduceMotion(context);
     final textStyle = DefaultTextStyle.of(context).style
         .merge(TextStyle(color: palette.ink));
 
     return RawMenuAnchor(
       controller: _menu,
       consumeOutsideTaps: true,
+      useRootOverlay: widget.useRootOverlay,
       childFocusNode: _triggerNode,
       onOpen: _opened,
       onClose: _closed,
@@ -373,89 +460,94 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
           delegate: DrawkitPanelPositionDelegate(
             anchorRect: info.anchorRect,
             textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
-            width: widget.minWidth,
+            width: null,
+            minWidth: widget.minWidth,
+            maxWidth: widget.maxWidth,
             gap: 4,
             maxHeight: _panelMaxHeight,
+            alignmentOffset: widget.alignmentOffset,
           ),
-          child: _PopoverPanel(
-            style: style,
-            seed: widget.seed,
-            animate: widget.animate,
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Shortcuts(
-              shortcuts: {
-                const SingleActivator(LogicalKeyboardKey.arrowDown):
-                    const DrawkitMoveIntent(1),
-                const SingleActivator(LogicalKeyboardKey.arrowUp):
-                    const DrawkitMoveIntent(-1),
-                const SingleActivator(LogicalKeyboardKey.arrowLeft):
-                    const DrawkitNoopIntent(),
-                const SingleActivator(LogicalKeyboardKey.arrowRight):
-                    const DrawkitNoopIntent(),
-                const SingleActivator(LogicalKeyboardKey.home):
-                    const DrawkitEdgeIntent(false),
-                const SingleActivator(LogicalKeyboardKey.end):
-                    const DrawkitEdgeIntent(true),
-              },
-              child: Actions(
-                actions: {
-                  DrawkitMoveIntent: CallbackAction<DrawkitMoveIntent>(
-                    onInvoke: (intent) {
-                      _move(intent.delta);
-                      return null;
-                    },
-                  ),
-                  DrawkitEdgeIntent: CallbackAction<DrawkitEdgeIntent>(
-                    onInvoke: (intent) {
-                      _edge(intent.end);
-                      return null;
-                    },
-                  ),
-                  DrawkitNoopIntent: CallbackAction<DrawkitNoopIntent>(
-                    onInvoke: (intent) => null,
-                  ),
+          child: FocusTraversalGroup(
+            child: _PopoverPanel(
+              style: style,
+              seed: widget.seed,
+              animate: widget.animate,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Shortcuts(
+                shortcuts: {
+                  const SingleActivator(LogicalKeyboardKey.arrowDown):
+                      const DrawkitMoveIntent(1),
+                  const SingleActivator(LogicalKeyboardKey.arrowUp):
+                      const DrawkitMoveIntent(-1),
+                  const SingleActivator(LogicalKeyboardKey.arrowLeft):
+                      const DrawkitNoopIntent(),
+                  const SingleActivator(LogicalKeyboardKey.arrowRight):
+                      const DrawkitNoopIntent(),
+                  const SingleActivator(LogicalKeyboardKey.home):
+                      const DrawkitEdgeIntent(false),
+                  const SingleActivator(LogicalKeyboardKey.end):
+                      const DrawkitEdgeIntent(true),
                 },
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (var i = 0; i < widget.items.length; i++)
-                        if (widget.items[i].divider)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            child: CustomPaint(
-                              size: const Size(double.infinity, 1.5),
-                              painter: _RulePainter(
-                                seed: widget.seed ?? 1,
-                                ink: style.effectiveStroke,
+                child: Actions(
+                  actions: {
+                    DrawkitMoveIntent: CallbackAction<DrawkitMoveIntent>(
+                      onInvoke: (intent) {
+                        _move(intent.delta);
+                        return null;
+                      },
+                    ),
+                    DrawkitEdgeIntent: CallbackAction<DrawkitEdgeIntent>(
+                      onInvoke: (intent) {
+                        _edge(intent.end);
+                        return null;
+                      },
+                    ),
+                    DrawkitNoopIntent: CallbackAction<DrawkitNoopIntent>(
+                      onInvoke: (intent) => null,
+                    ),
+                  },
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (var i = 0; i < widget.items.length; i++)
+                          if (widget.items[i].divider)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
                               ),
+                              child: CustomPaint(
+                                size: const Size(double.infinity, 1.5),
+                                painter: _RulePainter(
+                                  seed: widget.seed ?? 1,
+                                  ink: style.effectiveStroke,
+                                ),
+                              ),
+                            )
+                          else
+                            DrawkitPanelRow(
+                              label: widget.items[i].label,
+                              textStyle: textStyle.copyWith(
+                                color: widget.items[i].active
+                                    ? null
+                                    : palette.inkFaint,
+                              ),
+                              hint: widget.items[i].hint,
+                              hintStyle: textStyle.copyWith(
+                                fontSize: (textStyle.fontSize ?? 14) - 2,
+                                color: palette.inkMuted,
+                              ),
+                              ink: style.effectiveStroke,
+                              seed: widget.seed,
+                              enabled: widget.items[i].active,
+                              checked: widget.items[i].checked ? true : null,
+                              focusNode: _rowNodes[i],
+                              onPick: () => _pick(widget.items[i]),
                             ),
-                          )
-                        else
-                          DrawkitPanelRow(
-                            label: widget.items[i].label,
-                            textStyle: textStyle.copyWith(
-                              color: widget.items[i].active
-                                  ? null
-                                  : palette.inkFaint,
-                            ),
-                            hint: widget.items[i].hint,
-                            hintStyle: textStyle.copyWith(
-                              fontSize: (textStyle.fontSize ?? 14) - 2,
-                              color: palette.inkMuted,
-                            ),
-                            ink: style.effectiveStroke,
-                            seed: widget.seed,
-                            enabled: widget.items[i].active,
-                            checked: widget.items[i].checked ? true : null,
-                            focusNode: _rowNodes[i],
-                            onPick: () => _pick(widget.items[i]),
-                          ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -463,54 +555,57 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
           ),
         ),
       ),
-      builder: (context, controller, child) => DrawkitButton(
-        key: _anchorKey,
-        onPressed: _toggle,
-        style: widget.style,
-        seed: widget.seed,
-        animate: widget.animate,
-        focusNode: _triggerNode,
-        autofocus: widget.autofocus,
-        semanticLabel: widget.semanticLabel,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            widget.child,
-            const SizedBox(width: 8),
-            AnimatedRotation(
-              turns: _open ? 0.5 : 0,
-              duration: widget.animate
-                  ? const Duration(milliseconds: 160)
-                  : Duration.zero,
-              curve: drawkitEase,
-              child: DrawkitSurface(
-                builder: (size, options) => [
-                  DrawkitLayer(
-                    roughLine(0, 0, size.width / 2, size.height, options),
-                    drawkitStroke(style, fallbackWidth: 1.5),
-                  ),
-                  DrawkitLayer(
-                    roughLine(
-                      size.width / 2,
-                      size.height,
-                      size.width,
-                      0,
-                      RoughOptions(
-                        seed: options.seed + 1,
-                        roughness: options.roughness * 0.4,
-                        boil: options.boil,
-                      ),
+      builder: (context, controller, child) => Semantics(
+        expanded: _open,
+        child: DrawkitButton(
+          key: _anchorKey,
+          onPressed: _toggle,
+          style: widget.style,
+          seed: widget.seed,
+          animate: widget.animate,
+          focusNode: _triggerNode,
+          autofocus: widget.autofocus,
+          semanticLabel: widget.semanticLabel,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              widget.child,
+              const SizedBox(width: 8),
+              AnimatedRotation(
+                turns: _open ? 0.5 : 0,
+                duration: widget.animate && !reduce
+                    ? const Duration(milliseconds: 160)
+                    : Duration.zero,
+                curve: drawkitEase,
+                child: DrawkitSurface(
+                  builder: (size, options) => [
+                    DrawkitLayer(
+                      roughLine(0, 0, size.width / 2, size.height, options),
+                      drawkitStroke(style, fallbackWidth: 1.5),
                     ),
-                    drawkitStroke(style, fallbackWidth: 1.5),
-                  ),
-                ],
-                style: style,
-                seed: widget.seed,
-                animate: widget.animate,
-                size: const Size(9, 5),
+                    DrawkitLayer(
+                      roughLine(
+                        size.width / 2,
+                        size.height,
+                        size.width,
+                        0,
+                        RoughOptions(
+                          seed: options.seed + 1,
+                          roughness: options.roughness * 0.4,
+                          boil: options.boil,
+                        ),
+                      ),
+                      drawkitStroke(style, fallbackWidth: 1.5),
+                    ),
+                  ],
+                  style: style,
+                  seed: widget.seed,
+                  animate: widget.animate,
+                  size: const Size(9, 5),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

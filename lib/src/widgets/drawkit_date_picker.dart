@@ -8,6 +8,7 @@ import '../core/surface.dart';
 import '../engine/rough.dart';
 import 'drawkit_button.dart';
 import 'drawkit_dialog.dart';
+import 'drawkit_input.dart';
 
 const List<String> _defaultMonths = [
   'January',
@@ -34,6 +35,10 @@ const List<String> _defaultWeekdays = [
   'Su',
 ];
 
+/// The calendar's entry surface: the month grid, or a typed `YYYY-MM-DD`
+/// field (matching `showDatePicker`'s calendar/input modes).
+enum DrawkitDatePickerMode { calendar, input }
+
 /// A hand-drawn month calendar: chevron header, weekday row, and a day grid
 /// where the pick gets a shaded ball, today gets a dot, and out-of-range days
 /// fade. Rows follow the ambient direction like every other widget.
@@ -53,6 +58,11 @@ class DrawkitDatePicker extends StatefulWidget {
     this.firstDate,
     this.lastDate,
     this.today,
+    this.selectableDayPredicate,
+    this.onDisplayedMonthChanged,
+    this.headerText,
+    this.footerText,
+    this.entryMode = DrawkitDatePickerMode.calendar,
     this.monthNames = _defaultMonths,
     this.weekdayLabels = _defaultWeekdays,
     this.semanticLabel,
@@ -70,6 +80,19 @@ class DrawkitDatePicker extends StatefulWidget {
   /// Overridable clock input — defaults to `DateTime.now()`.
   final DateTime? today;
 
+  /// Days this predicate rejects render faded and cannot be picked, on top
+  /// of the [firstDate]/[lastDate] window.
+  final bool Function(DateTime day)? selectableDayPredicate;
+
+  /// Fired when the displayed month changes (paging, arrow walks past the
+  /// edge, or a typed jump).
+  final ValueChanged<DateTime>? onDisplayedMonthChanged;
+
+  /// Optional label above the calendar, and note below it.
+  final String? headerText;
+  final String? footerText;
+
+  final DrawkitDatePickerMode entryMode;
   final List<String> monthNames;
   final List<String> weekdayLabels;
   final String? semanticLabel;
@@ -86,21 +109,32 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
 
   late DateTime _month;
   late DateTime _cursor;
+  late final TextEditingController _typed;
   final FocusNode _dayNode = FocusNode();
   bool _focused = false;
+  String? _typedError;
 
   @override
   void initState() {
     super.initState();
-    final anchor = widget.value ?? widget.today ?? DateTime.now();
+    final anchor = _clampDate(widget.value ?? widget.today ?? DateTime.now());
     _month = DateTime(anchor.year, anchor.month);
     _cursor = DateTime(anchor.year, anchor.month, anchor.day);
+    _typed = TextEditingController(text: _formatDate(widget.value));
   }
 
   @override
   void dispose() {
     _dayNode.dispose();
+    _typed.dispose();
     super.dispose();
+  }
+
+  static String _formatDate(DateTime? date) {
+    if (date == null) return '';
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year.toString().padLeft(4, '0')}-$month-$day';
   }
 
   bool _sameDay(DateTime a, DateTime b) =>
@@ -117,12 +151,51 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
         day.isAfter(DateTime(last.year, last.month, last.day))) {
       return false;
     }
+    final predicate = widget.selectableDayPredicate;
+    if (predicate != null &&
+        !predicate(DateTime(day.year, day.month, day.day))) {
+      return false;
+    }
     return true;
   }
 
+  void _announceMonth(DateTime before) {
+    final listener = widget.onDisplayedMonthChanged;
+    if (listener == null) return;
+    if (before.year == _month.year && before.month == _month.month) return;
+    listener(_month);
+  }
+
+  DateTime _clampDate(DateTime day) {
+    final first = widget.firstDate;
+    final last = widget.lastDate;
+    if (first != null &&
+        day.isBefore(DateTime(first.year, first.month, first.day))) {
+      return DateTime(first.year, first.month, first.day);
+    }
+    if (last != null &&
+        day.isAfter(DateTime(last.year, last.month, last.day))) {
+      return DateTime(last.year, last.month, last.day);
+    }
+    return day;
+  }
+
+  DateTime _clampMonth(DateTime month) {
+    final first = widget.firstDate;
+    final last = widget.lastDate;
+    if (first != null && month.isBefore(DateTime(first.year, first.month))) {
+      return DateTime(first.year, first.month);
+    }
+    if (last != null && month.isAfter(DateTime(last.year, last.month))) {
+      return DateTime(last.year, last.month);
+    }
+    return month;
+  }
+
   void _step(int months) {
+    final before = _month;
     setState(() {
-      final target = DateTime(_month.year, _month.month + months);
+      final target = _clampMonth(DateTime(_month.year, _month.month + months));
       final daysInTarget = DateTime(target.year, target.month + 1, 0).day;
       _month = target;
       _cursor = DateTime(
@@ -131,21 +204,26 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
         _cursor.day.clamp(1, daysInTarget),
       );
     });
+    _announceMonth(before);
   }
 
   /// Moves the cursor by whole days, paging the month when it crosses an
   /// edge (so ArrowRight from the 31st lands on the 1st of the next month).
+  /// The cursor never leaves the `[firstDate, lastDate]` window.
   void _shift(int days) {
+    final before = _month;
     setState(() {
-      _cursor = _cursor.add(Duration(days: days));
+      _cursor = _clampDate(_cursor.add(Duration(days: days)));
       _month = DateTime(_cursor.year, _cursor.month);
     });
+    _announceMonth(before);
   }
 
   /// Pages by months, keeping the day when the target month is long enough.
   void _page(int months) {
+    final before = _month;
     setState(() {
-      final target = DateTime(_month.year, _month.month + months);
+      final target = _clampMonth(DateTime(_month.year, _month.month + months));
       final daysInTarget = DateTime(target.year, target.month + 1, 0).day;
       _month = target;
       _cursor = DateTime(
@@ -154,12 +232,28 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
         _cursor.day.clamp(1, daysInTarget),
       );
     });
+    _announceMonth(before);
   }
 
   void _edge(bool end) {
     setState(() {
       final daysInMonth = DateTime(_month.year, _month.month + 1, 0).day;
-      _cursor = DateTime(_month.year, _month.month, end ? daysInMonth : 1);
+      var day = end ? daysInMonth : 1;
+      final first = widget.firstDate;
+      final last = widget.lastDate;
+      if (end &&
+          last != null &&
+          last.year == _month.year &&
+          last.month == _month.month) {
+        day = last.day;
+      }
+      if (!end &&
+          first != null &&
+          first.year == _month.year &&
+          first.month == _month.month) {
+        day = first.day;
+      }
+      _cursor = DateTime(_month.year, _month.month, day);
     });
   }
 
@@ -169,6 +263,21 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
 
   void _pick(DateTime date) {
     setState(() => _cursor = date);
+    widget.onChanged(date);
+  }
+
+  void _submitTyped(String raw) {
+    final parsed = DateTime.tryParse(raw.trim());
+    if (parsed == null) {
+      setState(() => _typedError = 'use YYYY-MM-DD');
+      return;
+    }
+    final date = DateTime(parsed.year, parsed.month, parsed.day);
+    if (!_enabled(date)) {
+      setState(() => _typedError = 'not selectable');
+      return;
+    }
+    setState(() => _typedError = null);
     widget.onChanged(date);
   }
 
@@ -189,11 +298,51 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
     final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
     final horizontal = rtl ? -1 : 1;
 
+    if (widget.entryMode == DrawkitDatePickerMode.input) {
+      return Semantics(
+        label: widget.semanticLabel,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.headerText != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  widget.headerText!,
+                  style: textStyle.copyWith(color: palette.inkMuted),
+                ),
+              ),
+            DrawkitInput(
+              controller: _typed,
+              autofocus: true,
+              semanticLabel: widget.semanticLabel ?? 'date',
+              placeholder: 'YYYY-MM-DD',
+              style: widget.style,
+              seed: widget.seed,
+              animate: widget.animate,
+              helper: widget.footerText,
+              error: _typedError,
+              onSubmitted: _submitTyped,
+            ),
+          ],
+        ),
+      );
+    }
+
     return Semantics(
       label: widget.semanticLabel,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (widget.headerText != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                widget.headerText!,
+                style: textStyle.copyWith(color: palette.inkMuted),
+              ),
+            ),
           Row(
             children: [
               DrawkitIconButton(
@@ -204,7 +353,7 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
                 seed: widget.seed,
                 animate: widget.animate,
                 onPressed: () => _step(-1),
-                child: const Text('‹'),
+                child: Text(rtl ? '›' : '‹'),
               ),
               Expanded(
                 child: Text(
@@ -224,7 +373,7 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
                 seed: widget.seed,
                 animate: widget.animate,
                 onPressed: () => _step(1),
-                child: const Text('›'),
+                child: Text(rtl ? '‹' : '›'),
               ),
             ],
           ),
@@ -321,6 +470,17 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
               ],
             ),
           ),
+          if (widget.footerText != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                widget.footerText!,
+                style: textStyle.copyWith(
+                  fontSize: (textStyle.fontSize ?? 14) - 2,
+                  color: palette.inkMuted,
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -397,24 +557,39 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
       );
     }
 
-    if (!cursor) return cell;
-    return DrawkitSurface(
-      builder: (size, options) => [
-        drawkitFocusRingRect(
-          size: size,
-          radius: 10,
-          gapX: 2,
-          gapY: 2,
-          options: options,
-          style: style,
-        ),
-      ],
-      style: style,
-      seed: widget.seed,
-      animate: widget.animate,
-      child: cell,
+    if (!cursor) return _labeledDay(date, selected, enabled, cell);
+    return _labeledDay(
+      date,
+      selected,
+      enabled,
+      DrawkitSurface(
+        builder: (size, options) => [
+          drawkitFocusRingRect(
+            size: size,
+            radius: 10,
+            gapX: 2,
+            gapY: 2,
+            options: options,
+            style: style,
+          ),
+        ],
+        style: style,
+        seed: widget.seed,
+        animate: widget.animate,
+        child: cell,
+      ),
     );
   }
+
+  Widget _labeledDay(DateTime date, bool selected, bool enabled, Widget cell) =>
+      Semantics(
+        button: true,
+        enabled: enabled,
+        selected: selected,
+        label: '${widget.monthNames[(date.month - 1) % 12]} ${date.day}',
+        onTap: enabled ? () => _pick(date) : null,
+        child: ExcludeSemantics(child: cell),
+      );
 }
 
 /// Opens a [DrawkitDatePicker] in a sketch dialog; the future completes with
@@ -425,6 +600,11 @@ Future<DateTime?> showDrawkitDatePicker({
   DateTime? firstDate,
   DateTime? lastDate,
   DateTime? today,
+  bool Function(DateTime day)? selectableDayPredicate,
+  ValueChanged<DateTime>? onDisplayedMonthChanged,
+  String? headerText,
+  String? footerText,
+  DrawkitDatePickerMode initialEntryMode = DrawkitDatePickerMode.calendar,
   List<String> monthNames = _defaultMonths,
   List<String> weekdayLabels = _defaultWeekdays,
   String semanticLabel = 'pick a date',
@@ -442,6 +622,11 @@ Future<DateTime?> showDrawkitDatePicker({
     firstDate: firstDate,
     lastDate: lastDate,
     today: today,
+    selectableDayPredicate: selectableDayPredicate,
+    onDisplayedMonthChanged: onDisplayedMonthChanged,
+    headerText: headerText,
+    footerText: footerText,
+    initialEntryMode: initialEntryMode,
     monthNames: monthNames,
     weekdayLabels: weekdayLabels,
     semanticLabel: semanticLabel,
@@ -457,6 +642,11 @@ class _DatePickerHost extends StatefulWidget {
     required this.firstDate,
     required this.lastDate,
     required this.today,
+    required this.selectableDayPredicate,
+    required this.onDisplayedMonthChanged,
+    required this.headerText,
+    required this.footerText,
+    required this.initialEntryMode,
     required this.monthNames,
     required this.weekdayLabels,
     required this.semanticLabel,
@@ -469,6 +659,11 @@ class _DatePickerHost extends StatefulWidget {
   final DateTime? firstDate;
   final DateTime? lastDate;
   final DateTime? today;
+  final bool Function(DateTime day)? selectableDayPredicate;
+  final ValueChanged<DateTime>? onDisplayedMonthChanged;
+  final String? headerText;
+  final String? footerText;
+  final DrawkitDatePickerMode initialEntryMode;
   final List<String> monthNames;
   final List<String> weekdayLabels;
   final String semanticLabel;
@@ -495,6 +690,11 @@ class _DatePickerHostState extends State<_DatePickerHost> {
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
     today: widget.today,
+    selectableDayPredicate: widget.selectableDayPredicate,
+    onDisplayedMonthChanged: widget.onDisplayedMonthChanged,
+    headerText: widget.headerText,
+    footerText: widget.footerText,
+    entryMode: widget.initialEntryMode,
     monthNames: widget.monthNames,
     weekdayLabels: widget.weekdayLabels,
     semanticLabel: widget.semanticLabel,

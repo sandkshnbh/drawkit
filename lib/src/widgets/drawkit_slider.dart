@@ -243,16 +243,14 @@ class _DrawkitSliderState extends State<DrawkitSlider> {
             builder: (context, constraints) => GestureDetector(
               behavior: HitTestBehavior.opaque,
               excludeFromSemantics: true,
-              onTapDown: (details) => _setFromX(
-                details.localPosition.dx,
-                constraints.maxWidth,
-                rtl,
-              ),
-              onHorizontalDragStart: (details) => _setFromX(
-                details.localPosition.dx,
-                constraints.maxWidth,
-                rtl,
-              ),
+              onTapDown: (details) {
+                if (_enabled) _focusNode.requestFocus();
+                _setFromX(details.localPosition.dx, constraints.maxWidth, rtl);
+              },
+              onHorizontalDragStart: (details) {
+                if (_enabled) _focusNode.requestFocus();
+                _setFromX(details.localPosition.dx, constraints.maxWidth, rtl);
+              },
               onHorizontalDragUpdate: (details) => _setFromX(
                 details.localPosition.dx,
                 constraints.maxWidth,

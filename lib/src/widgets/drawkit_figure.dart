@@ -10,6 +10,7 @@ class DrawkitFigure extends StatelessWidget {
   const DrawkitFigure({
     required this.child,
     this.caption,
+    this.semanticLabel,
     this.padding = const EdgeInsets.all(8),
     this.captionSpacing = 8,
     this.captionStyle,
@@ -23,6 +24,9 @@ class DrawkitFigure extends StatelessWidget {
 
   /// Muted, centered, and captioned like a plate under the frame.
   final String? caption;
+
+  /// Alt text for the figure; when null the caption carries the meaning.
+  final String? semanticLabel;
 
   final EdgeInsetsGeometry padding;
   final double captionSpacing;
@@ -45,45 +49,49 @@ class DrawkitFigure extends StatelessWidget {
         )
         .merge(captionStyle);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        DrawkitSurface(
-          builder: (size, options) => [
-            DrawkitLayer(
-              roughRoundedRect(
-                3,
-                3,
-                size.width - 6,
-                size.height - 6,
-                8,
-                options,
+    return Semantics(
+      container: true,
+      label: semanticLabel,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DrawkitSurface(
+            builder: (size, options) => [
+              DrawkitLayer(
+                roughRoundedRect(
+                  3,
+                  3,
+                  size.width - 6,
+                  size.height - 6,
+                  8,
+                  options,
+                ),
+                drawkitFillPaint(resolved.paperColor),
               ),
-              drawkitFillPaint(resolved.paperColor),
-            ),
-            DrawkitLayer(
-              roughRoundedRect(
-                3,
-                3,
-                size.width - 6,
-                size.height - 6,
-                8,
-                options,
+              DrawkitLayer(
+                roughRoundedRect(
+                  3,
+                  3,
+                  size.width - 6,
+                  size.height - 6,
+                  8,
+                  options,
+                ),
+                drawkitStroke(resolved, fallbackWidth: 1.5),
               ),
-              drawkitStroke(resolved, fallbackWidth: 1.5),
-            ),
+            ],
+            style: resolved,
+            seed: seed,
+            animate: animate,
+            child: Padding(padding: padding, child: child),
+          ),
+          if (caption != null) ...[
+            SizedBox(height: captionSpacing),
+            Text(caption!, style: captionText, textAlign: TextAlign.center),
           ],
-          style: resolved,
-          seed: seed,
-          animate: animate,
-          child: Padding(padding: padding, child: child),
-        ),
-        if (caption != null) ...[
-          SizedBox(height: captionSpacing),
-          Text(caption!, style: captionText, textAlign: TextAlign.center),
         ],
-      ],
+      ),
     );
   }
 }

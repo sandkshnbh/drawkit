@@ -73,7 +73,12 @@ class DrawkitSurface extends StatefulWidget {
     this.boilClock,
     this.accent,
     this.size,
-  }) : assert(size == null || child == null);
+    this.repaintBoundary = true,
+  }) : assert(size == null || child == null),
+       assert(
+         size != null || child != null,
+         'DrawkitSurface needs a child or a size',
+       );
 
   final DrawkitLayerBuilder builder;
   final Widget? child;
@@ -89,6 +94,11 @@ class DrawkitSurface extends StatefulWidget {
   final VoidCallback? onTap;
   final ValueChanged<bool>? onHoverChanged;
   final ValueChanged<bool>? onPressedChanged;
+
+  /// Whether to isolate painting in a [RepaintBoundary]. Turn it off when a
+  /// layer blends against what is painted underneath (the highlighter wash):
+  /// the boundary would blend against its own transparent layer instead.
+  final bool repaintBoundary;
 
   /// Boil cycle; the loading button shortens it (450ms in the CSS).
   final Duration duration;
@@ -120,9 +130,11 @@ class DrawkitSurfaceState extends State<DrawkitSurface>
   bool _boiling = false;
   bool _hovered = false;
 
-  /// New pen stroke: a fresh seed unless one is forced. Same contract as
-  /// `resketch(seed?)` on the JS handle.
-  void resketch([int? seed]) => setState(() => _seed = seed ?? randomSeed());
+  /// New pen stroke: a fresh seed unless one is forced, honouring a pinned
+  /// [DrawkitSurface.seed] so interaction never re-sketches a fixed drawing.
+  /// Same contract as `resketch(seed?)` on the JS handle.
+  void resketch([int? seed]) =>
+      setState(() => _seed = seed ?? widget.seed ?? randomSeed());
 
   @override
   void didUpdateWidget(DrawkitSurface oldWidget) {
@@ -200,15 +212,16 @@ class DrawkitSurfaceState extends State<DrawkitSurface>
       sketchTrim: DrawkitSketchScope.maybeOf(context),
     );
 
-    Widget painted = RepaintBoundary(
-      child: CustomPaint(
-        painter: painter,
-        size: widget.size ?? Size.zero,
-        isComplex: false,
-        willChange: boil,
-        child: widget.child,
-      ),
+    Widget painted = CustomPaint(
+      painter: painter,
+      size: widget.size ?? Size.zero,
+      isComplex: false,
+      willChange: boil,
+      child: widget.child,
     );
+    if (widget.repaintBoundary) {
+      painted = RepaintBoundary(child: painted);
+    }
 
     if (!widget.enabled) {
       return Opacity(

@@ -1,5 +1,44 @@
 ## Unreleased
 
+- **Audit fixes (P1)** — the parity and polish half of the AUDIT.md sweep.
+  Semantics grew roles wherever the engine can hear them: `tab`/`tabBar`
+  on the segments and tabs, `table`/`row`/`cell`/`columnHeader` on the
+  table, and a strictly gated `progressBar` (value plus min/max) on the
+  determinate bar. The command palette reworked: `DrawkitCommand` carries
+  `leading`, `group`, and `enabled`; groups draw headers, disabled rows
+  are skipped by the roving highlight and refused on Enter, the list
+  scroll-reveals the highlight, a repeated invoke no longer pops twice,
+  and `showDrawkitCommandPalette` gained `filterCallback` and
+  `initialSelection`. `DrawkitDialog` stopped double-announcing (route
+  semantics are opt-in via `routeSemantics`/`semanticLabel`), paints its
+  scrim from the resolved palette, and `showDrawkitDialog` grew
+  `barrierLabel`, `requestFocus`, `useRootNavigator`, `routeSettings`,
+  `transitionDuration`, `anchorPoint`, and `fullscreenDialog`.
+  `DrawkitSheet` is a stateful draggable now — the handle follows the
+  finger on a widened strip, a fling or a 30% drag dismisses, otherwise
+  it settles back — meets the dialog's parity set plus `enableDrag`,
+  `isScrollControlled`, and `maxHeightFactor`, and yields to the
+  keyboard via `viewInsets`. The date picker gained
+  `selectableDayPredicate`, `onDisplayedMonthChanged`, `headerText`/
+  `footerText`, and a typed `DrawkitDatePickerMode.input` entry with
+  date parsing and announced errors, all threaded through its show
+  function. `DrawkitHighlight` skips its repaint boundary so blend modes
+  multiply through the real backdrop, `DrawkitButton` announced-loading
+  text is overridable, the toasts expose `plainLinger`/`actionLinger`,
+  and the sketch-in, stagger, and shake animations retune live from
+  their widgets instead of latching, while reduced motion short-circuits
+  every one of them. The engine stays total: `ellipsePoints` and
+  `variants` survive non-positive counts. Tests hardened to prove the fixes: the
+  gallery guidelines now walk RTL and dark pages at a 1.2 text scaler
+  and smoke the dialog and toast under reduced motion, the example
+  exercises sidebar selection and the RTL/dark toggles, a pixel test
+  proves boil frames genuinely repaint, the palette and nav keyboard
+  suites pin roving focus and disabled skipping, and
+  `test/audit_fixes_test.dart` covers the badge clamp, popover mirroring
+  and flipping, grab-handle gesture math, dialog focus restoration, the
+  date picker predicate and typed entry, and reduced-motion standstills.
+  278 tests.
+
 - **Audit fixes (P0)** — the correctness half of the AUDIT.md sweep.
   Overlaid routes were mounting outside the kit's scope: the dialog, sheet,
   toast, and command palette now wrap their `pageBuilder` in a

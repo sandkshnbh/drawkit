@@ -1,3 +1,4 @@
+import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 
 import '../core/style.dart';
@@ -56,51 +57,76 @@ class DrawkitTable extends StatelessWidget {
     final palette = resolved.palette;
     final ink = resolved.effectiveStroke;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _Cells(
-          columns: columns,
-          padding: cellPadding,
-          children: [
-            for (var i = 0; i < columns.length; i++)
-              Text(
-                columns[i].label,
-                style: DefaultTextStyle.of(context).style
-                    .merge(
-                      TextStyle(
-                        color: palette.ink,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        decoration: TextDecoration.none,
-                      ),
-                    )
-                    .merge(headerTextStyle),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+    return Semantics(
+      role: SemanticsRole.table,
+      container: true,
+      explicitChildNodes: true,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            role: SemanticsRole.row,
+            container: true,
+            explicitChildNodes: true,
+            child: _Cells(
+              columns: columns,
+              padding: cellPadding,
+              children: [
+                for (var i = 0; i < columns.length; i++)
+                  Semantics(
+                    role: SemanticsRole.columnHeader,
+                    child: Text(
+                      columns[i].label,
+                      style: DefaultTextStyle.of(context).style
+                          .merge(
+                            TextStyle(
+                              color: palette.ink,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.none,
+                            ),
+                          )
+                          .merge(headerTextStyle),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          _TableRuleLine(
+            seed: seed ?? 1,
+            style: resolved,
+            animate: animate,
+            color: ink,
+            width: 1.5,
+          ),
+          for (var r = 0; r < rows.length; r++) ...[
+            Semantics(
+              role: SemanticsRole.row,
+              container: true,
+              explicitChildNodes: true,
+              child: _Cells(
+                columns: columns,
+                padding: cellPadding,
+                children: [
+                  for (final cell in rows[r])
+                    Semantics(role: SemanticsRole.cell, child: cell),
+                ],
+              ),
+            ),
+            if (r < rows.length - 1)
+              _TableRuleLine(
+                seed: (seed ?? 1) + r + 1,
+                style: resolved,
+                animate: animate,
+                color: ink.withValues(alpha: 0.35),
+                width: 1,
               ),
           ],
-        ),
-        _TableRuleLine(
-          seed: seed ?? 1,
-          style: resolved,
-          animate: animate,
-          color: ink,
-          width: 1.5,
-        ),
-        for (var r = 0; r < rows.length; r++) ...[
-          _Cells(columns: columns, padding: cellPadding, children: rows[r]),
-          if (r < rows.length - 1)
-            _TableRuleLine(
-              seed: (seed ?? 1) + r + 1,
-              style: resolved,
-              animate: animate,
-              color: ink.withValues(alpha: 0.35),
-              width: 1,
-            ),
         ],
-      ],
+      ),
     );
   }
 }

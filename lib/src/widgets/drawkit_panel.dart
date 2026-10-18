@@ -17,6 +17,9 @@ class DrawkitPanelPositionDelegate extends SingleChildLayoutDelegate {
     required this.gap,
     required this.maxHeight,
     this.width,
+    this.minWidth = 180,
+    this.maxWidth = 360,
+    this.alignmentOffset = Offset.zero,
   });
 
   final Rect anchorRect;
@@ -24,10 +27,13 @@ class DrawkitPanelPositionDelegate extends SingleChildLayoutDelegate {
   final double gap;
   final double maxHeight;
   final double? width;
+  final double minWidth;
+  final double maxWidth;
+  final Offset alignmentOffset;
 
   @override
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
-    final w = width ?? anchorRect.width.clamp(180.0, 360.0);
+    final w = (width ?? anchorRect.width).clamp(minWidth, maxWidth);
     return BoxConstraints(minWidth: w, maxWidth: w, maxHeight: maxHeight);
   }
 
@@ -35,16 +41,15 @@ class DrawkitPanelPositionDelegate extends SingleChildLayoutDelegate {
   Offset getPositionForChild(Size size, Size childSize) {
     final below = anchorRect.bottom + gap;
     final fitsBelow = below + childSize.height <= size.height;
-    final y = fitsBelow ? below : anchorRect.top - gap - childSize.height;
+    final y =
+        (fitsBelow ? below : anchorRect.top - gap - childSize.height) +
+        alignmentOffset.dy;
     final rawX = textDirection == TextDirection.rtl
         ? anchorRect.right - childSize.width
         : anchorRect.left;
-    final x = rawX.clamp(
-      0.0,
-      (size.width - childSize.width).clamp(0.0, double.infinity),
-    );
+    final x = rawX + alignmentOffset.dx;
     return Offset(
-      x,
+      x.clamp(0.0, (size.width - childSize.width).clamp(0.0, double.infinity)),
       y.clamp(
         0.0,
         (size.height - childSize.height).clamp(0.0, double.infinity),
@@ -58,7 +63,10 @@ class DrawkitPanelPositionDelegate extends SingleChildLayoutDelegate {
       textDirection != oldDelegate.textDirection ||
       gap != oldDelegate.gap ||
       maxHeight != oldDelegate.maxHeight ||
-      width != oldDelegate.width;
+      width != oldDelegate.width ||
+      minWidth != oldDelegate.minWidth ||
+      maxWidth != oldDelegate.maxWidth ||
+      alignmentOffset != oldDelegate.alignmentOffset;
 }
 
 /// The rows' chosen-mark: a 2px-inset check sized to its 14px box.

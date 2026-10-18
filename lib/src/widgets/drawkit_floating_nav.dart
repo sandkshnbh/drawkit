@@ -254,9 +254,9 @@ class _FloatingTileState extends State<_FloatingTile> {
               clipBehavior: Clip.none,
               children: [
                 widget.destination.icon!,
-                Positioned(
+                PositionedDirectional(
                   top: -7,
-                  right: -10,
+                  end: -10,
                   child: DrawkitNavBadge(
                     count: widget.destination.badge!,
                     style: resolved,
