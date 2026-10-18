@@ -41,6 +41,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
     expect(direction(), TextDirection.rtl);
+    expect(find.text('Surface'), findsNothing);
+    expect(find.text('السطح'), findsWidgets);
   });
 
   testWidgets('the dark toggle swaps the palette', (tester) async {

@@ -1,5 +1,16 @@
 ## Unreleased
 
+- **Arabic gallery** — the sample flips to Arabic when its RTL toggle is
+  on. `example/lib/l10n.dart` holds the `demoArabic` switch that the
+  gallery build keeps in sync with the direction, a `tr(en, ar)` picker
+  that works without a context, a noun table for the sample keys that
+  double as labels (so the keys stay stable while the display
+  localizes), and month/weekday lists that the date pickers accept.
+  Every string on the twelve gallery pages, the sidebar chrome, and the
+  sample's own status lines routes through it, and the example tests
+  prove the Arabic sidebar plus a sweep that keeps English out of the
+  Arabic copy.
+
 - **Audit fixes (P2)** — the polish half of the AUDIT.md sweep. The core
   is stricter and steadier: the focus ring clamps its radius to half the
   shortest side and rejects negative insets, `DrawkitStyle.copyWith`

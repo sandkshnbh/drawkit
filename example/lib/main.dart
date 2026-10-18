@@ -4,7 +4,9 @@ import 'package:drawkit/drawkit.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
-void main() => runApp(const DrawkitGalleryApp());
+import 'l10n.dart';
+
+void main() => runApp(DrawkitGalleryApp());
 
 final _sidebarWidth = 210.0;
 
@@ -15,7 +17,7 @@ class DrawkitGalleryApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = DrawkitTheme.of(context).palette;
     return WidgetsApp(
-      title: 'drawkit gallery',
+      title: tr('drawkit gallery', 'معرض drawkit'),
       color: palette.paper,
       debugShowCheckedModeBanner: false,
       pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
@@ -24,7 +26,7 @@ class DrawkitGalleryApp extends StatelessWidget {
             pageBuilder: (context, animation, secondaryAnimation) =>
                 builder(context),
           ),
-      home: const Gallery(),
+      home: Gallery(),
     );
   }
 }
@@ -43,6 +45,7 @@ class _GalleryState extends State<Gallery> {
 
   @override
   Widget build(BuildContext context) {
+    demoArabic = _rtl;
     final palette = _dark ? DrawkitPalette.dark : DrawkitPalette.light;
     return Directionality(
       textDirection: _rtl ? TextDirection.rtl : TextDirection.ltr,
@@ -71,9 +74,9 @@ class _GalleryState extends State<Gallery> {
                 ),
                 Expanded(
                   child: ScrollConfiguration(
-                    behavior: const _DragScrollBehavior(),
+                    behavior: _DragScrollBehavior(),
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(28),
+                      padding: EdgeInsets.all(28),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -86,7 +89,7 @@ class _GalleryState extends State<Gallery> {
                               decoration: TextDecoration.none,
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          SizedBox(height: 6),
                           Text(
                             galleryPages[_page].subtitle,
                             style: TextStyle(
@@ -94,7 +97,7 @@ class _GalleryState extends State<Gallery> {
                               decoration: TextDecoration.none,
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          SizedBox(height: 24),
                           galleryPages[_page].builder(context),
                         ],
                       ),
@@ -111,7 +114,7 @@ class _GalleryState extends State<Gallery> {
 }
 
 class GalleryPage {
-  const GalleryPage(this.group, this.title, this.subtitle, this.builder);
+  GalleryPage(this.group, this.title, this.subtitle, this.builder);
 
   final String group;
   final String title;
@@ -120,107 +123,158 @@ class GalleryPage {
 }
 
 /// Filled in per milestone; see the individual page builders below.
-final List<GalleryPage> galleryPages = [
+List<GalleryPage> get galleryPages => [
   GalleryPage(
-    'Foundations',
-    'Surface',
-    'The shared sketch surface: seeded chrome behind any child, one boil clock.',
-    (context) => const SurfacePage(),
+    tr('Foundations', 'الأساسات'),
+    tr('Surface', 'السطح'),
+    tr(
+      'The shared sketch surface: seeded chrome behind any child, one boil clock.',
+      'سطح الرسم المشترك: إطار مبذور خلف أي محتوى، وساعة غليان واحدة.',
+    ),
+    (context) => SurfacePage(),
   ),
   GalleryPage(
-    'Foundations',
-    'Ink · Palette',
-    'Two papers side by side: the full palette, control by control.',
+    tr('Foundations', 'الأساسات'),
+    tr('Ink · Palette', 'الحبر · اللوحة'),
+    tr(
+      'Two papers side by side: the full palette, control by control.',
+      'ورقتان جنباً إلى جنب: اللوحة الكاملة، عنصراً عنصراً.',
+    ),
     (context) => const PalettePage(),
   ),
   GalleryPage(
-    'Foundations',
-    'Motion',
-    'Draw-on tracing, staggered lists, and the error shake — one shared pen.',
+    tr('Foundations', 'الأساسات'),
+    tr('Motion', 'الحركة'),
+    tr(
+      'Draw-on tracing, staggered lists, and the error shake — one shared pen.',
+      'ترسيم يترافق، وقوائم متتابعة، واهتزاز الخطأ — قلم واحد مشترك.',
+    ),
     (context) => const MotionPage(),
   ),
   GalleryPage(
-    'Foundations',
-    'Focus & Keyboard',
-    'One ring on every control — Tab, arrows, Home/End, Enter, Escape.',
+    tr('Foundations', 'الأساسات'),
+    tr('Focus & Keyboard', 'التركيز ولوحة المفاتيح'),
+    tr(
+      'One ring on every control — Tab, arrows, Home/End, Enter, Escape.',
+      'حلقة واحدة على كل عنصر — Tab والأسهم وHome/End وEnter وEscape.',
+    ),
     (context) => const FocusPage(),
   ),
   GalleryPage(
-    'Actions',
-    'Buttons',
-    'Variants, states, tones — plus icon buttons, the floating pen, and the fab menu.',
+    tr('Actions', 'الأفعال'),
+    tr('Buttons', 'الأزرار'),
+    tr(
+      'Variants, states, tones — plus icon buttons, the floating pen, and the fab menu.',
+      'أنماط وحالات وألوان — مع أزرار الأيقونات والقلم العائم وقائمة الإجراءات.',
+    ),
     (context) => const ButtonPage(),
   ),
   GalleryPage(
-    'Forms',
-    'Fields',
-    'Input, textarea, and search: real text editing behind a sketch outline.',
+    tr('Forms', 'النماذج'),
+    tr('Fields', 'الحقول'),
+    tr(
+      'Input, textarea, and search: real text editing behind a sketch outline.',
+      'إدخال ونص متعدد وبحث: تحرير حقيقي خلف إطار مرسوم.',
+    ),
     (context) => const FieldPage(),
   ),
   GalleryPage(
-    'Forms',
-    'Choices',
-    'Checkboxes, radios, toggles — and chips and segments for the wider picks.',
+    tr('Forms', 'النماذج'),
+    tr('Choices', 'الخيارات'),
+    tr(
+      'Checkboxes, radios, toggles — and chips and segments for the wider picks.',
+      'مربعات اختيار وراديو ومفاتيح — مع الرقائق والمقاطع للاختيارات الأوسع.',
+    ),
     (context) => const ChoicePage(),
   ),
   GalleryPage(
-    'Forms',
-    'Select & Dates',
-    'A dropdown and a calendar: pick one value out of many.',
+    tr('Forms', 'النماذج'),
+    tr('Select & Dates', 'القوائم والتواريخ'),
+    tr(
+      'A dropdown and a calendar: pick one value out of many.',
+      'قائمة منسدلة وتقويم: اختر قيمة واحدة من كثير.',
+    ),
     (context) => const SelectPage(),
   ),
   GalleryPage(
-    'Forms',
-    'Values',
-    'Slider, stepper, and stars: numbers and ratings with a drawn response.',
+    tr('Forms', 'النماذج'),
+    tr('Values', 'القيم'),
+    tr(
+      'Slider, stepper, and stars: numbers and ratings with a drawn response.',
+      'منزلق وعدّاد ونجوم: أرقام وتقييمات باستجابة مرسومة.',
+    ),
     (context) => const ValuesPage(),
   ),
   GalleryPage(
-    'Navigation',
-    'Navigation',
-    'App bar, rail, bottom bar, breadcrumb, pager — and the floating capsule.',
+    tr('Navigation', 'التنقل'),
+    tr('Navigation', 'التنقل'),
+    tr(
+      'App bar, rail, bottom bar, breadcrumb, pager — and the floating capsule.',
+      'شريط علوي ومسار وشريط سفلي وفتات وناقل — والكبسولة العائمة.',
+    ),
     (context) => const NavigationPage(),
   ),
   GalleryPage(
-    'Navigation',
-    'Tabs & Steps',
-    'Tabs that slide the underline, steps that count the walk.',
+    tr('Navigation', 'التنقل'),
+    tr('Tabs & Steps', 'التبويبات والخطوات'),
+    tr(
+      'Tabs that slide the underline, steps that count the walk.',
+      'تبويبات تزحزح الخط، وخطوات تعدّ المشوار.',
+    ),
     (context) => const TabsPage(),
   ),
   GalleryPage(
-    'Overlays',
-    'Menus & Popovers',
-    'Dropdowns, popovers, the tooltip, and the command palette.',
+    tr('Overlays', 'الطبقات العلوية'),
+    tr('Menus & Popovers', 'القوائم والمنبثقات'),
+    tr(
+      'Dropdowns, popovers, the tooltip, and the command palette.',
+      'قوائم منسدلة ومنبثقات وتلميح ولوحة أوامر.',
+    ),
     (context) => const MenusPage(),
   ),
   GalleryPage(
-    'Overlays',
-    'Dialogs & Sheets',
-    'Modals and drawers that trace themselves in over the page.',
+    tr('Overlays', 'الطبقات العلوية'),
+    tr('Dialogs & Sheets', 'الحوارات واللوحات'),
+    tr(
+      'Modals and drawers that trace themselves in over the page.',
+      'نوافذ ودرج يترسمان فوق الصفحة.',
+    ),
     (context) => const DialogsPage(),
   ),
   GalleryPage(
-    'Feedback',
-    'Feedback & States',
-    'Toasts, alerts, validation, empty margins, loading, and the pull.',
+    tr('Feedback', 'التغذية الراجعة'),
+    tr('Feedback & States', 'التغذية والحالات'),
+    tr(
+      'Toasts, alerts, validation, empty margins, loading, and the pull.',
+      'تنبيهات وتحذيرات وتحقق وهوامش فارغة وتحميل وسحب.',
+    ),
     (context) => const FeedbackPage(),
   ),
   GalleryPage(
-    'Display',
-    'Cards & Tables',
-    'Frames, rules, badges, lists, the accordion, and a ruled ledger.',
+    tr('Display', 'العرض'),
+    tr('Cards & Tables', 'البطاقات والجداول'),
+    tr(
+      'Frames, rules, badges, lists, the accordion, and a ruled ledger.',
+      'إطارات وقواعد وشارات وقوائم وأكورديون وسجل مسطّر.',
+    ),
     (context) => const ContainersPage(),
   ),
   GalleryPage(
-    'Display',
-    'Type & Ink',
-    'Headings, underline, highlight, circle, quote, and kbd.',
+    tr('Display', 'العرض'),
+    tr('Type & Ink', 'الخط والحبر'),
+    tr(
+      'Headings, underline, highlight, circle, quote, and kbd.',
+      'عناوين وخط سفلي وتظليل ودائرة واقتباس ومفاتيح.',
+    ),
     (context) => const TypePage(),
   ),
   GalleryPage(
-    'Display',
-    'Pictures & Extras',
-    'Faces, plates, doodles, arrows, and a ticker.',
+    tr('Display', 'العرض'),
+    tr('Pictures & Extras', 'الصور والإضافات'),
+    tr(
+      'Faces, plates, doodles, arrows, and a ticker.',
+      'وجوه وألواح وخربشات وأسهم وشريط متحرك.',
+    ),
     (context) => const PicturesPage(),
   ),
 ];
@@ -329,7 +383,7 @@ class _Sidebar extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      'RTL',
+                      tr('RTL', 'الاتجاه'),
                       style: TextStyle(
                         color: palette.inkMuted,
                         decoration: TextDecoration.none,
@@ -338,7 +392,7 @@ class _Sidebar extends StatelessWidget {
                     const SizedBox(width: 10),
                     DrawkitToggle(
                       value: rtl,
-                      semanticLabel: 'RTL',
+                      semanticLabel: tr('RTL', 'الاتجاه'),
                       onChanged: onToggleRtl,
                     ),
                   ],
@@ -347,7 +401,7 @@ class _Sidebar extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      'dark',
+                      tr('dark', 'داكن'),
                       style: TextStyle(
                         color: palette.inkMuted,
                         decoration: TextDecoration.none,
@@ -356,7 +410,7 @@ class _Sidebar extends StatelessWidget {
                     const SizedBox(width: 10),
                     DrawkitToggle(
                       value: dark,
-                      semanticLabel: 'dark ink',
+                      semanticLabel: tr('dark ink', 'حبر داكن'),
                       onChanged: onToggleDark,
                     ),
                   ],
@@ -428,12 +482,16 @@ class _SurfacePageState extends State<SurfacePage> {
             seed: seed,
             animate: animate,
             resketchOnPointer: true,
-            child: const Center(child: Text('hover me — I am redrawn')),
+            child: Center(
+              child: Text(
+                tr('hover me — I am redrawn', 'مرّر فوقي — أُعيد رسمي'),
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 24),
         _NumberStepper(
-          label: 'roughness',
+          label: tr('roughness', 'الخشونة'),
           value: roughness,
           step: 0.1,
           min: 0,
@@ -441,7 +499,7 @@ class _SurfacePageState extends State<SurfacePage> {
           onChanged: (v) => setState(() => roughness = v),
         ),
         _NumberStepper(
-          label: 'boil',
+          label: tr('boil', 'الغليان'),
           value: boil,
           step: 0.1,
           min: 0,
@@ -449,7 +507,7 @@ class _SurfacePageState extends State<SurfacePage> {
           onChanged: (v) => setState(() => boil = v),
         ),
         _NumberStepper(
-          label: 'seed',
+          label: tr('seed', 'البذرة'),
           value: seed?.toDouble() ?? -1,
           step: 1,
           min: -1,
@@ -461,7 +519,11 @@ class _SurfacePageState extends State<SurfacePage> {
           children: [
             DrawkitButton(
               onPressed: () => setState(() => animate = !animate),
-              child: Text(animate ? 'boil: on' : 'boil: off'),
+              child: Text(
+                animate
+                    ? tr('boil: on', 'الغليان: مفعّل')
+                    : tr('boil: off', 'الغليان: متوقف'),
+              ),
             ),
           ],
         ),
@@ -515,7 +577,9 @@ class _NumberStepper extends StatelessWidget {
             width: 90,
             child: Center(
               child: Text(
-                value < 0 ? 'random' : value.toStringAsFixed(step < 1 ? 1 : 0),
+                value < 0
+                    ? tr('random', 'عشوائي')
+                    : value.toStringAsFixed(step < 1 ? 1 : 0),
                 style: const TextStyle(
                   fontFeatures: [FontFeature.tabularFigures()],
                   decoration: TextDecoration.none,
@@ -566,7 +630,13 @@ class _ButtonPageState extends State<ButtonPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Variants — one frame, three finishes', style: body),
+          Text(
+            tr(
+              'Variants — one frame, three finishes',
+              'الأنماط — إطار واحد وثلاث لمسات',
+            ),
+            style: body,
+          ),
           const SizedBox(height: 10),
           Wrap(
             spacing: 18,
@@ -577,12 +647,15 @@ class _ButtonPageState extends State<ButtonPage> {
                 DrawkitButton(
                   variant: variant,
                   onPressed: () {},
-                  child: Text(variant.name),
+                  child: Text(ar(variant.name)),
                 ),
             ],
           ),
           const SizedBox(height: 22),
-          Text('Tones — and the disabled hand', style: body),
+          Text(
+            tr('Tones — and the disabled hand', 'الألوان — واليد المعطّلة'),
+            style: body,
+          ),
           const SizedBox(height: 10),
           Wrap(
             spacing: 18,
@@ -593,14 +666,22 @@ class _ButtonPageState extends State<ButtonPage> {
                 DrawkitButton(
                   tone: tone,
                   onPressed: () {},
-                  child: Text('tone: ${tone.name}'),
+                  child: Text(
+                    tr('tone: ${tone.name}', 'اللون: ${ar(tone.name)}'),
+                  ),
                 ),
-              const DrawkitButton(onPressed: null, child: Text('disabled')),
+              DrawkitButton(
+                onPressed: null,
+                child: Text(tr('disabled', 'معطّل')),
+              ),
             ],
           ),
           const SizedBox(height: 22),
           Text(
-            'States — loading slows the boil, error and success re-ink',
+            tr(
+              'States — loading slows the boil, error and success re-ink',
+              'الحالات — التحميل يبطئ الغليان، والخطأ والنجاح يعيدان الحبر',
+            ),
             style: body,
           ),
           const SizedBox(height: 10),
@@ -612,7 +693,7 @@ class _ButtonPageState extends State<ButtonPage> {
                 DrawkitButton(
                   state: s,
                   onPressed: () {},
-                  child: Text('state: ${s.name}'),
+                  child: Text(tr('state: ${s.name}', 'الحالة: ${ar(s.name)}')),
                 ),
             ],
           ),
@@ -634,26 +715,40 @@ class _ButtonPageState extends State<ButtonPage> {
                     };
                   });
                 },
-                child: Text('cycle state: ${state.name}'),
+                child: Text(
+                  tr(
+                    'cycle state: ${state.name}',
+                    'بدّل الحالة: ${ar(state.name)}',
+                  ),
+                ),
               ),
               Text(
-                'Tab to me for the focus ring →',
+                tr(
+                  'Tab to me for the focus ring →',
+                  'اضغط Tab لترى حلقة التركيز ←',
+                ),
                 style: body.copyWith(color: palette.inkMuted),
               ),
-              const DrawkitButton(
+              DrawkitButton(
                 autofocus: false,
                 onPressed: _noop,
-                child: Text('focus me'),
+                child: Text(tr('focus me', 'ركّز عليّ')),
               ),
             ],
           ),
           const SizedBox(height: 26),
-          Text('Icon buttons — one glyph, a required label', style: body),
+          Text(
+            tr(
+              'Icon buttons — one glyph, a required label',
+              'أزرار الأيقونات — رمز واحد ووسم لازم',
+            ),
+            style: body,
+          ),
           const SizedBox(height: 10),
           Row(
             children: [
               DrawkitIconButton(
-                semanticLabel: 'Favourite',
+                semanticLabel: tr('Favourite', 'المفضلة'),
                 tone: _favourite ? DrawkitTone.accent : DrawkitTone.neutral,
                 variant: _favourite
                     ? DrawkitButtonVariant.solid
@@ -663,7 +758,7 @@ class _ButtonPageState extends State<ButtonPage> {
               ),
               const SizedBox(width: 8),
               DrawkitIconButton(
-                semanticLabel: 'Clear the pages',
+                semanticLabel: tr('Clear the pages', 'امسح الصفحات'),
                 tone: DrawkitTone.danger,
                 onPressed: () => setState(() => _pages = 0),
                 child: const Text('×'),
@@ -672,29 +767,37 @@ class _ButtonPageState extends State<ButtonPage> {
           ),
           const SizedBox(height: 22),
           Text(
-            'Floating pen — the one action that never scrolls away',
+            tr(
+              'Floating pen — the one action that never scrolls away',
+              'القلم العائم — الفعل الذي لا يبتعد بالتمرير',
+            ),
             style: body,
           ),
           const SizedBox(height: 10),
           Row(
             children: [
               DrawkitFab(
-                semanticLabel: 'add a page',
+                semanticLabel: tr('add a page', 'أضف صفحة'),
                 onPressed: () => setState(() => _pages += 1),
                 child: const Text('＋'),
               ),
               const SizedBox(width: 16),
               Text(
                 _pages == 0
-                    ? 'no new pages yet'
-                    : '$_pages new ${_pages == 1 ? 'page' : 'pages'}',
+                    ? tr('no new pages yet', 'لا صفحات جديدة بعد')
+                    : _pages == 1
+                    ? tr('1 new page', 'صفحة جديدة واحدة')
+                    : tr('$_pages new pages', '$_pages صفحات جديدة'),
                 style: body.copyWith(color: palette.inkMuted),
               ),
             ],
           ),
           const SizedBox(height: 22),
           Text(
-            'Fab menu — labelled pills unfold above the circle',
+            tr(
+              'Fab menu — labelled pills unfold above the circle',
+              'قائمة الإجراءات — أقراص معنونة تتفتح فوق الدائرة',
+            ),
             style: body,
           ),
           const SizedBox(height: 10),
@@ -703,25 +806,31 @@ class _ButtonPageState extends State<ButtonPage> {
             child: Align(
               alignment: AlignmentDirectional.bottomEnd,
               child: DrawkitFabMenu(
-                semanticLabel: 'quick actions',
+                semanticLabel: tr('quick actions', 'إجراءات سريعة'),
                 items: [
                   DrawkitFabMenuItem(
-                    label: 'New note',
+                    label: tr('New note', 'ملاحظة جديدة'),
                     icon: Text('✎'),
-                    onPressed: () =>
-                        showDrawkitToast(context, message: 'a fresh note'),
+                    onPressed: () => showDrawkitToast(
+                      context,
+                      message: tr('a fresh note', 'ملاحظة جديدة'),
+                    ),
                   ),
                   DrawkitFabMenuItem(
-                    label: 'New sketch',
+                    label: tr('New sketch', 'رسمة جديدة'),
                     icon: Text('✏'),
-                    onPressed: () =>
-                        showDrawkitToast(context, message: 'a blank page'),
+                    onPressed: () => showDrawkitToast(
+                      context,
+                      message: tr('a blank page', 'صفحة بيضاء'),
+                    ),
                   ),
                   DrawkitFabMenuItem(
-                    label: 'Import',
+                    label: tr('Import', 'استيراد'),
                     icon: Text('⌤'),
-                    onPressed: () =>
-                        showDrawkitToast(context, message: 'importing…'),
+                    onPressed: () => showDrawkitToast(
+                      context,
+                      message: tr('importing…', 'يستورد…'),
+                    ),
                   ),
                 ],
               ),
@@ -762,28 +871,37 @@ class _ChoicePageState extends State<ChoicePage> {
         _ChoiceRow(
           control: DrawkitCheckbox(
             value: terms,
-            semanticLabel: 'accept the scribbles',
+            semanticLabel: tr('accept the scribbles', 'اقبل الخربشات'),
             onChanged: (v) => setState(() => terms = v),
           ),
-          text: 'I accept the scribbles (checked, with the check drawn on)',
+          text: tr(
+            'I accept the scribbles (checked, with the check drawn on)',
+            'أقبل الخربشات (محدد، والعلامة مرسومة)',
+          ),
           onTap: () => setState(() => terms = !terms),
         ),
         _ChoiceRow(
           control: DrawkitCheckbox(
             value: newsletter,
-            semanticLabel: 'send me one doodle a week',
+            semanticLabel: tr(
+              'send me one doodle a week',
+              'أرسل لي خربشة كل أسبوع',
+            ),
             onChanged: (v) => setState(() => newsletter = v),
           ),
-          text: 'Send me one doodle a week',
+          text: tr('Send me one doodle a week', 'أرسل لي خربشة كل أسبوع'),
           onTap: () => setState(() => newsletter = !newsletter),
         ),
         _ChoiceRow(
-          control: const DrawkitCheckbox(
+          control: DrawkitCheckbox(
             value: false,
-            semanticLabel: 'disabled checkbox',
+            semanticLabel: tr('disabled checkbox', 'مربع اختيار معطّل'),
             onChanged: null,
           ),
-          text: 'Disabled checkbox — the ink stays, the hand stops',
+          text: tr(
+            'Disabled checkbox — the ink stays, the hand stops',
+            'مربع اختيار معطّل — الحبر يبقى واليد تتوقف',
+          ),
           onTap: null,
         ),
         const SizedBox(height: 26),
@@ -792,34 +910,37 @@ class _ChoicePageState extends State<ChoicePage> {
             control: DrawkitRadio<String>(
               value: f,
               groupValue: fruit,
-              semanticLabel: 'radio $f',
+              semanticLabel: tr('radio $f', 'اختيار $f'),
               onChanged: (v) => setState(() => fruit = v),
             ),
-            text: 'Radio: $f',
+            text: tr('Radio: $f', 'اختيار: ${ar(f)}'),
             onTap: () => setState(() => fruit = f),
           ),
         const SizedBox(height: 26),
         _ChoiceRow(
           control: DrawkitToggle(
             value: darkInk,
-            semanticLabel: 'dark ink',
+            semanticLabel: tr('dark ink', 'حبر داكن'),
             onChanged: (v) => setState(() => darkInk = v),
           ),
-          text: 'Dark ink (toggle — the knob travels 20px)',
+          text: tr(
+            'Dark ink (toggle — the knob travels 20px)',
+            'حبر داكن (مفتاح — المقبض يتحرك 20px)',
+          ),
           onTap: () => setState(() => darkInk = !darkInk),
         ),
         _ChoiceRow(
-          control: const DrawkitToggle(
+          control: DrawkitToggle(
             value: true,
-            semanticLabel: 'disabled toggle',
+            semanticLabel: tr('disabled toggle', 'مفتاح معطّل'),
             onChanged: null,
           ),
-          text: 'Disabled toggle',
+          text: tr('Disabled toggle', 'مفتاح معطّل'),
           onTap: null,
         ),
         const SizedBox(height: 26),
         Text(
-          'Chip — a tag that picks itself',
+          tr('Chip — a tag that picks itself', 'رقاقة — وسم يختار نفسه'),
           style: TextStyle(
             color: palette.inkMuted,
             decoration: TextDecoration.none,
@@ -829,29 +950,35 @@ class _ChoicePageState extends State<ChoicePage> {
         DrawkitChip(
           selected: chip,
           onChanged: (v) => setState(() => chip = v),
-          child: Text('dashed'),
+          child: Text(tr('dashed', 'متقطع')),
         ),
-        const SizedBox(height: 26),
+        SizedBox(height: 26),
         Text(
-          'Segments — one frame, a scribbled wash for the pick',
+          tr(
+            'Segments — one frame, a scribbled wash for the pick',
+            'المقاطع — إطار واحد وغسلة خربشة للاختيار',
+          ),
           style: TextStyle(
             color: palette.inkMuted,
             decoration: TextDecoration.none,
           ),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         DrawkitSegmentedButton<String>(
-          segments: const [
-            DrawkitSegment(value: 'grid', label: 'Grid'),
-            DrawkitSegment(value: 'list', label: 'List'),
-            DrawkitSegment(value: 'kanban', label: 'Kanban'),
+          segments: [
+            DrawkitSegment(value: 'grid', label: tr('Grid', 'شبكة')),
+            DrawkitSegment(value: 'list', label: tr('List', 'قائمة')),
+            DrawkitSegment(value: 'kanban', label: tr('Kanban', 'كانبان')),
           ],
           selected: view,
           onChanged: (value) => setState(() => view = value),
         ),
         const SizedBox(height: 26),
         Text(
-          'Tab moves focus, Space/Enter flips — the focus ring answers.',
+          tr(
+            'Tab moves focus, Space/Enter flips — the focus ring answers.',
+            'Tab ينقل التركيز وSpace/Enter يبدّل — وحلقة التركيز تجيب.',
+          ),
           style: TextStyle(
             color: palette.inkMuted,
             decoration: TextDecoration.none,
@@ -920,7 +1047,7 @@ class _FieldPageState extends State<FieldPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Name',
+          tr('Name', 'الاسم'),
           style: TextStyle(
             color: palette.inkMuted,
             decoration: TextDecoration.none,
@@ -931,13 +1058,13 @@ class _FieldPageState extends State<FieldPage> {
           width: 300,
           child: DrawkitInput(
             controller: name,
-            placeholder: 'e.g. Scribbly McPenface',
+            placeholder: tr('e.g. Scribbly McPenface', 'مثال: خربوش بن قلم'),
             onChanged: (_) => setState(() {}),
           ),
         ),
         const SizedBox(height: 22),
         Text(
-          'Notes',
+          tr('Notes', 'ملاحظات'),
           style: TextStyle(
             color: palette.inkMuted,
             decoration: TextDecoration.none,
@@ -948,21 +1075,30 @@ class _FieldPageState extends State<FieldPage> {
           width: 420,
           child: DrawkitTextarea(
             controller: notes,
-            placeholder: 'What should the pen remember?',
+            placeholder: tr(
+              'What should the pen remember?',
+              'ماذا يتذكر القلم؟',
+            ),
             onChanged: (_) => setState(() {}),
           ),
         ),
         const SizedBox(height: 22),
-        const SizedBox(
+        SizedBox(
           width: 300,
           child: DrawkitInput(
-            placeholder: 'disabled — no cursor, no edits',
+            placeholder: tr(
+              'disabled — no cursor, no edits',
+              'معطّل — لا مؤشر ولا تعديل',
+            ),
             enabled: false,
           ),
         ),
         const SizedBox(height: 22),
         Text(
-          'Search — the magnifier holds the leading gutter',
+          tr(
+            'Search — the magnifier holds the leading gutter',
+            'البحث — العدسة تحمل الهامش الأول',
+          ),
           style: TextStyle(
             color: palette.inkMuted,
             decoration: TextDecoration.none,
@@ -972,13 +1108,15 @@ class _FieldPageState extends State<FieldPage> {
         SizedBox(
           width: 300,
           child: DrawkitSearchField(
-            placeholder: 'search the sketchbook…',
+            placeholder: tr('search the sketchbook…', 'ابحث في دفتر الرسوم…'),
             onChanged: (value) => setState(() => _query = value),
           ),
         ),
         const SizedBox(height: 10),
         Text(
-          _query.isEmpty ? 'nothing typed yet' : 'you are looking for: $_query',
+          _query.isEmpty
+              ? tr('nothing typed yet', 'لم يُكتب شيء بعد')
+              : tr('you are looking for: $_query', 'تبحث عن: $_query'),
           style: TextStyle(
             color: palette.inkMuted,
             decoration: TextDecoration.none,
@@ -986,7 +1124,10 @@ class _FieldPageState extends State<FieldPage> {
         ),
         const SizedBox(height: 26),
         Text(
-          'name: ${name.text.isEmpty ? '…' : name.text}\nnotes: ${notes.text.isEmpty ? '…' : notes.text.replaceAll('\n', ' ⏎ ')}',
+          tr(
+            'name: ${name.text.isEmpty ? '…' : name.text}\nnotes: ${notes.text.isEmpty ? '…' : notes.text.replaceAll('\n', ' ⏎ ')}',
+            'الاسم: ${name.text.isEmpty ? '…' : name.text}\nملاحظات: ${notes.text.isEmpty ? '…' : notes.text.replaceAll('\n', ' ⏎ ')}',
+          ),
           style: TextStyle(
             color: palette.inkMuted,
             decoration: TextDecoration.none,
@@ -1011,13 +1152,19 @@ class _SelectPageState extends State<SelectPage> {
   String? fruit = 'banana';
   DateTime? _date = DateTime(2026, 10, 16);
 
-  static const _fruits = [
-    DrawkitSelectOption(value: 'apple', label: 'Apple'),
-    DrawkitSelectOption(value: 'banana', label: 'Banana'),
-    DrawkitSelectOption(value: 'cherry', label: 'Cherry'),
-    DrawkitSelectOption(value: 'durian', label: 'Durian (probably a mistake)'),
-    DrawkitSelectOption(value: 'elderberry', label: 'Elderberry'),
-    DrawkitSelectOption(value: 'fig', label: 'Fig'),
+  List<DrawkitSelectOption<String>> get _fruits => [
+    DrawkitSelectOption(value: 'apple', label: tr('Apple', 'تفاحة')),
+    DrawkitSelectOption(value: 'banana', label: tr('Banana', 'موزة')),
+    DrawkitSelectOption(value: 'cherry', label: tr('Cherry', 'كرزة')),
+    DrawkitSelectOption(
+      value: 'durian',
+      label: tr('Durian (probably a mistake)', 'دوريان (لعلها سهو)'),
+    ),
+    DrawkitSelectOption(
+      value: 'elderberry',
+      label: tr('Elderberry', 'توت البيلسان'),
+    ),
+    DrawkitSelectOption(value: 'fig', label: tr('Fig', 'تين')),
   ];
 
   @override
@@ -1031,22 +1178,27 @@ class _SelectPageState extends State<SelectPage> {
           child: DrawkitSelect<String>(
             options: _fruits,
             value: fruit,
+            placeholder: tr('choose…', 'اختر…'),
             onChanged: (v) => setState(() => fruit = v),
           ),
         ),
         const SizedBox(height: 22),
-        const SizedBox(
+        SizedBox(
           width: 260,
           child: DrawkitSelect<String>(
             options: _fruits,
             value: null,
+            placeholder: tr('choose…', 'اختر…'),
             onChanged: null,
-            semanticLabel: 'disabled select',
+            semanticLabel: tr('disabled select', 'قائمة معطّلة'),
           ),
         ),
         const SizedBox(height: 26),
         Text(
-          'picked: ${fruit ?? '—'}',
+          tr(
+            'picked: ${fruit ?? '—'}',
+            'المختار: ${fruit == null ? '—' : ar(fruit!)}',
+          ),
           style: TextStyle(
             color: palette.inkMuted,
             decoration: TextDecoration.none,
@@ -1055,8 +1207,14 @@ class _SelectPageState extends State<SelectPage> {
         const SizedBox(height: 26),
         Text(
           _date == null
-              ? 'Date picker — nothing picked'
-              : 'Date picker — ${_date!.year}-${_date!.month}-${_date!.day}',
+              ? tr(
+                  'Date picker — nothing picked',
+                  'منتقي التاريخ — لم يُختر شيء',
+                )
+              : tr(
+                  'Date picker — ${_date!.year}-${_date!.month}-${_date!.day}',
+                  'منتقي التاريخ — ${_date!.year}-${_date!.month}-${_date!.day}',
+                ),
           style: TextStyle(
             color: palette.inkMuted,
             decoration: TextDecoration.none,
@@ -1066,7 +1224,9 @@ class _SelectPageState extends State<SelectPage> {
         DrawkitDatePicker(
           value: _date,
           onChanged: (date) => setState(() => _date = date),
-          semanticLabel: 'sheet date',
+          monthNames: monthNames,
+          weekdayLabels: weekdayLabels,
+          semanticLabel: tr('sheet date', 'تاريخ اللوحة'),
         ),
       ],
     );
@@ -1107,15 +1267,21 @@ class _ContainersPageState extends State<ContainersPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Card — one seeded frame around anything', style: caption),
+          Text(
+            tr(
+              'Card — one seeded frame around anything',
+              'بطاقة — إطار مبذور حول أي شيء',
+            ),
+            style: caption,
+          ),
           const SizedBox(height: 10),
           DrawkitCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'A card',
+                Text(
+                  tr('A card', 'بطاقة'),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -1124,17 +1290,20 @@ class _ContainersPageState extends State<ContainersPage> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'The frame is one seeded stroke; put anything inside.',
+                  tr(
+                    'The frame is one seeded stroke; put anything inside.',
+                    'الإطار خط مبذور واحد؛ ضع ما تشاء بالداخل.',
+                  ),
                   style: caption,
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Row(
-                  children: const [
-                    DrawkitBadge(child: Text('outline')),
+                  children: [
+                    DrawkitBadge(child: Text(tr('outline', 'محدد'))),
                     SizedBox(width: 10),
                     DrawkitBadge(
                       variant: DrawkitBadgeVariant.scribble,
-                      child: Text('scribble'),
+                      child: Text(tr('scribble', 'خربشة')),
                     ),
                   ],
                 ),
@@ -1142,12 +1311,24 @@ class _ContainersPageState extends State<ContainersPage> {
             ),
           ),
           const SizedBox(height: 22),
-          Text('Divider — a hand rule that stays hand-drawn', style: caption),
+          Text(
+            tr(
+              'Divider — a hand rule that stays hand-drawn',
+              'فاصل — مسطرة يد تبقى مرسومة',
+            ),
+            style: caption,
+          ),
           const SizedBox(height: 10),
           const DrawkitDivider(),
           const SizedBox(height: 22),
-          Text('List — the marker gutter redraws per pick', style: caption),
-          const SizedBox(height: 10),
+          Text(
+            tr(
+              'List — the marker gutter redraws per pick',
+              'قائمة — هامش العلامات يُرسم عند كل اختيار',
+            ),
+            style: caption,
+          ),
+          SizedBox(height: 10),
           Row(
             children: [
               DrawkitButton(
@@ -1156,46 +1337,76 @@ class _ContainersPageState extends State<ContainersPage> {
                       ? DrawkitListMarker.check
                       : DrawkitListMarker.dash;
                 }),
-                child: Text('marker: ${marker.name}'),
+                child: Text(
+                  tr('marker: ${marker.name}', 'العلامة: ${ar(marker.name)}'),
+                ),
               ),
-              const SizedBox(width: 18),
+              SizedBox(width: 18),
             ],
           ),
           SizedBox(height: 12),
           DrawkitList(
             marker: marker,
-            children: const [
-              Text('Seeded randomness makes every mount a fresh sketch.'),
+            children: [
               Text(
-                'Boil frames come from the variants generator, three per stroke.',
+                tr(
+                  'Seeded randomness makes every mount a fresh sketch.',
+                  'العشوائية المبذورة تجعل كل ظهور رسمة جديدة.',
+                ),
               ),
-              Text('The marker gutter is 24px of reserved padding.'),
+              Text(
+                tr(
+                  'Boil frames come from the variants generator, three per stroke.',
+                  'إطارات الغليان تأتي من مولّد الصور، ثلاثة لكل خط.',
+                ),
+              ),
+              Text(
+                tr(
+                  'The marker gutter is 24px of reserved padding.',
+                  'هامش العلامة حشوة محجوزة 24px.',
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 22),
-          Text('Accordion — headers unfold on a sketch line', style: caption),
+          Text(
+            tr(
+              'Accordion — headers unfold on a sketch line',
+              'الأكورديون — رؤوس تتفتح على خط مرسوم',
+            ),
+            style: caption,
+          ),
           const SizedBox(height: 10),
           DrawkitAccordion(
             initiallyExpanded: {1},
             sections: [
               DrawkitAccordionSection(
-                title: 'Pencils',
+                title: tr('Pencils', 'أقلام رصاص'),
                 child: Text(
-                  'HB, 2B, and one grudging 4H kept for margins.',
+                  tr(
+                    'HB, 2B, and one grudging 4H kept for margins.',
+                    'HB و2B و4H واحد متحفظ للهوامش.',
+                  ),
                   style: body,
                 ),
               ),
               DrawkitAccordionSection(
-                title: 'Paper',
+                title: tr('Paper', 'ورق'),
                 child: Text(
-                  'Ruled, graph, and the good cotton stock.',
+                  tr(
+                    'Ruled, graph, and the good cotton stock.',
+                    'مسطر ومربعات والخام القطني الجيد.',
+                  ),
                   style: body,
                 ),
               ),
               DrawkitAccordionSection(
-                title: 'Ink',
+                title: tr('Ink', 'حبر'),
                 child: Text(
-                  'Waterproof black, and a red for corrections.',
+                  tr(
+                    'Waterproof black, and a red for corrections.',
+                    'أسود مقاوم للماء وأحمر للتصحيحات.',
+                  ),
                   style: body,
                 ),
               ),
@@ -1203,15 +1414,18 @@ class _ContainersPageState extends State<ContainersPage> {
           ),
           const SizedBox(height: 22),
           Text(
-            'Table — a ruled ledger, header line, faint row rules',
+            tr(
+              'Table — a ruled ledger, header line, faint row rules',
+              'جدول — سجل مسطّر وخط رأس وقواعد صفوف باهتة',
+            ),
             style: caption,
           ),
           const SizedBox(height: 10),
           DrawkitTable(
             columns: [
-              DrawkitTableColumn(label: 'Pencil', flex: 2),
-              DrawkitTableColumn(label: 'Qty'),
-              DrawkitTableColumn(label: 'Total'),
+              DrawkitTableColumn(label: tr('Pencil', 'القلم'), flex: 2),
+              DrawkitTableColumn(label: tr('Qty', 'الكمية')),
+              DrawkitTableColumn(label: tr('Total', 'الإجمالي')),
             ],
             rows: [
               [
@@ -1263,35 +1477,62 @@ class TypePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const DrawkitHeading(text: 'The Type Kit', underline: true),
+          DrawkitHeading(
+            text: tr('The Type Kit', 'طقم الخطوط'),
+            underline: true,
+          ),
           const SizedBox(height: 8),
           DrawkitHeading(
-            text: 'display type with the pen in the margins',
+            text: tr(
+              'display type with the pen in the margins',
+              'خط عرضيّ والقلم في الهوامش',
+            ),
             level: 3,
             textStyle: TextStyle(color: palette.inkMuted),
           ),
           const SizedBox(height: 22),
           Text(
-            'Underline — every wrapped line gets its own stroke',
+            tr(
+              'Underline — every wrapped line gets its own stroke',
+              'الخط السفلي — كل سطر ملتف له خطه',
+            ),
             style: caption,
           ),
           const SizedBox(height: 10),
           DrawkitUnderline(
-            text: 'Every wrapped line gets its own underline stroke, so a sentence that crosses lines stays ruled to the last word.',
+            text: tr(
+              'Every wrapped line gets its own underline stroke, so a sentence that crosses lines stays ruled to the last word.',
+              'كل سطر ملتف له خط سفلي خاص، فتبقى الجملة الممتدة مسطّرة حتى آخر كلمة.',
+            ),
             textStyle: body,
           ),
           const SizedBox(height: 22),
-          Text('Highlight — a marker wash at 30% multiply', style: caption),
+          Text(
+            tr(
+              'Highlight — a marker wash at 30% multiply',
+              'التظليل — غسلة قلم عريض عند 30% بالضرب',
+            ),
+            style: caption,
+          ),
           const SizedBox(height: 10),
           DrawkitHighlight(
-            text: 'Important, but not shouting: the marker wash is one 6px scribble at 30% in multiply.',
+            text: tr(
+              'Important, but not shouting: the marker wash is one 6px scribble at 30% in multiply.',
+              'مهم، لكن دون صراخ: الغسلة خربشة 6px عند 30% بالضرب.',
+            ),
             textStyle: body,
           ),
           const SizedBox(height: 22),
-          Text('Circle — the word, circled on arrival', style: caption),
+          Text(
+            tr(
+              'Circle — the word, circled on arrival',
+              'الدائرة — الكلمة تُطوّق عند الوصول',
+            ),
+            style: caption,
+          ),
           const SizedBox(height: 10),
           DrawkitCircle(
-            text: 'circled on arrival',
+            text: tr('circled on arrival', 'طُوّقت عند الوصول'),
             textStyle: TextStyle(
               fontSize: 20,
               height: 1.5,
@@ -1300,14 +1541,28 @@ class TypePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 26),
-          Text('Quote — the margin remembers who said it', style: caption),
+          Text(
+            tr(
+              'Quote — the margin remembers who said it',
+              'الاقتباس — الهامش يتذكر قائله',
+            ),
+            style: caption,
+          ),
           const SizedBox(height: 10),
           DrawkitQuote(
-            text: 'Any sufficiently advanced CSS is indistinguishable from a canvas library.',
-            footer: Text('— the internet, paraphrased'),
+            text: tr(
+              'Any sufficiently advanced CSS is indistinguishable from a canvas library.',
+              'أي CSS متقدم بما يكفي لا يُميّز عن مكتبة رسم.',
+            ),
+            footer: Text(
+              tr('— the internet, paraphrased', '— الإنترنت، مقتبساً'),
+            ),
           ),
           const SizedBox(height: 26),
-          Text('Kbd — keys drawn like keys', style: caption),
+          Text(
+            tr('Kbd — keys drawn like keys', 'المفاتيح — أزرار كالأزرار'),
+            style: caption,
+          ),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -1357,7 +1612,10 @@ class _MotionPageState extends State<MotionPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Sketch-in — every stroke below traces itself on mount',
+            tr(
+              'Sketch-in — every stroke below traces itself on mount',
+              'الترسيم — كل خط أدناه يرسم نفسه عند الظهور',
+            ),
             style: body,
           ),
           const SizedBox(height: 10),
@@ -1365,51 +1623,65 @@ class _MotionPageState extends State<MotionPage> {
             key: ValueKey('sketch$_run'),
             child: DrawkitCard(
               child: Text(
-                'The frame draws first, the words were already written.',
+                tr(
+                  'The frame draws first, the words were already written.',
+                  'يُرسم الإطار أولاً، والكلمات كُتبت سلفاً.',
+                ),
                 style: body,
               ),
             ),
           ),
-          const SizedBox(height: 22),
-          Text('Stagger — one clock, a step apart', style: body),
-          const SizedBox(height: 10),
+          SizedBox(height: 22),
+          Text(
+            tr(
+              'Stagger — one clock, a step apart',
+              'التتابع — ساعة واحدة وخطوة فارقة',
+            ),
+            style: body,
+          ),
+          SizedBox(height: 10),
           DrawkitStagger(
             key: ValueKey('stagger$_run'),
-            step: const Duration(milliseconds: 120),
+            step: Duration(milliseconds: 120),
             spacing: 8,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (final task in const [
-                'sketch the outline',
-                'boil for three frames',
-                'mirror for RTL',
-                'ship it',
+              for (final task in [
+                tr('sketch the outline', 'ارسم المخطط'),
+                tr('boil for three frames', 'اغلِ ثلاث إطارات'),
+                tr('mirror for RTL', 'انعكس لليمين'),
+                tr('ship it', 'أطلقها'),
               ])
                 DrawkitCard(child: Text(task, style: body)),
             ],
           ),
           const SizedBox(height: 22),
-          Text('Shake — the wrong! wiggle', style: body),
+          Text(
+            tr('Shake — the wrong! wiggle', 'الاهتزاز — رجفة الخطأ!'),
+            style: body,
+          ),
           const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
                 child: DrawkitShake(
                   controller: _shake,
-                  child: DrawkitInput(placeholder: 'not an email'),
+                  child: DrawkitInput(
+                    placeholder: tr('not an email', 'ليست بريداً'),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               DrawkitButton(
                 onPressed: _shake.shake,
-                child: const Text('shake it'),
+                child: Text(tr('shake it', 'اهززها')),
               ),
             ],
           ),
           const SizedBox(height: 22),
           DrawkitButton(
             onPressed: () => setState(() => _run++),
-            child: const Text('replay the drawing'),
+            child: Text(tr('replay the drawing', 'أعد الرسم')),
           ),
         ],
       ),
@@ -1444,7 +1716,10 @@ class _ValuesPageState extends State<ValuesPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Slider — stroke width ${_size.toStringAsFixed(2)}',
+            tr(
+              'Slider — stroke width ${_size.toStringAsFixed(2)}',
+              'المنزلق — سماكة الخط ${_size.toStringAsFixed(2)}',
+            ),
             style: body,
           ),
           const SizedBox(height: 10),
@@ -1455,7 +1730,9 @@ class _ValuesPageState extends State<ValuesPage> {
           ),
           const SizedBox(height: 22),
           Text(
-            'Stepper — $_copies ${_copies == 1 ? 'copy' : 'copies'}',
+            _copies == 1
+                ? tr('Stepper — 1 copy', 'العدّاد — نسخة واحدة')
+                : tr('Stepper — $_copies copies', 'العدّاد — $_copies نسخ'),
             style: body,
           ),
           const SizedBox(height: 10),
@@ -1463,12 +1740,15 @@ class _ValuesPageState extends State<ValuesPage> {
             value: _copies,
             min: 1,
             max: 9,
-            semanticLabel: 'copies',
+            semanticLabel: tr('copies', 'نسخ'),
             onChanged: (value) => setState(() => _copies = value),
           ),
           const SizedBox(height: 22),
           Text(
-            'Rating — tap a star, tap again to clear one ($_stars/5)',
+            tr(
+              'Rating — tap a star, tap again to clear one ($_stars/5)',
+              'التقييم — اضغط نجمة، وأعد الضغط لتُمسح واحدة ($_stars/5)',
+            ),
             style: body,
           ),
           const SizedBox(height: 8),
@@ -1494,7 +1774,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
   double _progress = 0.35;
   final TextEditingController _email = TextEditingController();
   String? _emailError;
-  List<String> _notes = ['Sharpen the HB', 'Dust the eraser', 'Rinse the nib'];
+  List<String> _notes = [
+    tr('Sharpen the HB', 'اسنن HB'),
+    tr('Dust the eraser', 'انفض الممحاة'),
+    tr('Rinse the nib', 'اغسل السن'),
+  ];
   final List<int> _fetched = [3, 2, 1];
 
   TextStyle get body => TextStyle(
@@ -1516,8 +1800,14 @@ class _FeedbackPageState extends State<FeedbackPage> {
       _emailError = text.contains('@')
           ? null
           : text.isEmpty
-          ? 'An address, please — the pen refuses to guess.'
-          : 'That is missing its @ — even the ink knows.';
+          ? tr(
+              'An address, please — the pen refuses to guess.',
+              'عنوان من فضلك — القلم يرفض التخمين.',
+            )
+          : tr(
+              'That is missing its @ — even the ink knows.',
+              'ينقصه @ — حتى الحبر يعرف.',
+            );
     });
   }
 
@@ -1526,10 +1816,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
     setState(() => _notes = [..._notes]..removeAt(index));
     showDrawkitToast(
       context,
-      message: '“$removed” torn out',
+      message: tr('“$removed” torn out', '“$removed” قُطعت'),
       tone: DrawkitTone.neutral,
       action: DrawkitToastAction(
-        label: 'Undo',
+        label: tr('Undo', 'تراجع'),
         onPressed: () =>
             setState(() => _notes = [..._notes]..insert(index, removed)),
       ),
@@ -1550,11 +1840,17 @@ class _FeedbackPageState extends State<FeedbackPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Progress — ${(_progress * 100).round()}%', style: body),
+          Text(
+            tr(
+              'Progress — ${(_progress * 100).round()}%',
+              'التقدم — ${(_progress * 100).round()}%',
+            ),
+            style: body,
+          ),
           const SizedBox(height: 10),
           DrawkitProgressBar(
             value: _progress,
-            semanticLabel: 'gallery progress',
+            semanticLabel: tr('gallery progress', 'تقدم المعرض'),
           ),
           const SizedBox(height: 12),
           DrawkitSlider(
@@ -1563,7 +1859,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
             onChanged: (value) => setState(() => _progress = value),
           ),
           const SizedBox(height: 12),
-          const DrawkitProgressBar(semanticLabel: 'waiting'),
+          DrawkitProgressBar(semanticLabel: tr('waiting', 'ينتظر')),
           const SizedBox(height: 22),
           const Row(
             children: [
@@ -1575,17 +1871,26 @@ class _FeedbackPageState extends State<FeedbackPage> {
             ],
           ),
           const SizedBox(height: 22),
-          Text('Alert — a margin note in ink', style: body),
+          Text(
+            tr('Alert — a margin note in ink', 'التنبيه — ملاحظة هامش بالحبر'),
+            style: body,
+          ),
           const SizedBox(height: 10),
           DrawkitAlert(
-            tag: Text('rant'),
+            tag: Text(tr('rant', 'شكوى')),
             child: Text(
-              'The sketch layer never lies, the browser sometimes does.',
+              tr(
+                'The sketch layer never lies, the browser sometimes does.',
+                'طبقة الرسم لا تكذب أبداً، المتصفح يكذب أحياناً.',
+              ),
             ),
           ),
           const SizedBox(height: 26),
           Text(
-            'Validation — the outline inks red, the message speaks',
+            tr(
+              'Validation — the outline inks red, the message speaks',
+              'التحقق — الإطار يحمرّ والرسالة تتكلم',
+            ),
             style: body,
           ),
           const SizedBox(height: 10),
@@ -1594,28 +1899,43 @@ class _FeedbackPageState extends State<FeedbackPage> {
             child: DrawkitInput(
               controller: _email,
               placeholder: 'you@sketchbook.paper',
-              helper: 'We never share it.',
+              helper: tr('We never share it.', 'لا نشاركها أبداً.'),
               error: _emailError,
               onSubmitted: (_) => _validate(),
             ),
           ),
           const SizedBox(height: 10),
-          DrawkitButton(onPressed: _validate, child: const Text('Validate')),
+          DrawkitButton(
+            onPressed: _validate,
+            child: Text(tr('Validate', 'تحقق')),
+          ),
           const SizedBox(height: 26),
-          Text('Notes — deleting offers an Undo', style: body),
+          Text(
+            tr(
+              'Notes — deleting offers an Undo',
+              'الملاحظات — الحذف يعرض تراجعاً',
+            ),
+            style: body,
+          ),
           const SizedBox(height: 10),
           if (_notes.isEmpty)
             SizedBox(
               height: 220,
               child: DrawkitEmpty(
                 doodle: DrawkitDoodleKind.burst,
-                title: 'The margin is blank',
-                message: 'Every note was torn out, but the pen remembers.',
+                title: tr('The margin is blank', 'الهامش فارغ'),
+                message: tr(
+                  'Every note was torn out, but the pen remembers.',
+                  'قُطعت كل الملاحظات، لكن القلم يتذكر.',
+                ),
                 action: DrawkitButton(
                   onPressed: () => setState(
-                    () => _notes = ['Sharpen the HB', 'Dust the eraser'],
+                    () => _notes = [
+                      tr('Sharpen the HB', 'اسنن HB'),
+                      tr('Dust the eraser', 'انفض الممحاة'),
+                    ],
                   ),
-                  child: const Text('Write two back'),
+                  child: Text(tr('Write two back', 'أعد كتابة اثنتين')),
                 ),
               ),
             )
@@ -1638,7 +1958,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
               ),
           const SizedBox(height: 20),
           Text(
-            'Pull-to-refresh — drag the list down past the flip',
+            tr(
+              'Pull-to-refresh — drag the list down past the flip',
+              'اسحب للتحديث — اسحب القائمة للأسفل حتى الانقلاب',
+            ),
             style: body,
           ),
           const SizedBox(height: 10),
@@ -1653,7 +1976,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
                     for (final n in _fetched)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Text('fetched page $n', style: body),
+                        child: Text(
+                          tr('fetched page $n', 'صفحة مجلوبة $n'),
+                          style: body,
+                        ),
                       ),
                   ],
                 ),
@@ -1662,7 +1988,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
           ),
           const SizedBox(height: 22),
           Text(
-            'Progress and skeletons keep the page honest while it waits',
+            tr(
+              'Progress and skeletons keep the page honest while it waits',
+              'التقدم والهياكل تحافظ على صدق الصفحة أثناء الانتظار',
+            ),
             style: body.copyWith(color: palette.inkMuted),
           ),
         ],
@@ -1679,7 +2008,7 @@ class DialogsPage extends StatefulWidget {
 }
 
 class _DialogsPageState extends State<DialogsPage> {
-  String _last = 'nothing yet';
+  String _last = tr('nothing yet', 'لا شيء بعد');
 
   TextStyle get body => TextStyle(
     fontSize: 14,
@@ -1696,7 +2025,13 @@ class _DialogsPageState extends State<DialogsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Modals — the panel traces itself in', style: body),
+          Text(
+            tr(
+              'Modals — the panel traces itself in',
+              'النوافذ — اللوحة ترسم نفسها',
+            ),
+            style: body,
+          ),
           SizedBox(height: 10),
           Wrap(
             spacing: 10,
@@ -1712,7 +2047,7 @@ class _DialogsPageState extends State<DialogsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Tear this page out?',
+                            tr('Tear this page out?', 'انزع هذه الصفحة؟'),
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
@@ -1722,7 +2057,10 @@ class _DialogsPageState extends State<DialogsPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'The ink is still wet — nothing is saved yet.',
+                            tr(
+                              'The ink is still wet — nothing is saved yet.',
+                              'الحبر ما زال رطباً — لم يُحفظ شيء بعد.',
+                            ),
                             style: body,
                           ),
                           const SizedBox(height: 16),
@@ -1732,14 +2070,14 @@ class _DialogsPageState extends State<DialogsPage> {
                               DrawkitButton(
                                 onPressed: () =>
                                     Navigator.of(context).pop(false),
-                                child: const Text('keep'),
+                                child: Text(tr('keep', 'أبقها')),
                               ),
                               const SizedBox(width: 10),
                               DrawkitButton(
                                 variant: DrawkitButtonVariant.solid,
                                 onPressed: () =>
                                     Navigator.of(context).pop(true),
-                                child: const Text('tear it'),
+                                child: Text(tr('tear it', 'انزعها')),
                               ),
                             ],
                           ),
@@ -1748,9 +2086,14 @@ class _DialogsPageState extends State<DialogsPage> {
                     ),
                   );
                   if (!mounted) return;
-                  setState(() => _last = 'dialog answered: $answer');
+                  setState(
+                    () => _last = tr(
+                      'dialog answered: $answer',
+                      'أجاب الحوار: $answer',
+                    ),
+                  );
                 },
-                child: Text('open dialog'),
+                child: Text(tr('open dialog', 'افتح الحوار')),
               ),
               DrawkitButton(
                 onPressed: () => showDrawkitSheet(
@@ -1760,7 +2103,7 @@ class _DialogsPageState extends State<DialogsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Sketchbook options',
+                        tr('Sketchbook options', 'خيارات دفتر الرسوم'),
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
@@ -1770,51 +2113,66 @@ class _DialogsPageState extends State<DialogsPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Drag the handle down or tap the scrim to fold it away.',
+                        tr(
+                          'Drag the handle down or tap the scrim to fold it away.',
+                          'اسحب المقبض للأسفل أو انقر خارج اللوحة لطيّها.',
+                        ),
                         style: body,
                       ),
                       const SizedBox(height: 14),
                       DrawkitButton(
                         variant: DrawkitButtonVariant.solid,
                         onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('done'),
+                        child: Text(tr('done', 'تم')),
                       ),
                     ],
                   ),
                 ),
-                child: Text('bottom sheet'),
+                child: Text(tr('bottom sheet', 'لوحة سفلية')),
               ),
               DrawkitButton(
                 onPressed: () => showDrawkitSheet(
                   context: context,
                   edge: DrawkitSheetEdge.end,
-                  child: Text('a quiet side drawer', style: body),
+                  child: Text(
+                    tr('a quiet side drawer', 'درج جانبي هادئ'),
+                    style: body,
+                  ),
                 ),
-                child: Text('side sheet'),
+                child: Text(tr('side sheet', 'لوحة جانبية')),
               ),
             ],
           ),
           const SizedBox(height: 22),
-          Text('Toasts — bottom pills that excuse themselves', style: body),
+          Text(
+            tr(
+              'Toasts — bottom pills that excuse themselves',
+              'التنبيهات العابرة — أقراص سفلية تعتذر وتنصرف',
+            ),
+            style: body,
+          ),
           SizedBox(height: 10),
           Row(
             children: [
               DrawkitButton(
                 onPressed: () => showDrawkitToast(
                   context,
-                  message: 'saved to the sketchbook',
+                  message: tr(
+                    'saved to the sketchbook',
+                    'حُفظت في دفتر الرسوم',
+                  ),
                 ),
-                child: const Text('toast ok'),
+                child: Text(tr('toast ok', 'تنبيه نجاح')),
               ),
               const SizedBox(width: 10),
               DrawkitButton(
                 tone: DrawkitTone.danger,
                 onPressed: () => showDrawkitToast(
                   context,
-                  message: 'the ink ran out',
+                  message: tr('the ink ran out', 'نفد الحبر'),
                   tone: DrawkitTone.danger,
                 ),
-                child: const Text('toast fail'),
+                child: Text(tr('toast fail', 'تنبيه فشل')),
               ),
             ],
           ),
@@ -1837,7 +2195,7 @@ class _MenusPageState extends State<MenusPage> {
   bool _ruled = true;
   bool _graph = false;
   final _tipTarget = GlobalKey();
-  String _last = 'nothing yet';
+  String _last = tr('nothing yet', 'لا شيء بعد');
 
   TextStyle get body => TextStyle(
     fontSize: 14,
@@ -1854,7 +2212,10 @@ class _MenusPageState extends State<MenusPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Menus — panels that fold away', style: body),
+          Text(
+            tr('Menus — panels that fold away', 'القوائم — لوحات تُطوى بعيداً'),
+            style: body,
+          ),
           SizedBox(height: 10),
           Wrap(
             spacing: 10,
@@ -1862,33 +2223,38 @@ class _MenusPageState extends State<MenusPage> {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               DrawkitMenu(
-                semanticLabel: 'view options',
+                semanticLabel: tr('view options', 'خيارات العرض'),
                 items: [
                   DrawkitMenuItem(
-                    label: 'Ruled paper',
+                    label: tr('Ruled paper', 'ورق مسطر'),
                     checked: _ruled,
                     onSelected: () => setState(() => _ruled = true),
                   ),
                   DrawkitMenuItem(
-                    label: 'Graph paper',
+                    label: tr('Graph paper', 'ورق مربعات'),
                     checked: _graph,
                     onSelected: () => setState(() => _graph = true),
                   ),
                   DrawkitMenuItem.divider(),
-                  DrawkitMenuItem(label: 'Tracing paper', hint: '⌘T'),
                   DrawkitMenuItem(
-                    label: 'Save sheet',
+                    label: tr('Tracing paper', 'ورق شفاف'),
+                    hint: '⌘T',
+                  ),
+                  DrawkitMenuItem(
+                    label: tr('Save sheet', 'احفظ الورقة'),
                     hint: '⌘S',
-                    onSelected: () =>
-                        showDrawkitToast(context, message: 'sheet saved'),
+                    onSelected: () => showDrawkitToast(
+                      context,
+                      message: tr('sheet saved', 'حُفظت الورقة'),
+                    ),
                   ),
                 ],
-                child: Text('view'),
+                child: Text(tr('view', 'عرض')),
               ),
               DrawkitPopover(
-                semanticLabel: 'pen options',
+                semanticLabel: tr('pen options', 'خيارات القلم'),
                 trigger: Text(
-                  'pen options',
+                  tr('pen options', 'خيارات القلم'),
                   style: TextStyle(
                     fontSize: 14,
                     color: palette.ink,
@@ -1900,29 +2266,31 @@ class _MenusPageState extends State<MenusPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Nib', style: body),
+                    Text(tr('Nib', 'السن'), style: body),
                     SizedBox(height: 8),
                     Row(
                       children: [
-                        for (final nib in const [
-                          'fine',
-                          'medium',
-                          'broad',
-                        ]) ...[
+                        for (final nib in ['fine', 'medium', 'broad']) ...[
                           DrawkitButton(
                             onPressed: () => showDrawkitToast(
                               context,
-                              message: '$nib nib loaded',
+                              message: tr(
+                                '$nib nib loaded',
+                                'رُكّب السن ${ar(nib)}',
+                              ),
                             ),
-                            child: Text(nib),
+                            child: Text(ar(nib)),
                           ),
-                          if (nib != 'broad') const SizedBox(width: 8),
+                          if (nib != 'broad') SizedBox(width: 8),
                         ],
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
                     Text(
-                      'Any widget can open a popover.',
+                      tr(
+                        'Any widget can open a popover.',
+                        'أي عنصر يستطيع فتح منبثقة.',
+                      ),
                       style: TextStyle(
                         fontSize: 12,
                         color: palette.inkMuted,
@@ -1936,39 +2304,45 @@ class _MenusPageState extends State<MenusPage> {
                 onPressed: () async {
                   final result = await showDrawkitCommandPalette<String>(
                     context: context,
-                    commands: const [
+                    commands: [
                       DrawkitCommand(
-                        label: 'Open sheet',
+                        label: tr('Open sheet', 'افتح الورقة'),
                         value: 'open',
                         hint: '⌘O',
                       ),
                       DrawkitCommand(
-                        label: 'Save sheet',
+                        label: tr('Save sheet', 'احفظ الورقة'),
                         value: 'save',
                         hint: '⌘S',
                       ),
                       DrawkitCommand(
-                        label: 'Export as PNG',
+                        label: tr('Export as PNG', 'صدّر PNG'),
                         value: 'export',
-                        keywords: ['image', 'picture'],
+                        keywords: [tr('image', 'صورة'), tr('picture', 'رسم')],
                       ),
                       DrawkitCommand(
-                        label: 'Clear page',
+                        label: tr('Clear page', 'امسح الصفحة'),
                         value: 'clear',
-                        keywords: ['erase', 'wipe'],
+                        keywords: [tr('erase', 'محو'), tr('wipe', 'مسح')],
                       ),
                     ],
                   );
                   if (!mounted || result == null) return;
-                  setState(() => _last = 'command: $result');
+                  setState(
+                    () =>
+                        _last = tr('command: $result', 'الأمر: ${ar(result)}'),
+                  );
                 },
-                child: const Text('command palette'),
+                child: Text(tr('command palette', 'لوحة الأوامر')),
               ),
             ],
           ),
           const SizedBox(height: 22),
           Text(
-            'Tooltip — a sketched card with an arrow to its target',
+            tr(
+              'Tooltip — a sketched card with an arrow to its target',
+              'التلميح — بطاقة مرسومة بسهم إلى هدفها',
+            ),
             style: body,
           ),
           const SizedBox(height: 10),
@@ -1982,7 +2356,9 @@ class _MenusPageState extends State<MenusPage> {
                   start: 0,
                   child: DrawkitTooltip(
                     target: _tipTarget,
-                    child: const Text('the target is down there'),
+                    child: Text(
+                      tr('the target is down there', 'الهدف هناك بالأسفل'),
+                    ),
                   ),
                 ),
                 PositionedDirectional(
@@ -1992,9 +2368,9 @@ class _MenusPageState extends State<MenusPage> {
                     key: _tipTarget,
                     width: 90,
                     height: 48,
-                    child: const DrawkitButton(
+                    child: DrawkitButton(
                       onPressed: _noop,
-                      child: Text('target'),
+                      child: Text(tr('target', 'الهدف')),
                     ),
                   ),
                 ),
@@ -2038,10 +2414,14 @@ class _NavigationPageState extends State<NavigationPage> {
     decoration: TextDecoration.none,
   );
 
-  static const destinations = [
-    DrawkitNavDestination(label: 'Inbox', icon: Text('✉'), badge: 3),
-    DrawkitNavDestination(label: 'Drafts', icon: Text('✎')),
-    DrawkitNavDestination(label: 'Archive', icon: Text('▤')),
+  static List<DrawkitNavDestination> get destinations => [
+    DrawkitNavDestination(
+      label: tr('Inbox', 'الوارد'),
+      icon: Text('✉'),
+      badge: 3,
+    ),
+    DrawkitNavDestination(label: tr('Drafts', 'المسودات'), icon: Text('✎')),
+    DrawkitNavDestination(label: tr('Archive', 'الأرشيف'), icon: Text('▤')),
   ];
 
   @override
@@ -2057,10 +2437,10 @@ class _NavigationPageState extends State<NavigationPage> {
               '←',
               style: TextStyle(fontSize: 18, decoration: TextDecoration.none),
             ),
-            title: Text('Sketchbook'),
+            title: Text(tr('Sketchbook', 'دفتر الرسوم')),
             actions: [
               Text(
-                'save',
+                ar('save'),
                 style: TextStyle(
                   fontSize: 14,
                   color: palette.inkMuted,
@@ -2075,8 +2455,10 @@ class _NavigationPageState extends State<NavigationPage> {
           ),
           const SizedBox(height: 22),
           Text(
-            'Rail — destinations stack down the side; everything mirrors '
-            'in RTL',
+            tr(
+              'Rail — destinations stack down the side; everything mirrors in RTL',
+              'المسار — الوجهات تصطف على الجانب؛ وكل شيء ينعكس في RTL',
+            ),
             style: body.copyWith(color: palette.inkMuted),
           ),
           const SizedBox(height: 10),
@@ -2093,7 +2475,7 @@ class _NavigationPageState extends State<NavigationPage> {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 14),
                   child: Text(
-                    'rail picked: ${destinations[_rail].label.toLowerCase()}',
+                    '${tr('rail picked: ', 'اختيار المسار: ')}${destinations[_rail].label.toLowerCase()}',
                     style: body.copyWith(color: palette.inkMuted),
                   ),
                 ),
@@ -2102,7 +2484,10 @@ class _NavigationPageState extends State<NavigationPage> {
           ),
           const SizedBox(height: 22),
           Text(
-            'Bottom bar — one paper strip across the foot',
+            tr(
+              'Bottom bar — one paper strip across the foot',
+              'الشريط السفلي — شريحة ورق واحدة عبر القدم',
+            ),
             style: body.copyWith(color: palette.inkMuted),
           ),
           const SizedBox(height: 10),
@@ -2113,8 +2498,10 @@ class _NavigationPageState extends State<NavigationPage> {
           ),
           const SizedBox(height: 22),
           Text(
-            'Floating — a capsule hovering above the content, badge on the '
-            'icon',
+            tr(
+              'Floating — a capsule hovering above the content, badge on the icon',
+              'العائم — كبسولة تحوم فوق المحتوى، والشارة على الأيقونة',
+            ),
             style: body.copyWith(color: palette.inkMuted),
           ),
           const SizedBox(height: 10),
@@ -2125,12 +2512,15 @@ class _NavigationPageState extends State<NavigationPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            'picked: ${destinations[_labels].label.toLowerCase()}',
+            '${tr('picked: ', 'المختار: ')}${destinations[_labels].label.toLowerCase()}',
             style: body.copyWith(color: palette.inkMuted),
           ),
           const SizedBox(height: 22),
           Text(
-            'Floating, flexible — only the pick opens into a label',
+            tr(
+              'Floating, flexible — only the pick opens into a label',
+              'عائم، مرن — الاختيار وحده ينفتح في تسمية',
+            ),
             style: body.copyWith(color: palette.inkMuted),
           ),
           const SizedBox(height: 10),
@@ -2142,13 +2532,15 @@ class _NavigationPageState extends State<NavigationPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            'picked: ${destinations[_flexible].label.toLowerCase()}',
+            '${tr('picked: ', 'المختار: ')}${destinations[_flexible].label.toLowerCase()}',
             style: body.copyWith(color: palette.inkMuted),
           ),
           const SizedBox(height: 22),
           Text(
-            'Scroll-aware — scrolling forward tucks the bar away, the '
-            'first pull back brings it home',
+            tr(
+              'Scroll-aware — scrolling forward tucks the bar away, the first pull back brings it home',
+              'يتابع التمرير — التمرير للأمام يخبئ الشريط، وأول سحبة للخلف تعيده',
+            ),
             style: body.copyWith(color: palette.inkMuted),
           ),
           const SizedBox(height: 10),
@@ -2165,7 +2557,7 @@ class _NavigationPageState extends State<NavigationPage> {
                         height: 34,
                         child: Align(
                           alignment: AlignmentDirectional.centerStart,
-                          child: Text('row $i', style: body),
+                          child: Text(tr('row $i', 'صف $i'), style: body),
                         ),
                       ),
                     ),
@@ -2184,28 +2576,38 @@ class _NavigationPageState extends State<NavigationPage> {
           ),
           const SizedBox(height: 22),
           Text(
-            'Breadcrumb — the trail, last stop in bold',
+            tr(
+              'Breadcrumb — the trail, last stop in bold',
+              'الفتات — الدرب، ومحطته الأخيرة عريضة',
+            ),
             style: body.copyWith(color: palette.inkMuted),
           ),
           const SizedBox(height: 10),
           DrawkitBreadcrumb(
             items: [
               DrawkitBreadcrumbItem(
-                label: 'Sketchbook',
-                onTap: () =>
-                    showDrawkitToast(context, message: 'back to the book'),
+                label: tr('Sketchbook', 'دفتر الرسوم'),
+                onTap: () => showDrawkitToast(
+                  context,
+                  message: tr('back to the book', 'عودة إلى الدفتر'),
+                ),
               ),
               DrawkitBreadcrumbItem(
-                label: 'Pencils',
-                onTap: () =>
-                    showDrawkitToast(context, message: 'pencil drawer'),
+                label: tr('Pencils', 'أقلام رصاص'),
+                onTap: () => showDrawkitToast(
+                  context,
+                  message: tr('pencil drawer', 'جرّار الأقلام'),
+                ),
               ),
               DrawkitBreadcrumbItem(label: 'HB'),
             ],
           ),
           const SizedBox(height: 22),
           Text(
-            'Pager — page numbers in a sketch row',
+            tr(
+              'Pager — page numbers in a sketch row',
+              'الترقيم — أرقام الصفحات في صف مرسوم',
+            ),
             style: body.copyWith(color: palette.inkMuted),
           ),
           const SizedBox(height: 10),
@@ -2246,26 +2648,36 @@ class _TabsPageState extends State<TabsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Tabs — the pick gets a drawn underline of its own',
+            tr(
+              'Tabs — the pick gets a drawn underline of its own',
+              'التبويبات — لكل اختيار خط سفلي مرسوم',
+            ),
             style: body.copyWith(color: palette.inkMuted),
           ),
           const SizedBox(height: 10),
           DrawkitTabs(
-            labels: ['overview', 'details', 'notes'],
+            labels: [
+              tr('overview', 'نظرة عامة'),
+              tr('details', 'تفاصيل'),
+              tr('notes', 'ملاحظات'),
+            ],
             active: tab,
             onChanged: (i) => setState(() => tab = i),
           ),
           const SizedBox(height: 26),
           Text(
-            'Steps — the walk, numbered in the margins',
+            tr(
+              'Steps — the walk, numbered in the margins',
+              'الخطوات — المسير مرقّم في الهوامش',
+            ),
             style: body.copyWith(color: palette.inkMuted),
           ),
           const SizedBox(height: 10),
           DrawkitSteps(
             children: [
-              Text('Pick a seed'),
-              Text('Watch the strokes boil'),
-              Text('Ship the sketch'),
+              Text(tr('Pick a seed', 'اختر بذرة')),
+              Text(tr('Watch the strokes boil', 'شاهد الخطوط تغلي')),
+              Text(tr('Ship the sketch', 'أطلق الرسمة')),
             ],
           ),
         ],
@@ -2299,7 +2711,13 @@ class _PicturesPageState extends State<PicturesPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('A crowd — discs overlap, the overflow confesses', style: body),
+          Text(
+            tr(
+              'A crowd — discs overlap, the overflow confesses',
+              'حشد — أقراص متراكبة، والزائد يعترف',
+            ),
+            style: body,
+          ),
           const SizedBox(height: 10),
           DrawkitAvatarGroup(
             max: 3,
@@ -2315,13 +2733,22 @@ class _PicturesPageState extends State<PicturesPage> {
           ),
           const SizedBox(height: 22),
           DrawkitFigure(
-            caption: 'fig 1 — the idle pen, mid-spiral',
+            caption: tr(
+              'fig 1 — the idle pen, mid-spiral',
+              'شكل 1 — القلم العاطل، في منتصف الحلزون',
+            ),
             child: const Center(
               child: DrawkitDoodle(kind: DrawkitDoodleKind.spiral, size: 72),
             ),
           ),
           const SizedBox(height: 22),
-          Text('Doodles — decorative, silent, never interactive', style: body),
+          Text(
+            tr(
+              'Doodles — decorative, silent, never interactive',
+              'الخربشات — زخرفية صامتة غير تفاعلية',
+            ),
+            style: body,
+          ),
           SizedBox(height: 10),
           Row(
             children: [
@@ -2333,16 +2760,28 @@ class _PicturesPageState extends State<PicturesPage> {
             ],
           ),
           const SizedBox(height: 22),
-          Text('A ticker — hover to pause it', style: body),
+          Text(
+            tr('A ticker — hover to pause it', 'الشريط — مرّر للإيقاف المؤقت'),
+            style: body,
+          ),
           SizedBox(height: 8),
           DrawkitMarquee(
             child: Text(
-              'all work and no play makes the pen a dull tool',
+              tr(
+                'all work and no play makes the pen a dull tool',
+                'كل العمل بلا لعب يجعل القلم أداة بليدة',
+              ),
               style: body,
             ),
           ),
           const SizedBox(height: 22),
-          Text('An arrow — a line from one point to another', style: body),
+          Text(
+            tr(
+              'An arrow — a line from one point to another',
+              'السهم — خط من نقطة إلى أخرى',
+            ),
+            style: body,
+          ),
           const SizedBox(height: 10),
           SizedBox(
             height: 110,
@@ -2356,9 +2795,9 @@ class _PicturesPageState extends State<PicturesPage> {
                     key: _arrowFrom,
                     width: 90,
                     height: 36,
-                    child: const DrawkitButton(
+                    child: DrawkitButton(
                       onPressed: _noop,
-                      child: Text('from'),
+                      child: Text(tr('from', 'من')),
                     ),
                   ),
                 ),
@@ -2369,9 +2808,9 @@ class _PicturesPageState extends State<PicturesPage> {
                     key: _arrowTo,
                     width: 90,
                     height: 48,
-                    child: const DrawkitButton(
+                    child: DrawkitButton(
                       onPressed: _noop,
-                      child: Text('to'),
+                      child: Text(tr('to', 'إلى')),
                     ),
                   ),
                 ),
@@ -2418,7 +2857,10 @@ class _FocusPageState extends State<FocusPage> {
   String? _pick = 'ink';
   DateTime _date = DateTime(2026, 6, 15);
   int _nav = 0;
-  String _last = 'nothing yet — pressing a key would be a start';
+  String _last = tr(
+    'nothing yet — pressing a key would be a start',
+    'لا شيء بعد — ضغطة مفتاح بداية',
+  );
 
   void _say(String note) => setState(() => _last = note);
 
@@ -2432,7 +2874,7 @@ class _FocusPageState extends State<FocusPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'A page within the page',
+              tr('A page within the page', 'صفحة داخل الصفحة'),
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
@@ -2442,8 +2884,10 @@ class _FocusPageState extends State<FocusPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Escape folds it away; Tab never wanders outside; focus '
-              'returns to the button that opened it.',
+              tr(
+                'Escape folds it away; Tab never wanders outside; focus returns to the button that opened it.',
+                'Escape يطويها؛ وTab لا يشرد خارجها؛ ويعود التركيز إلى الزر الذي فتحها.',
+              ),
               style: body,
             ),
             SizedBox(height: 16),
@@ -2453,9 +2897,14 @@ class _FocusPageState extends State<FocusPage> {
                 DrawkitButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    _say('dialog closed — the trigger holds focus again');
+                    _say(
+                      tr(
+                        'dialog closed — the trigger holds focus again',
+                        'أُغلق الحوار — والمُشغّل يمسك التركيز مجدداً',
+                      ),
+                    );
                   },
-                  child: const Text('close'),
+                  child: Text(tr('close', 'أغلق')),
                 ),
               ],
             ),
@@ -2473,22 +2922,33 @@ class _FocusPageState extends State<FocusPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const DrawkitHeading(text: 'The Focus Kit', underline: true),
+          DrawkitHeading(
+            text: tr('The Focus Kit', 'طقم التركيز'),
+            underline: true,
+          ),
           const SizedBox(height: 8),
           DrawkitHeading(
-            text: 'one ring, drawn only while the keyboard is at work',
+            text: tr(
+              'one ring, drawn only while the keyboard is at work',
+              'حلقة واحدة تُرسم فقط حين يعمل لوح المفاتيح',
+            ),
             level: 3,
             textStyle: TextStyle(color: palette.inkMuted),
           ),
           const SizedBox(height: 12),
           Text(
-            'Tab to walk the page · arrows to move · Home/End to jump · '
-            'Enter/Space to choose · Escape to close',
+            tr(
+              'Tab to walk the page · arrows to move · Home/End to jump · Enter/Space to choose · Escape to close',
+              'Tab يمشي في الصفحة · الأسهم للتنقل · Home/End للقفز · Enter/Space للاختيار · Escape للإغلاق',
+            ),
             style: hint,
           ),
           SizedBox(height: 20),
           Text(
-            'Slider — Home, End, PageUp and PageDown; RTL mirrors the arrows',
+            tr(
+              'Slider — Home, End, PageUp and PageDown; RTL mirrors the arrows',
+              'المنزلق — Home وEnd وPageUp وPageDown؛ وفي RTL تنعكس الأسهم',
+            ),
             style: body,
           ),
           SizedBox(height: 8),
@@ -2496,40 +2956,54 @@ class _FocusPageState extends State<FocusPage> {
             value: _inkLevel,
             onChanged: (v) => setState(() {
               _inkLevel = v;
-              _last = 'ink level ${(v * 100).round()}%';
+              _last = tr(
+                'ink level ${(v * 100).round()}%',
+                'مستوى الحبر ${(v * 100).round()}%',
+              );
             }),
           ),
           const SizedBox(height: 22),
           Text(
-            'Segments and tabs — the selection owns the single tab stop',
+            tr(
+              'Segments and tabs — the selection owns the single tab stop',
+              'المقاطع والتبويبات — الاختيار يملك موقف Tab الوحيد',
+            ),
             style: body,
           ),
           SizedBox(height: 8),
           DrawkitSegmentedButton<String>(
             segments: [
-              DrawkitSegment(value: 'pen', label: 'pen'),
-              DrawkitSegment(value: 'pencil', label: 'pencil'),
-              DrawkitSegment(value: 'brush', label: 'brush'),
+              DrawkitSegment(value: 'pen', label: ar('pen')),
+              DrawkitSegment(value: 'pencil', label: ar('pencil')),
+              DrawkitSegment(value: 'brush', label: ar('brush')),
             ],
             selected: _segment,
             onChanged: (v) => setState(() {
               _segment = v;
-              _last = 'drawing with the $v';
+              _last = tr('drawing with the $v', 'الرسم بـ${ar(v)}');
             }),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           DrawkitTabs(
-            labels: const ['Sketch', 'Ink', 'Export'],
+            labels: [
+              tr('Sketch', 'رسم'),
+              tr('Ink', 'حبر'),
+              tr('Export', 'تصدير'),
+            ],
             active: _tab,
             onChanged: (i) => setState(() {
               _tab = i;
-              _last = 'tab: ${const ['Sketch', 'Ink', 'Export'][i]}';
+              _last =
+                  '${tr('tab: ', 'تبويب: ')}${[tr('Sketch', 'رسم'), tr('Ink', 'حبر'), tr('Export', 'تصدير')][i]}';
             }),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           Text(
             [
-              'a rough start, all construction lines',
+              tr(
+                'a rough start, all construction lines',
+                'بداية خشنة، كلها خطوط بناء',
+              ),
               'the damp layer, still catching light',
               'a clean file, corners folded shut',
             ][_tab],
@@ -2537,24 +3011,32 @@ class _FocusPageState extends State<FocusPage> {
           ),
           SizedBox(height: 22),
           Text(
-            'Accordion — Up/Down walk the headers, Enter folds a section',
+            tr(
+              'Accordion — Up/Down walk the headers, Enter folds a section',
+              'الأكورديون — Up/Down يمشيان بين الرؤوس، وEnter يطوي قسماً',
+            ),
             style: body,
           ),
           SizedBox(height: 8),
           DrawkitAccordion(
             sections: [
               DrawkitAccordionSection(
-                title: 'What takes focus',
+                title: tr('What takes focus', 'ما الذي يأخذ التركيز'),
                 child: Text(
-                  'Anything with a story to tell the keyboard — buttons, '
-                  'fields, rows, days, crumbs.',
+                  tr(
+                    'Anything with a story to tell the keyboard — buttons, fields, rows, days, crumbs.',
+                    'أي شيء له حكاية يرويها للوحة المفاتيح — أزرار وحقول وصفوف وأيام وفتات.',
+                  ),
                   style: hint,
                 ),
               ),
               DrawkitAccordionSection(
-                title: 'Where the ring comes from',
+                title: tr('Where the ring comes from', 'من أين تأتي الحلقة'),
                 child: Text(
-                  'one helper inks the dashed holder around every control.',
+                  tr(
+                    'one helper inks the dashed holder around every control.',
+                    'مساعد واحد يرسم الحاضنة المتقطعة حول كل عنصر.',
+                  ),
                   style: hint,
                 ),
               ),
@@ -2562,7 +3044,10 @@ class _FocusPageState extends State<FocusPage> {
           ),
           SizedBox(height: 22),
           Text(
-            'Select and menu — arrows walk, Escape hands focus back',
+            tr(
+              'Select and menu — arrows walk, Escape hands focus back',
+              'القائمة والمنسدلة — الأسهم تمشي وEscape يعيد التركيز',
+            ),
             style: body,
           ),
           SizedBox(height: 8),
@@ -2574,98 +3059,126 @@ class _FocusPageState extends State<FocusPage> {
               SizedBox(
                 width: 220,
                 child: DrawkitSelect<String>(
-                  options: const [
-                    DrawkitSelectOption(value: 'ink', label: 'Ink'),
-                    DrawkitSelectOption(value: 'wash', label: 'Wash'),
-                    DrawkitSelectOption(value: 'gouache', label: 'Gouache'),
+                  options: [
+                    DrawkitSelectOption(value: 'ink', label: tr('Ink', 'حبر')),
+                    DrawkitSelectOption(
+                      value: 'wash',
+                      label: tr('Wash', 'غسلة'),
+                    ),
+                    DrawkitSelectOption(
+                      value: 'gouache',
+                      label: tr('Gouache', 'غواش'),
+                    ),
                   ],
                   value: _pick,
                   onChanged: (v) => setState(() {
                     _pick = v;
-                    _last = 'medium: $v';
+                    _last = tr('medium: $v', 'الوسط: ${ar(v)}');
                   }),
                 ),
               ),
               DrawkitMenu(
-                semanticLabel: 'focus menu',
+                semanticLabel: tr('focus menu', 'قائمة التركيز'),
                 items: [
                   DrawkitMenuItem(
-                    label: 'Sharpen the HB',
-                    onSelected: () => _say('the HB is sharp again'),
+                    label: tr('Sharpen the HB', 'اسنن HB'),
+                    onSelected: () =>
+                        _say(tr('the HB is sharp again', 'HB حادّ من جديد')),
                   ),
                   DrawkitMenuItem(
-                    label: 'Refill the well',
-                    onSelected: () => _say('the well is full'),
+                    label: tr('Refill the well', 'أعد ملء المحبرة'),
+                    onSelected: () =>
+                        _say(tr('the well is full', 'المحبرة ممتلئة')),
                   ),
                   const DrawkitMenuItem.divider(),
-                  const DrawkitMenuItem(label: 'Fold the page', enabled: false),
+                  DrawkitMenuItem(
+                    label: tr('Fold the page', 'اطوِ الصفحة'),
+                    enabled: false,
+                  ),
                 ],
-                child: Text('maintenance', style: body),
+                child: Text(tr('maintenance', 'صيانة'), style: body),
               ),
             ],
           ),
           SizedBox(height: 22),
           Text(
-            'Date picker — arrows walk days, PageUp/Down change months',
+            tr(
+              'Date picker — arrows walk days, PageUp/Down change months',
+              'منتقي التاريخ — الأسهم تمشي الأيام، وPageUp/Down يبدّلان الشهر',
+            ),
             style: body,
           ),
           SizedBox(height: 8),
           DrawkitDatePicker(
             value: _date,
             today: DateTime(2026, 6, 15),
+            monthNames: monthNames,
+            weekdayLabels: weekdayLabels,
             onChanged: (d) => setState(() {
               _date = d;
-              _last = 'dated ${d.year}-${d.month}-${d.day}';
+              _last = tr(
+                'dated ${d.year}-${d.month}-${d.day}',
+                'بتاريخ ${d.year}-${d.month}-${d.day}',
+              );
             }),
           ),
-          const SizedBox(height: 22),
+          SizedBox(height: 22),
           Text(
-            'Breadcrumb and nav rail — plain Tab stops, Enter to choose',
+            tr(
+              'Breadcrumb and nav rail — plain Tab stops, Enter to choose',
+              'الفتات ومسار التنقل — مواقف Tab عادية وEnter للاختيار',
+            ),
             style: body,
           ),
           SizedBox(height: 10),
           DrawkitBreadcrumb(
             items: [
               DrawkitBreadcrumbItem(
-                label: 'kit',
-                onTap: () => _say('back to the kit'),
+                label: tr('kit', 'الطقم'),
+                onTap: () => _say(tr('back to the kit', 'عودة إلى الطقم')),
               ),
               DrawkitBreadcrumbItem(
-                label: 'focus',
-                onTap: () => _say('still on the focus page'),
+                label: tr('focus', 'التركيز'),
+                onTap: () => _say(
+                  tr('still on the focus page', 'ما زلنا في صفحة التركيز'),
+                ),
               ),
-              const DrawkitBreadcrumbItem(label: 'here'),
+              DrawkitBreadcrumbItem(label: tr('here', 'هنا')),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           SizedBox(
             height: 170,
             width: 150,
             child: DrawkitNavRail(
-              destinations: const [
-                DrawkitNavDestination(label: 'Sketches'),
-                DrawkitNavDestination(label: 'Swatches'),
-                DrawkitNavDestination(label: 'Filed'),
+              destinations: [
+                DrawkitNavDestination(label: tr('Sketches', 'رسوم')),
+                DrawkitNavDestination(label: tr('Swatches', 'عينات')),
+                DrawkitNavDestination(label: tr('Filed', 'مؤرشف')),
               ],
               selected: _nav,
               onChanged: (i) => setState(() {
                 _nav = i;
-                _last = 'rail: ${const ['Sketches', 'Swatches', 'Filed'][i]}';
+                _last =
+                    '${tr('rail: ', 'المسار: ')}${[tr('Sketches', 'رسوم'), tr('Swatches', 'عينات'), tr('Filed', 'مؤرشف')][i]}';
               }),
             ),
           ),
           const SizedBox(height: 22),
           Text(
-            'Dialog — Escape dismisses, Tab stays inside, focus comes home',
+            tr(
+              'Dialog — Escape dismisses, Tab stays inside, focus comes home',
+              'الحوار — Escape يغلق وTab يبقى بالداخل والتركيز يعود',
+            ),
             style: body,
           ),
           const SizedBox(height: 8),
           DrawkitButton(
             onPressed: () => _openDialog(),
-            child: Text('Open a dialog'),
+            child: Text(tr('Open a dialog', 'افتح حواراً')),
           ),
           SizedBox(height: 16),
-          Text('last action: $_last', style: hint),
+          Text('${tr('last action: ', 'آخر فعل: ')}$_last', style: hint),
           const SizedBox(height: 22),
         ],
       ),
@@ -2680,9 +3193,15 @@ class PalettePage extends StatelessWidget {
   Widget build(BuildContext context) => Wrap(
     spacing: 22,
     runSpacing: 22,
-    children: const [
-      _PalettePanel(name: 'paper light', palette: DrawkitPalette.light),
-      _PalettePanel(name: 'ink dark', palette: DrawkitPalette.dark),
+    children: [
+      _PalettePanel(
+        name: tr('paper light', 'ورق فاتح'),
+        palette: DrawkitPalette.light,
+      ),
+      _PalettePanel(
+        name: tr('ink dark', 'حبر داكن'),
+        palette: DrawkitPalette.dark,
+      ),
     ],
   );
 }
@@ -2724,30 +3243,38 @@ class _PalettePanel extends StatelessWidget {
               spacing: 10,
               runSpacing: 10,
               children: [
-                _Swatch(name: 'pen', color: palette.pen, paper: palette.paper),
-                _Swatch(name: 'ink', color: palette.ink, paper: palette.paper),
                 _Swatch(
-                  name: 'muted',
+                  name: ar('pen'),
+                  color: palette.pen,
+                  paper: palette.paper,
+                ),
+                _Swatch(
+                  name: ar('ink'),
+                  color: palette.ink,
+                  paper: palette.paper,
+                ),
+                _Swatch(
+                  name: tr('muted', 'خافت'),
                   color: palette.inkMuted,
                   paper: palette.paper,
                 ),
                 _Swatch(
-                  name: 'faint',
+                  name: tr('faint', 'أخفت'),
                   color: palette.inkFaint,
                   paper: palette.paper,
                 ),
                 _Swatch(
-                  name: 'error',
+                  name: tr('error', 'خطأ'),
                   color: palette.error,
                   paper: palette.paper,
                 ),
                 _Swatch(
-                  name: 'success',
+                  name: tr('success', 'نجاح'),
                   color: palette.success,
                   paper: palette.paper,
                 ),
                 _Swatch(
-                  name: 'neutral',
+                  name: tr('neutral', 'محايد'),
                   color: palette.neutral,
                   paper: palette.paper,
                 ),
@@ -2759,34 +3286,42 @@ class _PalettePanel extends StatelessWidget {
               runSpacing: 10,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                DrawkitButton(onPressed: () {}, child: const Text('outline')),
+                DrawkitButton(
+                  onPressed: () {},
+                  child: Text(tr('outline', 'محدد')),
+                ),
                 DrawkitButton(
                   variant: DrawkitButtonVariant.solid,
                   onPressed: () {},
-                  child: const Text('solid'),
+                  child: Text(tr('solid', 'مصمت')),
                 ),
                 DrawkitButton(
                   tone: DrawkitTone.danger,
                   onPressed: () {},
-                  child: const Text('danger'),
+                  child: Text(tr('danger', 'خطر')),
                 ),
-                const DrawkitCheckbox(
+                DrawkitCheckbox(
                   value: true,
-                  semanticLabel: 'sample checkbox',
+                  semanticLabel: tr('sample checkbox', 'مربع عينة'),
                   onChanged: null,
                 ),
                 DrawkitToggle(
                   value: true,
-                  semanticLabel: 'sample toggle',
+                  semanticLabel: tr('sample toggle', 'مفتاح عينة'),
                   onChanged: (_) {},
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            DrawkitInput(placeholder: 'placeholder ink'),
+            DrawkitInput(
+              placeholder: tr('placeholder ink', 'حبر العنصر النائب'),
+            ),
             const SizedBox(height: 10),
             Text(
-              'tone text darkens (or lightens) until it clears 4.5:1',
+              tr(
+                'tone text darkens (or lightens) until it clears 4.5:1',
+                'نص اللون يغمق (أو يفتح) حتى يتجاوز 4.5:1',
+              ),
               style: TextStyle(
                 color: palette.inkMuted,
                 decoration: TextDecoration.none,
@@ -2824,7 +3359,7 @@ class _Swatch extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         Text(
-          '$name ${ratio.toStringAsFixed(1)}:1',
+          '${ar(name)} ${ratio.toStringAsFixed(1)}:1',
           style: TextStyle(
             fontSize: 12,
             color: DrawkitTheme.of(context).palette.inkMuted,
