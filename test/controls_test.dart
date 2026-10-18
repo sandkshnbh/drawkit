@@ -179,11 +179,26 @@ void main() {
       expect(seen, [true]);
     });
 
-    testWidgets('disabled toggle ignores taps', (tester) async {
+    testWidgets('disabled toggle ignores taps and announces itself disabled', (
+      tester,
+    ) async {
+      final semanticsHandle = tester.ensureSemantics();
       await tester.pumpWidget(
-        host(const DrawkitToggle(value: false, onChanged: null)),
+        host(
+          const DrawkitToggle(
+            value: false,
+            semanticLabel: 'bold',
+            onChanged: null,
+          ),
+        ),
       );
+      final semantics = tester.getSemantics(
+        find.bySemanticsLabel(RegExp('bold')),
+      );
+      expect(semantics.flagsCollection.isEnabled, Tristate.isFalse);
       await tester.tap(find.byType(DrawkitToggle), warnIfMissed: false);
+      await tester.pump();
+      semanticsHandle.dispose();
     });
 
     testWidgets('keyboard flips it and the knob settles', (tester) async {

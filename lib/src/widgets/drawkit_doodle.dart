@@ -52,7 +52,7 @@ class DrawkitDoodle extends StatelessWidget {
   }
 
   Path _squigglePath(Size size, RoughOptions options) {
-    final w = size.width - 6;
+    final w = math.max(2.0, size.width - 6);
     final mid = size.height / 2;
     final amp = size.height * 0.18;
     final points = [

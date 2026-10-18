@@ -198,6 +198,7 @@ class _DrawkitFieldState extends State<_DrawkitField> {
     _ownsFocusNode = widget.focusNode == null;
     _focusNode = widget.focusNode ?? FocusNode();
     _focused = _focusNode.hasFocus;
+    _focusNode.canRequestFocus = widget.enabled;
     _focusNode.addListener(_onFocusChanged);
   }
 
@@ -217,6 +218,10 @@ class _DrawkitFieldState extends State<_DrawkitField> {
       _focusNode.removeListener(_onFocusChanged);
       if (_ownsFocusNode) _focusNode.dispose();
       _attachFocusNode();
+    }
+    if (widget.enabled != oldWidget.enabled) {
+      _focusNode.canRequestFocus = widget.enabled;
+      if (!widget.enabled) _focusNode.unfocus();
     }
   }
 

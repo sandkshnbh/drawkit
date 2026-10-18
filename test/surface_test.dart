@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:drawkit/drawkit.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
@@ -126,9 +124,11 @@ void main() {
   });
 
   testWidgets('same seed paints identical pixels across runs', (tester) async {
-    // Paths are deterministic; compare their bounds as a smoke check that a
-    // pinned seed produces identical geometry between passes.
+    // Paths are deterministic; compare their bounds across two passes to
+    // prove a pinned seed produces identical geometry.
+    final bounds = <Rect>[];
     for (var i = 0; i < 2; i++) {
+      late Path captured;
       await tester.pumpWidget(
         host(
           DrawkitSurface(
@@ -136,7 +136,7 @@ void main() {
             animate: false,
             builder: (size, options) => [
               DrawkitLayer(
-                roughCheckmark(3, 4, 14, 12, options),
+                captured = roughCheckmark(3, 4, 14, 12, options),
                 Paint()..color = const Color(0xFF2724D1),
               ),
             ],
@@ -144,8 +144,9 @@ void main() {
           ),
         ),
       );
+      bounds.add(captured.getBounds());
     }
-    expect(math.max(1, 1), 1);
+    expect(bounds[0], bounds[1]);
   });
 
   testWidgets('disposes without leaking the boil ticker', (tester) async {

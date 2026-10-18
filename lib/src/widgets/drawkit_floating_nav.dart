@@ -112,65 +112,78 @@ class _DrawkitFloatingNavBarState extends State<DrawkitFloatingNavBar> {
         : Duration.zero;
     final safeBottom = MediaQuery.viewPaddingOf(context).bottom;
 
-    return AnimatedSlide(
-      offset: _hidden ? const Offset(0, 1.8) : Offset.zero,
-      duration: duration,
-      curve: drawkitEase,
-      child: AnimatedOpacity(
-        opacity: _hidden ? 0 : 1,
-        duration: duration,
-        curve: drawkitEase,
-        child: Padding(
-          padding: widget.margin.add(EdgeInsets.only(bottom: safeBottom)),
-          child: Semantics(
-            container: true,
-            child: DrawkitSurface(
-              builder: (size, options) => [
-                DrawkitLayer(
-                  roughRoundedRect(
-                    0,
-                    0,
-                    size.width,
-                    size.height,
-                    size.height / 2,
-                    options,
-                  ),
-                  drawkitFillPaint(resolved.paperColor),
-                ),
-                DrawkitLayer(
-                  roughRoundedRect(
-                    0,
-                    0,
-                    size.width,
-                    size.height,
-                    size.height / 2,
-                    options,
-                  ),
-                  drawkitStroke(resolved, fallbackWidth: 1.5),
-                ),
-              ],
-              style: resolved,
-              seed: widget.seed,
-              animate: widget.animate,
-              child: SizedBox(
-                height: widget.height,
-                child: Row(
-                  children: [
-                    for (var i = 0; i < widget.destinations.length; i++)
-                      Expanded(
-                        child: _FloatingTile(
-                          destination: widget.destinations[i],
-                          isSelected: i == widget.selected && enabled,
-                          showLabel:
-                              widget.showLabels ||
-                              (i == widget.selected && enabled),
-                          onTap: enabled ? () => widget.onChanged!(i) : null,
-                          style: widget.style,
-                          seed: widget.seed == null ? null : widget.seed! + i,
-                          animate: widget.animate,
+    return IgnorePointer(
+      ignoring: _hidden,
+      child: ExcludeFocus(
+        excluding: _hidden,
+        child: ExcludeSemantics(
+          excluding: _hidden,
+          child: AnimatedSlide(
+            offset: _hidden ? const Offset(0, 1.8) : Offset.zero,
+            duration: duration,
+            curve: drawkitEase,
+            child: AnimatedOpacity(
+              opacity: _hidden ? 0 : 1,
+              duration: duration,
+              curve: drawkitEase,
+              child: Padding(
+                padding: widget.margin.add(EdgeInsets.only(bottom: safeBottom)),
+                child: Semantics(
+                  container: true,
+                  child: DrawkitSurface(
+                    builder: (size, options) => [
+                      DrawkitLayer(
+                        roughRoundedRect(
+                          0,
+                          0,
+                          size.width,
+                          size.height,
+                          size.height / 2,
+                          options,
                         ),
+                        drawkitFillPaint(resolved.paperColor),
                       ),
-                  ],
+                      DrawkitLayer(
+                        roughRoundedRect(
+                          0,
+                          0,
+                          size.width,
+                          size.height,
+                          size.height / 2,
+                          options,
+                        ),
+                        drawkitStroke(resolved, fallbackWidth: 1.5),
+                      ),
+                    ],
+                    style: resolved,
+                    seed: widget.seed,
+                    animate: widget.animate,
+                    child: SizedBox(
+                      height: widget.height,
+                      child: Row(
+                        children: [
+                          for (var i = 0; i < widget.destinations.length; i++)
+                            Expanded(
+                              child: _FloatingTile(
+                                destination: widget.destinations[i],
+                                isSelected: i == widget.selected && enabled,
+                                showLabel:
+                                    widget.showLabels ||
+                                    (i == widget.selected && enabled),
+                                onTap: enabled
+                                    ? () => widget.onChanged!(i)
+                                    : null,
+                                style: widget.style,
+                                seed: widget.seed == null
+                                    ? null
+                                    : widget.seed! + i,
+                                animate: widget.animate,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

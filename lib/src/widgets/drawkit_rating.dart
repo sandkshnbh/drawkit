@@ -38,8 +38,9 @@ class DrawkitRating extends StatelessWidget {
   final int? seed;
   final bool animate;
 
-  List<Offset> _star(int index) {
-    final cx = index * (starSize + spacing) + starSize / 2;
+  List<Offset> _star(int index, double width, bool rtl) {
+    final slot = index * (starSize + spacing);
+    final cx = rtl ? width - slot - starSize / 2 : slot + starSize / 2;
     final cy = starSize / 2;
     final outer = starSize / 2 - 3;
     final inner = outer * 0.46;
@@ -60,6 +61,7 @@ class DrawkitRating extends StatelessWidget {
   Widget build(BuildContext context) {
     final resolved = style ?? DrawkitTheme.of(context);
     final enabled = onChanged != null;
+    final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
     final width = count * (starSize + spacing) - spacing;
     final fill = Paint()
       ..color = resolved.effectiveStroke
@@ -92,7 +94,7 @@ class DrawkitRating extends StatelessWidget {
               builder: (size, options) {
                 final layers = <DrawkitLayer>[];
                 for (var i = 0; i < count; i++) {
-                  final points = _star(i);
+                  final points = _star(i, size.width, rtl);
                   if (i < value) {
                     layers.add(
                       DrawkitLayer(Path()..addPolygon(points, true), fill),
@@ -121,7 +123,9 @@ class DrawkitRating extends StatelessWidget {
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: enabled
-                            ? () => onChanged!(value == i + 1 ? i : i + 1)
+                            ? () {
+                                onChanged!(value == i + 1 ? i : i + 1);
+                              }
                             : null,
                         child: const SizedBox.expand(),
                       ),

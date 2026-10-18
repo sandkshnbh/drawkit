@@ -121,7 +121,16 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
   }
 
   void _step(int months) {
-    setState(() => _month = DateTime(_month.year, _month.month + months));
+    setState(() {
+      final target = DateTime(_month.year, _month.month + months);
+      final daysInTarget = DateTime(target.year, target.month + 1, 0).day;
+      _month = target;
+      _cursor = DateTime(
+        target.year,
+        target.month,
+        _cursor.day.clamp(1, daysInTarget),
+      );
+    });
   }
 
   /// Moves the cursor by whole days, paging the month when it crosses an
@@ -427,23 +436,18 @@ Future<DateTime?> showDrawkitDatePicker({
   style: style,
   seed: seed,
   animate: animate,
-  child: DrawkitDialog(
-    padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+  child: _DatePickerHost(
+    initialDate: initialDate,
+    firstDate: firstDate,
+    lastDate: lastDate,
+    today: today,
+    monthNames: monthNames,
+    weekdayLabels: weekdayLabels,
+    semanticLabel: semanticLabel,
     style: style,
     seed: seed,
     animate: animate,
-    child: _DatePickerHost(
-      initialDate: initialDate,
-      firstDate: firstDate,
-      lastDate: lastDate,
-      today: today,
-      monthNames: monthNames,
-      weekdayLabels: weekdayLabels,
-      semanticLabel: semanticLabel,
-      style: style,
-      seed: seed,
-      animate: animate,
-    ),
   ),
 );
 

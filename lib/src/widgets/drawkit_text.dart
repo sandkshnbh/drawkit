@@ -173,6 +173,7 @@ class _TextChrome extends StatelessWidget {
   ) {
     final painter = TextPainter(
       text: TextSpan(text: text, style: effective),
+      textScaler: MediaQuery.textScalerOf(context),
       textDirection: direction,
       textAlign: textAlign,
     )..layout(maxWidth: constraints.maxWidth);

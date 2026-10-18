@@ -34,7 +34,8 @@ class DrawkitSlider extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     super.key,
-  });
+  }) : assert(min < max, 'min must be less than max'),
+       assert(divisions == null || divisions > 0, 'divisions must be positive');
 
   final double value;
 

@@ -87,7 +87,6 @@ class _DrawkitPopoverState extends State<DrawkitPopover> {
   final GlobalKey _anchorKey = GlobalKey();
   late FocusNode _focusNode;
   late bool _ownsFocusNode;
-  Rect _anchorRect = Rect.zero;
 
   @override
   void initState() {
@@ -119,10 +118,6 @@ class _DrawkitPopoverState extends State<DrawkitPopover> {
     if (_menu.isOpen) {
       _menu.close();
     } else {
-      final box = _anchorKey.currentContext?.findRenderObject() as RenderBox?;
-      if (box != null && box.hasSize) {
-        _anchorRect = box.localToGlobal(Offset.zero) & box.size;
-      }
       _menu.open();
     }
   }
@@ -139,7 +134,7 @@ class _DrawkitPopoverState extends State<DrawkitPopover> {
         onTapOutside: (event) => _menu.close(),
         child: CustomSingleChildLayout(
           delegate: DrawkitPanelPositionDelegate(
-            anchorRect: _anchorRect,
+            anchorRect: info.anchorRect,
             textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
             width: widget.width,
             gap: widget.gap,
@@ -261,7 +256,6 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
   late FocusNode _triggerNode;
   late bool _ownsTriggerNode;
   List<FocusNode?> _rowNodes = const [];
-  Rect _anchorRect = Rect.zero;
   bool _open = false;
 
   @override
@@ -333,10 +327,6 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
       _menu.close();
       return;
     }
-    final box = _anchorKey.currentContext?.findRenderObject() as RenderBox?;
-    if (box != null && box.hasSize) {
-      _anchorRect = box.localToGlobal(Offset.zero) & box.size;
-    }
     _menu.open();
   }
 
@@ -381,7 +371,7 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
         onTapOutside: (event) => _menu.close(),
         child: CustomSingleChildLayout(
           delegate: DrawkitPanelPositionDelegate(
-            anchorRect: _anchorRect,
+            anchorRect: info.anchorRect,
             textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
             width: widget.minWidth,
             gap: 4,
@@ -425,46 +415,48 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
                     onInvoke: (intent) => null,
                   ),
                 },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (var i = 0; i < widget.items.length; i++)
-                      if (widget.items[i].divider)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          child: CustomPaint(
-                            size: const Size(double.infinity, 1.5),
-                            painter: _RulePainter(
-                              seed: widget.seed ?? 1,
-                              ink: style.effectiveStroke,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (var i = 0; i < widget.items.length; i++)
+                        if (widget.items[i].divider)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
                             ),
+                            child: CustomPaint(
+                              size: const Size(double.infinity, 1.5),
+                              painter: _RulePainter(
+                                seed: widget.seed ?? 1,
+                                ink: style.effectiveStroke,
+                              ),
+                            ),
+                          )
+                        else
+                          DrawkitPanelRow(
+                            label: widget.items[i].label,
+                            textStyle: textStyle.copyWith(
+                              color: widget.items[i].active
+                                  ? null
+                                  : palette.inkFaint,
+                            ),
+                            hint: widget.items[i].hint,
+                            hintStyle: textStyle.copyWith(
+                              fontSize: (textStyle.fontSize ?? 14) - 2,
+                              color: palette.inkMuted,
+                            ),
+                            ink: style.effectiveStroke,
+                            seed: widget.seed,
+                            enabled: widget.items[i].active,
+                            checked: widget.items[i].checked ? true : null,
+                            focusNode: _rowNodes[i],
+                            onPick: () => _pick(widget.items[i]),
                           ),
-                        )
-                      else
-                        DrawkitPanelRow(
-                          label: widget.items[i].label,
-                          textStyle: textStyle.copyWith(
-                            color: widget.items[i].active
-                                ? null
-                                : palette.inkFaint,
-                          ),
-                          hint: widget.items[i].hint,
-                          hintStyle: textStyle.copyWith(
-                            fontSize: (textStyle.fontSize ?? 14) - 2,
-                            color: palette.inkMuted,
-                          ),
-                          ink: style.effectiveStroke,
-                          seed: widget.seed,
-                          enabled: widget.items[i].active,
-                          checked: widget.items[i].checked ? true : null,
-                          focusNode: _rowNodes[i],
-                          onPick: () => _pick(widget.items[i]),
-                        ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -490,7 +490,7 @@ class _DrawkitFabState extends State<DrawkitFab> {
                 onTap: widget.enabled ? widget.onPressed : null,
                 child: DefaultTextStyle(
                   style: DefaultTextStyle.of(context).style
-                      .copyWith(color: themeStyle.paperColor),
+                      .copyWith(color: ink),
                   child: Center(child: widget.child),
                 ),
               ),

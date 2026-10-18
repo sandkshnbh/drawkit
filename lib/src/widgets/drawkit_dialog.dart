@@ -86,9 +86,12 @@ Future<T?> showDrawkitDialog<T extends Object?>({
   DrawkitStyle? style,
   int? seed,
   bool animate = true,
+  double maxWidth = 420,
+  EdgeInsetsGeometry padding = const EdgeInsets.all(20),
 }) {
   final reduceMotion = drawkitReduceMotion(context);
   final motion = animate && !reduceMotion;
+  final resolved = style ?? DrawkitTheme.of(context);
   return showGeneralDialog<T>(
     context: context,
     barrierDismissible: barrierDismissible,
@@ -98,19 +101,24 @@ Future<T?> showDrawkitDialog<T extends Object?>({
     transitionDuration: motion
         ? const Duration(milliseconds: 220)
         : Duration.zero,
-    pageBuilder: (context, animation, secondaryAnimation) => Center(
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: DrawkitSketchIn(
-            duration: motion
-                ? const Duration(milliseconds: 700)
-                : Duration.zero,
-            child: DrawkitDialog(
-              style: style,
-              seed: seed,
-              animate: animate,
-              child: child,
+    pageBuilder: (context, animation, secondaryAnimation) => DrawkitTheme(
+      data: resolved,
+      child: DefaultTextStyle(
+        style: drawkitRouteTextStyle(resolved),
+        child: Center(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: DrawkitSketchIn(
+                duration: motion
+                    ? const Duration(milliseconds: 700)
+                    : Duration.zero,
+                child: DrawkitDialog(
+                  seed: seed,
+                  animate: animate,
+                  child: child,
+                ),
+              ),
             ),
           ),
         ),

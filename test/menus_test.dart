@@ -126,6 +126,7 @@ void main() {
       await tester.tap(find.text('Paste'), warnIfMissed: false);
       await tester.pump();
       expect(actions, ['copy']);
+      expect(find.text('Paste'), findsOneWidget);
     });
 
     testWidgets('a checked row announces its mark', (tester) async {

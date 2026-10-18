@@ -156,6 +156,7 @@ Future<T?> showDrawkitSheet<T extends Object?>({
     DrawkitSheetEdge.end => Offset(rtl ? -1 : 1, 0),
   };
   final draggable = showHandle && edge == DrawkitSheetEdge.bottom;
+  final resolved = style ?? DrawkitTheme.of(context);
   return showGeneralDialog<T>(
     context: context,
     barrierDismissible: barrierDismissible,
@@ -165,14 +166,19 @@ Future<T?> showDrawkitSheet<T extends Object?>({
     transitionDuration: motion
         ? const Duration(milliseconds: 240)
         : Duration.zero,
-    pageBuilder: (context, animation, secondaryAnimation) => DrawkitSheet(
-      edge: edge,
-      width: width,
-      onDismiss: draggable ? () => Navigator.of(context).maybePop() : null,
-      style: style,
-      seed: seed,
-      animate: animate,
-      child: child,
+    pageBuilder: (context, animation, secondaryAnimation) => DrawkitTheme(
+      data: resolved,
+      child: DefaultTextStyle(
+        style: drawkitRouteTextStyle(resolved),
+        child: DrawkitSheet(
+          edge: edge,
+          width: width,
+          onDismiss: draggable ? () => Navigator.of(context).maybePop() : null,
+          seed: seed,
+          animate: animate,
+          child: child,
+        ),
+      ),
     ),
     transitionBuilder: (context, animation, secondaryAnimation, child) {
       if (!motion) return child;

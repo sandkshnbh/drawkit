@@ -87,7 +87,10 @@ class _DrawkitMarqueeState extends State<DrawkitMarquee>
       mainAxisSize: MainAxisSize.min,
       children: [
         KeyedSubtree(key: _childKey, child: widget.child),
-        if (cycle != null) ...[SizedBox(width: widget.gap), widget.child],
+        if (cycle != null) ...[
+          SizedBox(width: widget.gap),
+          ExcludeSemantics(child: widget.child),
+        ],
       ],
     );
 

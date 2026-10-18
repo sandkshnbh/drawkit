@@ -70,22 +70,29 @@ DrawkitToastHandle showDrawkitToast(
   int? seed,
 }) {
   final overlay = Overlay.of(context);
+  final resolved = style ?? DrawkitTheme.of(context);
   final linger =
       duration ?? Duration(milliseconds: action == null ? 2400 : 5000);
   final key = GlobalKey<_DrawkitToastEntryState>();
   late final DrawkitToastHandle handle;
   final entry = OverlayEntry(
     builder: (context) {
-      final toast = _DrawkitToastEntry(
-        key: key,
-        message: message,
-        tone: tone,
-        duration: linger,
-        action: action,
-        animate: animate,
-        style: style,
-        seed: seed,
-        onDismissed: () => handle._remove(),
+      final toast = DrawkitTheme(
+        data: resolved,
+        child: DefaultTextStyle(
+          style: drawkitRouteTextStyle(resolved),
+          child: _DrawkitToastEntry(
+            key: key,
+            message: message,
+            tone: tone,
+            duration: linger,
+            action: action,
+            animate: animate,
+            style: resolved,
+            seed: seed,
+            onDismissed: () => handle._remove(),
+          ),
+        ),
       );
       return action == null ? IgnorePointer(child: toast) : toast;
     },
@@ -283,14 +290,15 @@ class _DrawkitToastEntryState extends State<_DrawkitToastEntry>
   Timer? _timer;
   bool _started = false;
   bool _closing = false;
+  bool _motion = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_started) return;
     _started = true;
-    final motion = widget.animate && !drawkitReduceMotion(context);
-    if (motion) {
+    _motion = widget.animate && !drawkitReduceMotion(context);
+    if (_motion) {
       _controller.forward();
     } else {
       _controller.value = 1;
@@ -303,7 +311,9 @@ class _DrawkitToastEntryState extends State<_DrawkitToastEntry>
     if (_closing) return;
     _closing = true;
     _timer?.cancel();
-    if (!mounted || _controller.status == AnimationStatus.dismissed) {
+    if (!mounted ||
+        !_motion ||
+        _controller.status == AnimationStatus.dismissed) {
       widget.onDismissed();
       return;
     }

@@ -33,8 +33,10 @@ void main() {
       semanticsHandle.dispose();
     });
 
-    testWidgets('disabled ignores taps', (tester) async {
-      var taps = 0;
+    testWidgets('disabled ignores taps and announces itself disabled', (
+      tester,
+    ) async {
+      final semanticsHandle = tester.ensureSemantics();
       await tester.pumpWidget(
         host(
           DrawkitIconButton(
@@ -44,8 +46,13 @@ void main() {
           ),
         ),
       );
+      final semantics = tester.getSemantics(
+        find.bySemanticsLabel(RegExp('close')),
+      );
+      expect(semantics.flagsCollection.isEnabled, Tristate.isFalse);
       await tester.tap(find.text('x'), warnIfMissed: false);
-      expect(taps, 0);
+      await tester.pump();
+      semanticsHandle.dispose();
     });
   });
 
@@ -65,9 +72,20 @@ void main() {
       expect(taps, 1);
     });
 
-    testWidgets('disabled fab ignores taps', (tester) async {
-      await tester.pumpWidget(host(const DrawkitFab(child: Text('+'))));
+    testWidgets('disabled fab ignores taps and announces itself disabled', (
+      tester,
+    ) async {
+      final semanticsHandle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        host(const DrawkitFab(semanticLabel: 'compose', child: Text('+'))),
+      );
+      final semantics = tester.getSemantics(
+        find.bySemanticsLabel(RegExp('compose')),
+      );
+      expect(semantics.flagsCollection.isEnabled, Tristate.isFalse);
       await tester.tap(find.text('+'), warnIfMissed: false);
+      await tester.pump();
+      semanticsHandle.dispose();
     });
   });
 
@@ -138,19 +156,34 @@ void main() {
       );
     });
 
-    testWidgets('disabled control ignores taps', (tester) async {
-      final seen = <String>[];
+    testWidgets('disabled control ignores taps and never takes focus', (
+      tester,
+    ) async {
+      final probe = FocusNode();
+      addTearDown(probe.dispose);
       await tester.pumpWidget(
         host(
-          const DrawkitSegmentedButton<String>(
-            segments: segments,
-            selected: 'a',
-            onChanged: null,
+          Column(
+            children: [
+              const DrawkitSegmentedButton<String>(
+                segments: segments,
+                selected: 'a',
+                onChanged: null,
+              ),
+              Focus(
+                focusNode: probe,
+                child: const SizedBox(width: 8, height: 8),
+              ),
+            ],
           ),
         ),
       );
+      probe.requestFocus();
+      await tester.pump();
+      expect(probe.hasFocus, isTrue);
       await tester.tap(find.text('two'), warnIfMissed: false);
-      expect(seen, isEmpty);
+      await tester.pump();
+      expect(probe.hasFocus, isTrue);
     });
   });
 
@@ -216,11 +249,24 @@ void main() {
     });
 
     testWidgets('disabled slider ignores input', (tester) async {
+      final semanticsHandle = tester.ensureSemantics();
       await tester.pumpWidget(
-        host(const DrawkitSlider(value: 0.5, onChanged: null)),
+        host(
+          const DrawkitSlider(
+            value: 0.5,
+            semanticLabel: 'volume',
+            onChanged: null,
+          ),
+        ),
       );
+      final semantics = tester.getSemantics(
+        find.bySemanticsLabel(RegExp('volume')),
+      );
+      expect(semantics.flagsCollection.isEnabled, Tristate.isFalse);
       final rect = tester.getRect(find.byType(DrawkitSlider));
       await tester.tapAt(Offset(rect.left + 100, rect.center.dy));
+      await tester.pump();
+      semanticsHandle.dispose();
     });
   });
 

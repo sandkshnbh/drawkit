@@ -177,22 +177,32 @@ void main() {
     });
 
     testWidgets('a disabled control never takes focus', (tester) async {
-      var changed = 0;
+      final probe = FocusNode();
+      addTearDown(probe.dispose);
       await tester.pumpWidget(
         host(
-          DrawkitSegmentedButton<String>(
-            segments: const [
-              DrawkitSegment(value: 'a', label: 'one'),
-              DrawkitSegment(value: 'b', label: 'two'),
+          Column(
+            children: [
+              const DrawkitSegmentedButton<String>(
+                segments: [
+                  DrawkitSegment(value: 'a', label: 'one'),
+                  DrawkitSegment(value: 'b', label: 'two'),
+                ],
+                selected: 'a',
+                onChanged: null,
+              ),
+              Focus(
+                focusNode: probe,
+                child: const SizedBox(width: 8, height: 8),
+              ),
             ],
-            selected: 'a',
-            onChanged: null,
           ),
         ),
       );
       await tab(tester);
+      expect(probe.hasFocus, isTrue);
       await key(tester, LogicalKeyboardKey.arrowRight);
-      expect(changed, 0);
+      expect(probe.hasFocus, isTrue);
     });
   });
 

@@ -1,5 +1,31 @@
 ## Unreleased
 
+- **Audit fixes (P0)** — the correctness half of the AUDIT.md sweep.
+  Overlaid routes were mounting outside the kit's scope: the dialog, sheet,
+  toast, and command palette now wrap their `pageBuilder` in a
+  `DrawkitTheme` plus a route-level `DefaultTextStyle`
+  (`drawkitRouteTextStyle`) that carries the readable ink, and
+  `showDrawkitDialog` grew `maxWidth`/`padding` (the command palette
+  dropped its second, nested copy of the frame). The date picker's month
+  paging walks the keyboard cursor into the target month (day clamped),
+  the menu tracks its anchor from the controller's info and scrolls long
+  item lists instead of overflowing, the rating's taps and paint mirror
+  together under RTL, the segmented focus ring lands on the visual
+  first/last segment, and the floating bar, when hidden, ignores
+  pointers, focus, and semantics. `DrawkitNavBar`'s badge stays a circle
+  at any label length and its height scales with the text scaler,
+  `DrawkitInput` hands focus back when it turns read-only, the
+  breadcrumb's whole tap target is live, the FAB label inks with the pen,
+  and `DrawkitSlider` asserts sane bounds. The disabled-mid-press reset
+  defers a frame so sibling buttons rebuild safely; `DrawkitStagger`
+  recomputes its schedule when the child count or duration changes; the
+  refresh indicator swallows `onRefresh` errors; the marquee no longer
+  announces its clone; the doodle clamps its stroke width; table and
+  decoration surfaces survive unbounded intrinsics; and the engine guards
+  empty `smooth`, degenerate `roughEllipse`, and zero-step `sampleLine`.
+  Eight tests that could not fail were rewritten into real checks, and
+  `test/audit_fixes_test.dart` pins the regressions. 262 tests.
+
 - **Gallery reorganization** — the demo app is grouped by function now
   (Foundations, Actions, Forms, Navigation, Overlays, Feedback, Display) with
   uppercase section headers in the sidebar, and every page collects its whole

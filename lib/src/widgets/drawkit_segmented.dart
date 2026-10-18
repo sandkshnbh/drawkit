@@ -176,6 +176,9 @@ class _DrawkitSegmentedButtonState<T> extends State<DrawkitSegmentedButton<T>> {
           final focused = _focused;
           if (focused != null && enabled) {
             final seg = size.width / widget.segments.length;
+            final visualFocus = rtl
+                ? widget.segments.length - 1 - focused
+                : focused;
             final ring = drawkitFocusRingRect(
               size: Size(seg - 2 * _inset - 2, size.height - 2 * _inset - 2),
               radius: 10,
@@ -187,7 +190,7 @@ class _DrawkitSegmentedButtonState<T> extends State<DrawkitSegmentedButton<T>> {
                 ring.path,
                 ring.paint,
                 matrix: () => Matrix4.translationValues(
-                  seg * focused + _inset + 1,
+                  seg * visualFocus + _inset + 1,
                   _inset + 1,
                   0,
                 ),

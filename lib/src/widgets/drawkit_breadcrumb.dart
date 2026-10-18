@@ -146,6 +146,7 @@ class _CrumbState extends State<_Crumb> {
         onTap: widget.item.onTap,
         child: ExcludeSemantics(
           child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: widget.item.onTap,
             child: DrawkitTapTarget(
               child: DrawkitSurface(

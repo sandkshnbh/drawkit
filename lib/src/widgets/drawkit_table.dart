@@ -117,17 +117,28 @@ class _Cells extends StatelessWidget {
   final List<Widget> children;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: padding,
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var i = 0; i < columns.length; i++)
-          Expanded(
-            flex: columns[i].flex,
-            child: Align(alignment: columns[i].alignment, child: children[i]),
-          ),
-      ],
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => Padding(
+      padding: padding,
+      child: Row(
+        mainAxisSize: constraints.hasBoundedWidth
+            ? MainAxisSize.max
+            : MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < columns.length; i++)
+            if (constraints.hasBoundedWidth)
+              Expanded(
+                flex: columns[i].flex,
+                child: Align(
+                  alignment: columns[i].alignment,
+                  child: children[i],
+                ),
+              )
+            else
+              children[i],
+        ],
+      ),
     ),
   );
 }

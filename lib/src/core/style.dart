@@ -156,6 +156,18 @@ Color drawkitReadableInk(
   return candidate;
 }
 
+/// Baseline text style for route and overlay subtrees.
+///
+/// Widgets built through an [Overlay] or a general dialog sit outside any
+/// Material, where the app's fallback error style (large, yellow,
+/// double-underlined) would otherwise leak into unstyled [Text].
+TextStyle drawkitRouteTextStyle(DrawkitStyle style) => TextStyle(
+  fontSize: 14,
+  height: 1.4,
+  decoration: TextDecoration.none,
+  color: style.palette.ink,
+);
+
 /// Visual configuration shared by every Drawkit widget.
 ///
 /// [width] is nullable on purpose: controls default to 2 and text decorations

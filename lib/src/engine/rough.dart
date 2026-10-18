@@ -34,6 +34,7 @@ List<Offset> sampleLine(
   double y2, [
   double step = 8,
 ]) {
+  if (!(step > 0)) step = 8;
   final dx = x2 - x1;
   final dy = y2 - y1;
   final n = math.max(2, (math.sqrt(dx * dx + dy * dy) / step).ceil());
@@ -126,6 +127,7 @@ List<Offset> boilPass(List<Offset> points, RoughOptions o) {
 /// Midpoint-quadratic smoothing: each interior point is a control, the curve
 /// passes through the midpoints. Shared with the JS pen, so strokes match.
 Path smooth(List<Offset> points, {required bool close}) {
+  if (points.isEmpty) return Path();
   final path = Path()..moveTo(points.first.dx, points.first.dy);
   for (var i = 1; i < points.length - 1; i++) {
     final c = points[i];
@@ -167,6 +169,7 @@ Path roughCircle(double cx, double cy, double r, RoughOptions o) =>
     roughEllipse(cx, cy, r, r, o);
 
 Path roughEllipse(double cx, double cy, double rx, double ry, RoughOptions o) {
+  if (!(rx > 0) || !(ry > 0)) return Path();
   // Ramanujan's perimeter approximation, sampled every 8px like the lines
   final h = math.pow((rx - ry) / (rx + ry), 2).toDouble();
   final perimeter =

@@ -131,6 +131,15 @@ class DrawkitSurfaceState extends State<DrawkitSurface>
     if (widget.seed != null && widget.seed != oldWidget.seed) {
       _seed = widget.seed!;
     }
+    if (oldWidget.enabled && !widget.enabled) {
+      final wasHovered = _hovered;
+      _hovered = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || widget.enabled) return;
+        if (wasHovered) widget.onHoverChanged?.call(false);
+        widget.onPressedChanged?.call(false);
+      });
+    }
   }
 
   @override

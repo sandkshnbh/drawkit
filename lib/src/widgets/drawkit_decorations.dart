@@ -35,7 +35,14 @@ class DrawkitDivider extends StatelessWidget {
       seed: seed,
       animate: animate,
       resketchOnPointer: false,
-      child: const SizedBox(height: height, width: double.infinity),
+      child: LayoutBuilder(
+        builder: (context, constraints) => SizedBox(
+          height: height,
+          width: constraints.hasBoundedWidth
+              ? double.infinity
+              : MediaQuery.sizeOf(context).width,
+        ),
+      ),
     );
   }
 }

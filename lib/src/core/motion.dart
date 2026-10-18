@@ -126,16 +126,20 @@ class DrawkitStagger extends StatefulWidget {
 
 class _DrawkitStaggerState extends State<DrawkitStagger>
     with SingleTickerProviderStateMixin {
-  late final Duration _total =
-      widget.duration + widget.step * math.max(0, widget.children.length - 1);
+  late Duration _total = _computeTotal();
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: _total,
   );
-  late final List<Animation<double>> _progress = [
+  late List<Animation<double>> _progress = _computeProgress();
+  bool _started = false;
+
+  Duration _computeTotal() =>
+      widget.duration + widget.step * math.max(0, widget.children.length - 1);
+
+  List<Animation<double>> _computeProgress() => [
     for (var i = 0; i < widget.children.length; i++) _intervalFor(i),
   ];
-  bool _started = false;
 
   Animation<double> _intervalFor(int i) {
     if (_total.inMicroseconds <= 0) return kAlwaysCompleteAnimation;
@@ -153,6 +157,20 @@ class _DrawkitStaggerState extends State<DrawkitStagger>
   }
 
   @override
+  void didUpdateWidget(DrawkitStagger oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final total = _computeTotal();
+    if (total == _total &&
+        widget.children.length == oldWidget.children.length) {
+      return;
+    }
+    _disposeProgress();
+    _total = total;
+    _controller.duration = _total;
+    _progress = _computeProgress();
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_started) return;
@@ -164,11 +182,15 @@ class _DrawkitStaggerState extends State<DrawkitStagger>
     }
   }
 
-  @override
-  void dispose() {
+  void _disposeProgress() {
     for (final progress in _progress) {
       if (progress is CurvedAnimation) progress.dispose();
     }
+  }
+
+  @override
+  void dispose() {
+    _disposeProgress();
     _controller.dispose();
     super.dispose();
   }

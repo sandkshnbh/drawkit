@@ -122,6 +122,10 @@ class _DrawkitRefreshState extends State<DrawkitRefresh>
     });
     try {
       await widget.onRefresh();
+    } catch (error, stack) {
+      FlutterError.reportError(
+        FlutterErrorDetails(exception: error, stack: stack, library: 'drawkit'),
+      );
     } finally {
       if (mounted) await _settleBack(clearing: true);
     }

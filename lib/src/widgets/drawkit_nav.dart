@@ -50,14 +50,19 @@ class DrawkitNavBadge extends StatelessWidget {
     return DrawkitSurface(
       builder: (size, options) => [
         DrawkitLayer(
-          roughCircle(size.width / 2, size.height / 2, size.width / 2, options),
+          roughCircle(
+            size.width / 2,
+            size.height / 2,
+            size.shortestSide / 2,
+            options,
+          ),
           drawkitFillPaint(resolved.palette.error),
         ),
         DrawkitLayer(
           roughCircle(
             size.width / 2,
             size.height / 2,
-            size.width / 2 + 0.5,
+            size.shortestSide / 2 + 0.5,
             options,
           ),
           drawkitStroke(resolved),
@@ -164,6 +169,7 @@ class DrawkitBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final resolved = style ?? DrawkitTheme.of(context);
     final enabled = onChanged != null;
+    final barHeight = MediaQuery.textScalerOf(context).scale(height);
     return Semantics(
       container: true,
       child: DrawkitSurface(
@@ -181,7 +187,7 @@ class DrawkitBottomNav extends StatelessWidget {
         seed: seed,
         animate: animate,
         child: SizedBox(
-          height: height,
+          height: barHeight,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
