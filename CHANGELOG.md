@@ -1,3 +1,9 @@
+## 0.1.1
+
+- The gallery demo is live at <https://sandkshnbh.github.io/drawkit/>,
+  deployed by a new GitHub Pages workflow on every push, and the README
+  links it from the intro and the gallery section.
+
 ## 0.1.0
 
 - **Arabic gallery** — the sample flips to Arabic when its RTL toggle is

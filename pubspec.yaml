@@ -3,7 +3,7 @@ description: >-
   Animated hand-drawn UI for Flutter: real widgets on top, seeded pen strokes
   behind, one shared boil clock — the Dart port of drawably with zero
   dependencies beyond the Flutter SDK.
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/sandkshnbh/drawkit
 repository: https://github.com/sandkshnbh/drawkit
 issue_tracker: https://github.com/sandkshnbh/drawkit/issues
