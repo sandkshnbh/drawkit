@@ -4,15 +4,11 @@ import 'package:drawkit/drawkit.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
   Widget host(Widget child, {TextDirection direction = TextDirection.ltr}) =>
-      Directionality(
-        textDirection: direction,
-        child: DrawkitTheme(
-          data: const DrawkitStyle(boil: 0),
-          child: Center(child: SizedBox(width: 360, child: child)),
-        ),
-      );
+      harness.host(child, direction: direction, width: 360);
 
   const destinations = [
     DrawkitNavDestination(label: 'Inbox', icon: Text('✉')),

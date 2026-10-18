@@ -47,6 +47,7 @@ export 'src/widgets/drawkit_list.dart';
 export 'src/widgets/drawkit_marquee.dart';
 export 'src/widgets/drawkit_menu.dart';
 export 'src/widgets/drawkit_nav.dart';
+export 'src/widgets/drawkit_panel.dart';
 export 'src/widgets/drawkit_progress.dart';
 export 'src/widgets/drawkit_radio.dart';
 export 'src/widgets/drawkit_rating.dart';

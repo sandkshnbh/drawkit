@@ -5,13 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
-  Widget host(Widget child) => Directionality(
-    textDirection: TextDirection.ltr,
-    child: Center(
-      child: DrawkitTheme(data: const DrawkitStyle(boil: 0), child: child),
-    ),
-  );
+  Widget host(Widget child) => harness.host(child);
 
   group('DrawkitCheckbox', () {
     testWidgets('tap fires onChanged with the inverted value', (tester) async {
@@ -82,11 +79,10 @@ void main() {
     });
 
     testWidgets('disposes controllers cleanly', (tester) async {
-      await tester.pumpWidget(
+      await harness.disposeSmoke(
+        tester,
         host(DrawkitCheckbox(value: false, onChanged: (_) {})),
       );
-      await tester.pump(const Duration(milliseconds: 30));
-      await tester.pumpWidget(const SizedBox());
     });
   });
 
@@ -155,10 +151,10 @@ void main() {
     });
 
     testWidgets('disposes controllers cleanly', (tester) async {
-      await tester.pumpWidget(
+      await harness.disposeSmoke(
+        tester,
         host(DrawkitRadio<int>(value: 1, groupValue: 1, onChanged: (_) {})),
       );
-      await tester.pumpWidget(const SizedBox());
     });
   });
 
@@ -219,11 +215,10 @@ void main() {
     });
 
     testWidgets('disposes controllers cleanly', (tester) async {
-      await tester.pumpWidget(
+      await harness.disposeSmoke(
+        tester,
         host(DrawkitToggle(value: true, onChanged: (_) {})),
       );
-      await tester.pump(const Duration(milliseconds: 30));
-      await tester.pumpWidget(const SizedBox());
     });
   });
 }

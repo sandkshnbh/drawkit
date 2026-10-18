@@ -30,7 +30,8 @@ class DrawkitRating extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     super.key,
-  }) : assert(value >= 0 && value <= count, 'value must sit within count');
+  }) : assert(value >= 0 && value <= count, 'value must sit within count'),
+       assert(count > 0, 'a rating draws at least one star');
 
   final int value;
   final int count;
@@ -110,8 +111,10 @@ class _DrawkitRatingState extends State<DrawkitRating> {
     final resolved = widget.style ?? DrawkitTheme.of(context);
     final enabled = widget.onChanged != null;
     final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
-    final width =
-        widget.count * (widget.starSize + widget.spacing) - widget.spacing;
+    final width = math.max(
+      0.0,
+      widget.count * (widget.starSize + widget.spacing) - widget.spacing,
+    );
     final fill = Paint()
       ..color = resolved.effectiveStroke
       ..style = PaintingStyle.fill;

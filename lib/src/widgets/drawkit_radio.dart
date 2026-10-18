@@ -88,7 +88,7 @@ class _DrawkitRadioState<T> extends State<DrawkitRadio<T>>
   void didUpdateWidget(DrawkitRadio<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selected != oldWidget.selected) {
-      if (_reduceMotion) {
+      if (_reduceMotion || !widget.animate) {
         _dot.value = widget.selected ? 1 : 0;
       } else {
         _dot.animateTo(

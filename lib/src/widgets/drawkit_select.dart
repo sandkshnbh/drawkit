@@ -147,7 +147,10 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
   void _closed() {
     if (!_optionNodes.any((n) => n.hasFocus)) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focusNode.requestFocus();
+      if (!mounted || !_focusNode.canRequestFocus) return;
+      final primary = FocusManager.instance.primaryFocus;
+      if (primary != null && !identical(primary, _focusNode)) return;
+      _focusNode.requestFocus();
     });
   }
 
@@ -262,7 +265,9 @@ class _DrawkitSelectState<T> extends State<DrawkitSelect<T>> {
     final textStyle = DefaultTextStyle.of(context).style
         .merge(TextStyle(color: palette.ink))
         .merge(widget.textStyle);
-    final isPlaceholder = _label == widget.placeholder;
+    final isPlaceholder = widget.options.every(
+      (option) => option.value != widget.value,
+    );
 
     return RawMenuAnchor(
       controller: _menu,

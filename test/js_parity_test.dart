@@ -7,9 +7,11 @@ import 'package:drawkit/src/engine/rough.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  final fixtures = jsonDecode(
-    File('test/fixtures/js_vectors.json').readAsStringSync(),
-  ) as Map<String, dynamic>;
+  final fixture = File.fromUri(
+    Platform.script.resolve('test/fixtures/js_vectors.json'),
+  );
+  final fixtures =
+      jsonDecode(fixture.readAsStringSync()) as Map<String, dynamic>;
 
   double approx(Object? v) => (v as num).toDouble();
 

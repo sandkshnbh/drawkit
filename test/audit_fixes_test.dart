@@ -4,41 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
   Widget host(Widget child, {TextDirection direction = TextDirection.ltr}) =>
-      WidgetsApp(
-        color: DrawkitPalette.light.paper,
-        debugShowCheckedModeBanner: false,
-        pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
-            PageRouteBuilder<T>(
-              settings: settings,
-              transitionDuration: Duration.zero,
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  builder(context),
-            ),
-        home: Directionality(
-          textDirection: direction,
-          child: DrawkitTheme(
-            data: const DrawkitStyle(boil: 0),
-            child: Center(child: SizedBox(width: 360, child: child)),
-          ),
-        ),
-      );
+      harness.host(child, direction: direction, app: true, width: 360);
 
   Widget routeHost(Widget Function(BuildContext context) home) =>
-      Directionality(
-        textDirection: TextDirection.ltr,
-        child: DrawkitTheme(
-          data: const DrawkitStyle(boil: 0),
-          child: Navigator(
-            onGenerateRoute: (settings) => PageRouteBuilder(
-              transitionDuration: Duration.zero,
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  home(context),
-            ),
-          ),
-        ),
-      );
+      harness.routeHost(home);
 
   group('engine guards', () {
     test('smooth tolerates an empty point list', () {

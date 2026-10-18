@@ -68,7 +68,8 @@ class DrawkitAvatarGroup extends StatelessWidget {
     final shown = children.length > max ? max : children.length;
     final hidden = children.length - shown;
     final discs = shown + (hidden > 0 ? 1 : 0);
-    final width = discs * (size - overlap) + overlap;
+    final step = size - overlap.clamp(0.0, size);
+    final width = discs * step + (size - step);
     final palette = (style ?? DrawkitTheme.of(context)).palette;
     final text = TextStyle(
       fontSize: size * 0.32,
@@ -89,7 +90,7 @@ class DrawkitAvatarGroup extends StatelessWidget {
             children: [
               for (var i = 0; i < shown; i++)
                 PositionedDirectional(
-                  start: i * (size - overlap),
+                  start: i * step,
                   child: DrawkitAvatar(
                     size: size,
                     style: style,
@@ -100,7 +101,7 @@ class DrawkitAvatarGroup extends StatelessWidget {
                 ),
               if (hidden > 0)
                 PositionedDirectional(
-                  start: shown * (size - overlap),
+                  start: shown * step,
                   child: DrawkitAvatar(
                     size: size,
                     style: style,

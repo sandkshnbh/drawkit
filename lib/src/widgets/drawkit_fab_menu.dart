@@ -108,7 +108,14 @@ class _DrawkitFabMenuState extends State<DrawkitFabMenu> {
   void _close() {
     final hadFocus = _itemNodes.any((node) => node.hasFocus);
     setState(() => _open = false);
-    if (hadFocus) _triggerNode.requestFocus();
+    if (hadFocus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_triggerNode.canRequestFocus) return;
+        final primary = FocusManager.instance.primaryFocus;
+        if (primary != null && !identical(primary, _triggerNode)) return;
+        _triggerNode.requestFocus();
+      });
+    }
   }
 
   @override
@@ -219,7 +226,10 @@ class _DialItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final start = (count - 1 - index) * 0.12;
+    // Spread the whole stagger window over however many items exist, so a
+    // long menu still unfolds in sequence instead of in simultaneous groups.
+    final step = count <= 1 ? 0.0 : 0.7 / (count - 1);
+    final start = (count - 1 - index) * step;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: duration,

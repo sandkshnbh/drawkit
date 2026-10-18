@@ -44,7 +44,8 @@ class DrawkitAppBar extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         )
-        .merge(titleStyle);
+        .merge(titleStyle)
+        .merge(const TextStyle(decoration: TextDecoration.none));
     final topPadding = MediaQuery.viewPaddingOf(context).top;
 
     return Semantics(

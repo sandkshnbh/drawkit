@@ -178,7 +178,14 @@ class _DrawkitProgressBarState extends State<DrawkitProgressBar>
         seed: widget.seed,
         animate: widget.animate,
         accent: _indeterminate ? _controller : null,
-        child: SizedBox(height: widget.height, width: double.infinity),
+        child: LayoutBuilder(
+          builder: (context, constraints) => SizedBox(
+            height: widget.height,
+            width: constraints.hasBoundedWidth
+                ? double.infinity
+                : widget.height * 6,
+          ),
+        ),
       ),
     );
   }

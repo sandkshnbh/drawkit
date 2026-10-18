@@ -51,7 +51,7 @@ class DrawkitFigure extends StatelessWidget {
 
     return Semantics(
       container: true,
-      label: semanticLabel,
+      label: semanticLabel ?? caption,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -88,7 +88,13 @@ class DrawkitFigure extends StatelessWidget {
           ),
           if (caption != null) ...[
             SizedBox(height: captionSpacing),
-            Text(caption!, style: captionText, textAlign: TextAlign.center),
+            ExcludeSemantics(
+              child: Text(
+                caption!,
+                style: captionText,
+                textAlign: TextAlign.center,
+              ),
+            ),
           ],
         ],
       ),

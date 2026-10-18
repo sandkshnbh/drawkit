@@ -124,6 +124,27 @@ class _DrawkitDatePickerState extends State<DrawkitDatePicker> {
   }
 
   @override
+  void didUpdateWidget(DrawkitDatePicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.firstDate != oldWidget.firstDate ||
+        widget.lastDate != oldWidget.lastDate) {
+      _syncTo(_clampDate(_cursor));
+    }
+    if (widget.value != oldWidget.value && widget.value != null) {
+      _syncTo(widget.value!);
+      _typed.text = _formatDate(widget.value);
+      _typedError = null;
+    }
+  }
+
+  /// Moves the displayed month and keyboard cursor onto [date].
+  void _syncTo(DateTime date) {
+    final clamped = _clampDate(date);
+    _month = DateTime(clamped.year, clamped.month);
+    _cursor = DateTime(clamped.year, clamped.month, clamped.day);
+  }
+
+  @override
   void dispose() {
     _dayNode.dispose();
     _typed.dispose();

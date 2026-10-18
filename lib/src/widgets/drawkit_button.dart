@@ -200,6 +200,7 @@ class _DrawkitButtonState extends State<DrawkitButton> {
           ? Duration.zero
           : const Duration(milliseconds: 120),
       curve: Curves.easeOut,
+      transformAlignment: Alignment.center,
       transform: Matrix4.translationValues(0, offsetY, 0)
         ..scaleByDouble(scale, scale, 1, 1),
       child: Shortcuts(

@@ -49,7 +49,7 @@ class _DrawkitArrowState extends State<DrawkitArrow> {
     super.initState();
     _configurePoll();
     _anchorPoll.addListener(_onAnchorsMoved);
-    SchedulerBinding.instance.addPostFrameCallback(_anchorPoll.tick);
+    _anchorPoll.start();
   }
 
   /// A repaint alone would reuse the frames the painter cached for its size,
@@ -63,6 +63,7 @@ class _DrawkitArrowState extends State<DrawkitArrow> {
   void didUpdateWidget(DrawkitArrow oldWidget) {
     super.didUpdateWidget(oldWidget);
     _configurePoll();
+    _anchorPoll.start();
   }
 
   @override
@@ -137,7 +138,13 @@ class _DrawkitArrowState extends State<DrawkitArrow> {
 }
 
 /// Polls both anchor rects after every frame and notifies when they move.
+///
+/// Rect work runs only while something moves: the poll stops after a run of
+/// stable frames (relative rects are immune to the whole stack scrolling
+/// together) and [start]s again whenever the arrow rebuilds.
 class _AnchorPoll extends ChangeNotifier {
+  static const int _stabilityFrames = 6;
+
   GlobalKey? from;
   GlobalKey? to;
   GlobalKey? self;
@@ -145,6 +152,8 @@ class _AnchorPoll extends ChangeNotifier {
   Rect? _lastB;
   Offset _selfOrigin = Offset.zero;
   bool _disposed = false;
+  bool _polling = false;
+  int _stable = 0;
 
   Rect? _globalRect(GlobalKey? key) {
     final box = key?.currentContext?.findRenderObject() as RenderBox?;
@@ -155,6 +164,13 @@ class _AnchorPoll extends ChangeNotifier {
   /// Anchor rect relative to the arrow's own origin.
   Rect? rectOf(GlobalKey key) => _globalRect(key)?.shift(-_selfOrigin);
 
+  void start() {
+    if (_disposed || _polling) return;
+    _polling = true;
+    _stable = 0;
+    SchedulerBinding.instance.addPostFrameCallback(tick);
+  }
+
   void tick(Duration _) {
     if (_disposed) return;
     final selfBox = self?.currentContext?.findRenderObject() as RenderBox?;
@@ -163,12 +179,15 @@ class _AnchorPoll extends ChangeNotifier {
     }
     final a = _globalRect(from);
     final b = _globalRect(to);
-    if (a != _lastA || b != _lastB) {
-      _lastA = a;
-      _lastB = b;
+    final moved = a != _lastA || b != _lastB;
+    _lastA = a;
+    _lastB = b;
+    if (moved) {
       notifyListeners();
     }
-    SchedulerBinding.instance.addPostFrameCallback(tick);
+    _polling = false;
+    final settled = !moved && ++_stable >= _stabilityFrames;
+    if (!settled) start();
   }
 
   @override

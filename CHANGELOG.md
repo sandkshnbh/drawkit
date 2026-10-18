@@ -1,5 +1,34 @@
 ## Unreleased
 
+- **Audit fixes (P2)** — the polish half of the AUDIT.md sweep. The core
+  is stricter and steadier: the focus ring clamps its radius to half the
+  shortest side and rejects negative insets, `DrawkitStyle.copyWith`
+  learned `clearWidth`, `drawkitContrast` composites translucent colors
+  before measuring, `RoughOptions.copyWith` covers every field including
+  `boilSeed`/`clearBoilSeed`, and `DrawkitSurface` rebuilds its boil
+  schedule when its theme changes, caches its painter until an input
+  moves, and treats `seed: null` as a fresh sketch (so does
+  `DrawkitList`); the anchored arrow polls for its target, then settles
+  after stable frames. Controls self-correct: button presses stay
+  centered, checkbox and radio honor reduced motion, the select detects
+  a placeholder by value rather than label, the rating asserts a
+  positive count and clamps non-negative width, progress bars fall back
+  to a readable width when unconstrained, the skeleton's sweep mirrors
+  in RTL, and the nav badge clamps to 99 and drops out of announcements
+  when empty; the app bar forces `TextDecoration.none`, the avatar clamps
+  its overlap, the table pads short rows, and the figure announces its
+  caption with a `refreshLabel` hook on refresh. Overlays tightened:
+  the panel gains a pressed wash, the date picker re-clamps when its
+  bounds or value change, menu dividers are real ink on the boil clock,
+  and neither menus, selects, nor FAB menus steal focus from a pushed
+  route; the dialog scrolls tall content and its show function now
+  threads `maxWidth`/`padding` through (they were ignored). Tests got a
+  shared `test/harness.dart` (one host, route host, a11y host, disposal
+  smoke), the feedback suite split into dialog, toast, and progress
+  files, the accordion suite moved out of the menu file, the JS fixture
+  path survives any working directory, and the pixel and size assertions
+  read the real laid-out geometry. 278 tests.
+
 - **Audit fixes (P1)** — the parity and polish half of the AUDIT.md sweep.
   Semantics grew roles wherever the engine can hear them: `tab`/`tabBar`
   on the segments and tabs, `table`/`row`/`cell`/`columnHeader` on the

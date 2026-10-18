@@ -13,7 +13,8 @@ class DrawkitMoveIntent extends Intent {
   final int delta;
 }
 
-/// Slides a continuous value by [delta] (sliders).
+/// Steps a continuous value by [delta] increments of the widget's own step
+/// size (sliders), never a raw pixel amount.
 class DrawkitAdjustIntent extends Intent {
   const DrawkitAdjustIntent(this.delta);
 

@@ -88,7 +88,9 @@ class DrawkitBreadcrumb extends StatelessWidget {
         container: true,
         child: Text(
           item.label,
-          style: base.copyWith(fontWeight: FontWeight.w600),
+          style: base.copyWith(
+            fontWeight: isLast ? FontWeight.w600 : FontWeight.w400,
+          ),
         ),
       );
     }

@@ -111,8 +111,13 @@ class DrawkitTable extends StatelessWidget {
                 columns: columns,
                 padding: cellPadding,
                 children: [
-                  for (final cell in rows[r])
-                    Semantics(role: SemanticsRole.cell, child: cell),
+                  for (var i = 0; i < columns.length; i++)
+                    Semantics(
+                      role: SemanticsRole.cell,
+                      child: i < rows[r].length
+                          ? rows[r][i]
+                          : const SizedBox.shrink(),
+                    ),
                 ],
               ),
             ),

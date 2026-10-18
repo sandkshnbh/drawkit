@@ -141,11 +141,13 @@ class DrawkitPanelRow extends StatefulWidget {
 class _DrawkitPanelRowState extends State<DrawkitPanelRow> {
   bool _hovered = false;
   bool _focused = false;
+  bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
     final active = widget.enabled ?? true;
-    final wash = (_hovered || _focused) && active && widget.selected != true;
+    final wash =
+        (_hovered || _focused || _pressed) && active && widget.selected != true;
     return FocusableActionDetector(
       focusNode: widget.focusNode,
       enabled: active,
@@ -176,9 +178,14 @@ class _DrawkitPanelRowState extends State<DrawkitPanelRow> {
             behavior: HitTestBehavior.opaque,
             excludeFromSemantics: true,
             onTap: active ? widget.onPick : null,
+            onTapDown: active ? (_) => setState(() => _pressed = true) : null,
+            onTapUp: active ? (_) => setState(() => _pressed = false) : null,
+            onTapCancel: active ? () => setState(() => _pressed = false) : null,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: wash ? widget.ink.withValues(alpha: 0.10) : null,
+                color: wash
+                    ? widget.ink.withValues(alpha: _pressed ? 0.16 : 0.10)
+                    : null,
               ),
               child: DrawkitTapTarget(
                 child: Padding(

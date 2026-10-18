@@ -2,16 +2,10 @@ import 'package:drawkit/drawkit.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
-  Widget host(Widget child) => Directionality(
-    textDirection: TextDirection.ltr,
-    child: Center(
-      child: DrawkitTheme(
-        data: const DrawkitStyle(boil: 0),
-        child: SizedBox(width: 260, child: child),
-      ),
-    ),
-  );
+  Widget host(Widget child) => harness.host(child, width: 260);
 
   group('DrawkitInput', () {
     testWidgets('typing reaches the controller and onChanged', (tester) async {
@@ -58,8 +52,7 @@ void main() {
     });
 
     testWidgets('disposes owned controller and focus node', (tester) async {
-      await tester.pumpWidget(host(const DrawkitInput()));
-      await tester.pumpWidget(const SizedBox());
+      await harness.disposeSmoke(tester, host(const DrawkitInput()));
     });
   });
 
@@ -82,8 +75,7 @@ void main() {
     });
 
     testWidgets('disposes cleanly', (tester) async {
-      await tester.pumpWidget(host(const DrawkitTextarea()));
-      await tester.pumpWidget(const SizedBox());
+      await harness.disposeSmoke(tester, host(const DrawkitTextarea()));
     });
   });
 }

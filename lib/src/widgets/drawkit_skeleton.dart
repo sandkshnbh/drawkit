@@ -138,6 +138,9 @@ class _DrawkitSkeletonState extends State<DrawkitSkeleton>
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
+          final sweep = Directionality.maybeOf(context) == TextDirection.rtl
+              ? -1.0
+              : 1.0;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -187,7 +190,7 @@ class _DrawkitSkeletonState extends State<DrawkitSkeleton>
                                 final eased =
                                     0.5 - 0.5 * math.cos(2 * math.pi * phase);
                                 return Matrix4.translationValues(
-                                  eased * travel,
+                                  sweep * eased * travel,
                                   0,
                                   0,
                                 );

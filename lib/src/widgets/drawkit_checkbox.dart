@@ -74,7 +74,7 @@ class _DrawkitCheckboxState extends State<DrawkitCheckbox>
   void didUpdateWidget(DrawkitCheckbox oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.value != oldWidget.value) {
-      if (_reduceMotion) {
+      if (_reduceMotion || !widget.animate) {
         _check.value = widget.value ? 1 : 0;
       } else {
         _check.animateTo(

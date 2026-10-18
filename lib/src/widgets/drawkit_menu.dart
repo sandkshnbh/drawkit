@@ -434,7 +434,10 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
     widget.onClose?.call();
     if (!hadRowFocus) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _triggerNode.requestFocus();
+      if (!mounted || !_triggerNode.canRequestFocus) return;
+      final primary = FocusManager.instance.primaryFocus;
+      if (primary != null && !identical(primary, _triggerNode)) return;
+      _triggerNode.requestFocus();
     });
   }
 
@@ -518,12 +521,30 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
                                 horizontal: 10,
                                 vertical: 5,
                               ),
-                              child: CustomPaint(
+                              child: DrawkitSurface(
+                                builder: (size, options) => [
+                                  DrawkitLayer(
+                                    roughLine(
+                                      0,
+                                      size.height / 2,
+                                      size.width,
+                                      size.height / 2,
+                                      options.copyWith(roughness: 0.4),
+                                    ),
+                                    Paint()
+                                      ..color = style.effectiveStroke
+                                          .withValues(alpha: 0.5)
+                                      ..style = PaintingStyle.stroke
+                                      ..strokeWidth = 1.5
+                                      ..strokeCap = StrokeCap.round,
+                                  ),
+                                ],
+                                style: style,
+                                seed: widget.seed == null
+                                    ? null
+                                    : widget.seed! + i + 1,
+                                animate: widget.animate,
                                 size: const Size(double.infinity, 1.5),
-                                painter: _RulePainter(
-                                  seed: widget.seed ?? 1,
-                                  ink: style.effectiveStroke,
-                                ),
                               ),
                             )
                           else
@@ -610,33 +631,4 @@ class _DrawkitMenuState extends State<DrawkitMenu> {
       ),
     );
   }
-}
-
-class _RulePainter extends CustomPainter {
-  _RulePainter({required this.seed, required this.ink});
-
-  final int seed;
-  final Color ink;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawPath(
-      roughLine(
-        0,
-        size.height / 2,
-        size.width,
-        size.height / 2,
-        RoughOptions(seed: seed, roughness: 0.4),
-      ),
-      Paint()
-        ..color = ink.withValues(alpha: 0.5)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_RulePainter oldDelegate) =>
-      seed != oldDelegate.seed || ink != oldDelegate.ink;
 }

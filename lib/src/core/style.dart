@@ -123,14 +123,19 @@ const Color _darkInk = Color(0xFFF1F1EF);
 const Color _darkInkMuted = Color(0xFFB4B3AF);
 const Color _darkInkFaint = Color(0xFF84837F);
 
-/// WCAG contrast ratio between two opaque colors.
+/// WCAG contrast ratio between two colors. Translucent colors are
+/// composited over their counterpart first, so alpha never inflates the
+/// reported ratio.
 double drawkitContrast(Color a, Color b) {
-  final la = a.computeLuminance();
-  final lb = b.computeLuminance();
+  final la = _opaque(a, b).computeLuminance();
+  final lb = _opaque(b, a).computeLuminance();
   final lighter = la > lb ? la : lb;
   final darker = la > lb ? lb : la;
   return (lighter + 0.05) / (darker + 0.05);
 }
+
+Color _opaque(Color color, Color background) =>
+    color.a >= 1 ? color : Color.alphaBlend(color, background);
 
 /// [ink] nudged until it reaches the WCAG AA contrast ratio ([minRatio],
 /// 4.5 by default) against [background] — toward black on a light paper,
@@ -219,6 +224,7 @@ class DrawkitStyle {
     Color? fillColor,
     Color? paperColor,
     double? width,
+    bool clearWidth = false,
     Color? ink,
     bool clearInk = false,
     DrawkitPalette? palette,
@@ -229,7 +235,7 @@ class DrawkitStyle {
     strokeColor: strokeColor ?? this.strokeColor,
     fillColor: fillColor ?? this.fillColor,
     paperColor: paperColor ?? this.paperColor,
-    width: width ?? this.width,
+    width: clearWidth ? null : width ?? this.width,
     ink: clearInk ? null : ink ?? this.ink,
     palette: palette ?? this.palette,
   );

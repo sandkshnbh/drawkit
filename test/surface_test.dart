@@ -6,6 +6,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
   List<DrawkitLayer> layers(Size size, RoughOptions options) => [
     DrawkitLayer(
@@ -15,10 +17,8 @@ void main() {
     ),
   ];
 
-  Widget host(Widget child) => Directionality(
-    textDirection: TextDirection.ltr,
-    child: Center(child: SizedBox(width: 120, height: 36, child: child)),
-  );
+  Widget host(Widget child) =>
+      harness.host(child, width: 120, height: 36, style: const DrawkitStyle());
 
   Future<Uint8List> pixels(WidgetTester tester) async {
     final boundary = tester.renderObject<RenderRepaintBoundary>(
@@ -187,11 +187,10 @@ void main() {
   });
 
   testWidgets('disposes without leaking the boil ticker', (tester) async {
-    await tester.pumpWidget(
+    await harness.disposeSmoke(
+      tester,
       host(DrawkitSurface(builder: layers, child: const SizedBox.expand())),
     );
-    await tester.pump(const Duration(milliseconds: 100));
-    await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(milliseconds: 100));
   });
 }

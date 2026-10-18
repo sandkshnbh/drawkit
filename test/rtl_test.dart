@@ -2,24 +2,14 @@ import 'package:drawkit/drawkit.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
   Widget host(
     Widget child, {
     TextDirection direction = TextDirection.rtl,
     bool overlay = false,
-  }) => Directionality(
-    textDirection: direction,
-    child: DrawkitTheme(
-      data: const DrawkitStyle(boil: 0),
-      child: overlay
-          ? Overlay(
-              initialEntries: [
-                OverlayEntry(builder: (context) => Center(child: child)),
-              ],
-            )
-          : Center(child: child),
-    ),
-  );
+  }) => harness.host(child, direction: direction, overlay: overlay);
 
   DrawkitLayer toggleTravelLayer(WidgetTester tester) {
     final surface = tester.widget<DrawkitSurface>(find.byType(DrawkitSurface));
@@ -239,7 +229,7 @@ void main() {
         find.byType(DrawkitSurface).first,
       );
       final layers = surface.builder(
-        const Size(160, 36),
+        tester.getSize(find.byType(DrawkitSelect<String>)),
         const RoughOptions(seed: 31),
       );
       expect(layers[1].path.getBounds().right, lessThan(80));
@@ -308,7 +298,7 @@ void main() {
         find.byType(DrawkitSurface).first,
       );
       final layers = surface.builder(
-        const Size(160, 36),
+        tester.getSize(find.byType(DrawkitSelect<String>)),
         const RoughOptions(seed: 31),
       );
       expect(layers[1].path.getBounds().left, greaterThan(80));

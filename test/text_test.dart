@@ -2,16 +2,10 @@ import 'package:drawkit/drawkit.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
-  Widget host(Widget child) => Directionality(
-    textDirection: TextDirection.ltr,
-    child: Center(
-      child: DrawkitTheme(
-        data: const DrawkitStyle(boil: 0),
-        child: SizedBox(width: 240, child: child),
-      ),
-    ),
-  );
+  Widget host(Widget child) => harness.host(child, width: 240);
 
   testWidgets('underline wraps and draws per line box', (tester) async {
     await tester.pumpWidget(
@@ -62,7 +56,6 @@ void main() {
   });
 
   testWidgets('disposes cleanly', (tester) async {
-    await tester.pumpWidget(host(const DrawkitCircle(text: 'bye')));
-    await tester.pumpWidget(const SizedBox());
+    await harness.disposeSmoke(tester, host(const DrawkitCircle(text: 'bye')));
   });
 }

@@ -4,40 +4,23 @@ import 'package:drawkit/drawkit.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
   Widget host(
     Widget child, {
     TextDirection direction = TextDirection.ltr,
     bool disableAnimations = false,
-  }) => Directionality(
-    textDirection: direction,
-    child: MediaQuery(
-      data: MediaQueryData(disableAnimations: disableAnimations),
-      child: Center(
-        child: DrawkitTheme(data: const DrawkitStyle(boil: 0), child: child),
-      ),
-    ),
+  }) => harness.host(
+    child,
+    direction: direction,
+    disableAnimations: disableAnimations,
   );
 
   Widget routeHost(
     Widget Function(BuildContext context) home, {
     bool disableAnimations = false,
-  }) => Directionality(
-    textDirection: TextDirection.ltr,
-    child: MediaQuery(
-      data: MediaQueryData(disableAnimations: disableAnimations),
-      child: DrawkitTheme(
-        data: const DrawkitStyle(boil: 0),
-        child: Navigator(
-          onGenerateRoute: (settings) => PageRouteBuilder(
-            transitionDuration: Duration.zero,
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                home(context),
-          ),
-        ),
-      ),
-    ),
-  );
+  }) => harness.routeHost(home, disableAnimations: disableAnimations);
 
   group('DrawkitInput validation', () {
     testWidgets('an error replaces the helper', (tester) async {

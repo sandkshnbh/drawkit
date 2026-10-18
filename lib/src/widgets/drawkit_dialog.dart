@@ -90,13 +90,8 @@ class DrawkitDialog extends StatelessWidget {
 /// The route fades and lifts the panel while the sketch traces itself in;
 /// honourable motion settings skip straight to the finished drawing. Tapping
 /// the scrim pops with `null` when [barrierDismissible] is set. The future
-/// completes with whatever the dialog pops with.
-/// Opens [child] (usually a [DrawkitDialog]) as a modal route over a soft scrim.
-///
-/// The route fades and lifts the panel while the sketch traces itself in;
-/// honourable motion settings skip straight to the finished drawing. Tapping
-/// the scrim pops with `null` when [barrierDismissible] is set. The future
-/// completes with whatever the dialog pops with.
+/// completes with whatever the dialog pops with. Tall content scrolls inside
+/// the panel instead of overflowing the route.
 Future<T?> showDrawkitDialog<T extends Object?>({
   required BuildContext context,
   required Widget child,
@@ -135,16 +130,20 @@ Future<T?> showDrawkitDialog<T extends Object?>({
         child: Align(
           alignment: fullscreenDialog ? Alignment.topCenter : Alignment.center,
           child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: DrawkitSketchIn(
-                duration: motion
-                    ? const Duration(milliseconds: 700)
-                    : Duration.zero,
-                child: DrawkitDialog(
-                  seed: seed,
-                  animate: animate,
-                  child: child,
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: DrawkitSketchIn(
+                  duration: motion
+                      ? const Duration(milliseconds: 700)
+                      : Duration.zero,
+                  child: DrawkitDialog(
+                    maxWidth: maxWidth,
+                    padding: padding,
+                    seed: seed,
+                    animate: animate,
+                    child: child,
+                  ),
                 ),
               ),
             ),

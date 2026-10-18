@@ -18,11 +18,17 @@ class RoughOptions {
   final double boil;
   final int? boilSeed;
 
-  RoughOptions copyWith({int? seed, int? boilSeed}) => RoughOptions(
+  RoughOptions copyWith({
+    int? seed,
+    double? roughness,
+    double? boil,
+    int? boilSeed,
+    bool clearBoilSeed = false,
+  }) => RoughOptions(
     seed: seed ?? this.seed,
-    roughness: roughness,
-    boil: boil,
-    boilSeed: boilSeed ?? this.boilSeed,
+    roughness: roughness ?? this.roughness,
+    boil: boil ?? this.boil,
+    boilSeed: clearBoilSeed ? null : boilSeed ?? this.boilSeed,
   );
 }
 

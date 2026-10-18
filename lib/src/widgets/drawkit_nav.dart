@@ -23,9 +23,11 @@ class DrawkitNavDestination {
   /// decorative.
   final int? badge;
 
-  String get announcement => badge == null
-      ? label
-      : '$label, $badge notification${badge == 1 ? '' : 's'}';
+  String get announcement {
+    final count = badge;
+    if (count == null || count <= 0) return label;
+    return '$label, $count notification${count == 1 ? '' : 's'}';
+  }
 }
 
 /// The count disc riding a destination's icon. Shared internal: the rail,
@@ -47,7 +49,7 @@ class DrawkitNavBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final resolved = style ?? DrawkitTheme.of(context);
-    final text = count > 99 ? '99+' : '$count';
+    final text = count > 99 ? '99+' : '${count.clamp(0, 99)}';
     return DrawkitSurface(
       builder: (size, options) => [
         DrawkitLayer(
@@ -361,7 +363,7 @@ class _NavTileState extends State<_NavTile> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (widget.destination.icon != null) ...[
-            if (widget.destination.badge == null)
+            if ((widget.destination.badge ?? 0) <= 0)
               widget.destination.icon!
             else
               Stack(

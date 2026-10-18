@@ -2,16 +2,10 @@ import 'package:drawkit/drawkit.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
-  Widget host(Widget child) => Directionality(
-    textDirection: TextDirection.ltr,
-    child: Center(
-      child: DrawkitTheme(
-        data: const DrawkitStyle(boil: 0),
-        child: SizedBox(width: 320, child: child),
-      ),
-    ),
-  );
+  Widget host(Widget child) => harness.host(child, width: 320);
 
   group('DrawkitDivider', () {
     testWidgets('stretches and disposes cleanly', (tester) async {

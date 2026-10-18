@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
   // WidgetsApp gives us the Tab shortcuts and the TapRegionSurface the FAB
   // menu leans on for outside taps.
@@ -12,26 +14,12 @@ void main() {
     Widget child, {
     TextDirection direction = TextDirection.ltr,
     bool disableAnimations = false,
-  }) => WidgetsApp(
-    color: DrawkitPalette.light.paper,
-    debugShowCheckedModeBanner: false,
-    pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
-        PageRouteBuilder<T>(
-          settings: settings,
-          transitionDuration: Duration.zero,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              builder(context),
-        ),
-    home: Directionality(
-      textDirection: direction,
-      child: DrawkitTheme(
-        data: const DrawkitStyle(boil: 0),
-        child: MediaQuery(
-          data: MediaQueryData(disableAnimations: disableAnimations),
-          child: Center(child: SizedBox(width: 360, child: child)),
-        ),
-      ),
-    ),
+  }) => harness.host(
+    child,
+    direction: direction,
+    disableAnimations: disableAnimations,
+    app: true,
+    width: 360,
   );
 
   const destinations = [

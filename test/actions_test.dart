@@ -5,14 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
   Widget host(Widget child, {TextDirection direction = TextDirection.ltr}) =>
-      Directionality(
-        textDirection: direction,
-        child: Center(
-          child: DrawkitTheme(data: const DrawkitStyle(boil: 0), child: child),
-        ),
-      );
+      harness.host(child, direction: direction);
 
   group('DrawkitIconButton', () {
     testWidgets('fires onPressed and announces its label', (tester) async {
@@ -122,7 +119,7 @@ void main() {
           ),
         );
         final layers = surface.builder(
-          const Size(300, 40),
+          tester.getSize(find.byType(DrawkitSegmentedButton<String>)),
           const RoughOptions(seed: 7),
         );
         return layers[1].path.getBounds();
@@ -137,7 +134,13 @@ void main() {
           ),
         ),
       );
-      expect(washAt(tester, TextDirection.ltr).center.dx, greaterThan(200));
+      final width = tester
+          .getSize(find.byType(DrawkitSegmentedButton<String>))
+          .width;
+      expect(
+        washAt(tester, TextDirection.ltr).center.dx,
+        greaterThan(width * 0.66),
+      );
 
       await tester.pumpWidget(
         host(
@@ -149,7 +152,10 @@ void main() {
           direction: TextDirection.rtl,
         ),
       );
-      expect(washAt(tester, TextDirection.rtl).center.dx, lessThan(100));
+      expect(
+        washAt(tester, TextDirection.rtl).center.dx,
+        lessThan(width * 0.34),
+      );
       expect(
         tester.getCenter(find.text('two')).dx,
         lessThan(tester.getCenter(find.text('one')).dx),

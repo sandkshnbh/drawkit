@@ -129,6 +129,9 @@ class DrawkitSurfaceState extends State<DrawkitSurface>
   late int _seed = widget.seed ?? randomSeed();
   bool _boiling = false;
   bool _hovered = false;
+  DrawkitStyle? _lastStyle;
+  _DrawkitSurfacePainter? _painter;
+  Object? _painterKey;
 
   /// New pen stroke: a fresh seed unless one is forced, honouring a pinned
   /// [DrawkitSurface.seed] so interaction never re-sketches a fixed drawing.
@@ -137,11 +140,20 @@ class DrawkitSurfaceState extends State<DrawkitSurface>
       setState(() => _seed = seed ?? widget.seed ?? randomSeed());
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _lastStyle = widget.style ?? DrawkitTheme.of(context);
+    _syncBoil(_shouldBoil(_lastStyle!));
+  }
+
+  @override
   void didUpdateWidget(DrawkitSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
     _controller.duration = widget.duration;
-    if (widget.seed != null && widget.seed != oldWidget.seed) {
-      _seed = widget.seed!;
+    if (widget.seed != oldWidget.seed) {
+      // A seed released back to null starts a fresh drawing rather than
+      // freezing the last pinned one.
+      _seed = widget.seed ?? randomSeed();
     }
     if (oldWidget.enabled && !widget.enabled) {
       final wasHovered = _hovered;
@@ -152,7 +164,15 @@ class DrawkitSurfaceState extends State<DrawkitSurface>
         widget.onPressedChanged?.call(false);
       });
     }
+    _lastStyle = widget.style ?? _lastStyle ?? DrawkitTheme.of(context);
+    _syncBoil(_shouldBoil(_lastStyle!));
   }
+
+  bool _shouldBoil(DrawkitStyle style) =>
+      widget.animate &&
+      style.boil > 0 &&
+      widget.boilClock == null &&
+      !drawkitReduceMotion(context);
 
   @override
   void dispose() {
@@ -197,20 +217,34 @@ class DrawkitSurfaceState extends State<DrawkitSurface>
 
   @override
   Widget build(BuildContext context) {
-    final style = widget.style ?? DrawkitTheme.of(context);
+    final style = widget.style ?? _lastStyle ?? DrawkitTheme.of(context);
     final reduceMotion = drawkitReduceMotion(context);
     final boil = widget.animate && style.boil > 0 && !reduceMotion;
-    _syncBoil(boil && widget.boilClock == null);
+    final animation = boil ? widget.boilClock ?? _controller : null;
+    final sketchTrim = DrawkitSketchScope.maybeOf(context);
 
-    final painter = _DrawkitSurfacePainter(
-      builder: widget.builder,
-      style: style,
-      seed: _seed,
-      frameCount: boil ? 3 : 1,
-      animation: boil ? widget.boilClock ?? _controller : null,
-      accent: widget.accent,
-      sketchTrim: DrawkitSketchScope.maybeOf(context),
+    final painterKey = (
+      widget.builder,
+      _seed,
+      style,
+      boil ? 3 : 1,
+      animation,
+      widget.accent,
+      sketchTrim,
     );
+    if (painterKey != _painterKey) {
+      _painterKey = painterKey;
+      _painter = _DrawkitSurfacePainter(
+        builder: widget.builder,
+        style: style,
+        seed: _seed,
+        frameCount: boil ? 3 : 1,
+        animation: animation,
+        accent: widget.accent,
+        sketchTrim: sketchTrim,
+      );
+    }
+    final painter = _painter!;
 
     Widget painted = CustomPaint(
       painter: painter,

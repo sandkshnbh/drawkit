@@ -1,48 +1,22 @@
-import 'dart:ui' show CheckedState, Tristate;
+import 'dart:ui' show CheckedState;
 
 import 'package:drawkit/drawkit.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void _noop() {}
 
 void main() {
   Widget host(Widget child, {TextDirection direction = TextDirection.ltr}) =>
-      WidgetsApp(
-        color: DrawkitPalette.light.paper,
-        debugShowCheckedModeBanner: false,
-        pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
-            PageRouteBuilder<T>(
-              settings: settings,
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  builder(context),
-            ),
-        home: Directionality(
-          textDirection: direction,
-          child: DrawkitTheme(
-            data: const DrawkitStyle(boil: 0),
-            child: Center(child: SizedBox(width: 360, child: child)),
-          ),
-        ),
-      );
+      harness.host(child, direction: direction, app: true, width: 360);
 
   Widget routeHost(
     Widget Function(BuildContext context) home, {
     TextDirection direction = TextDirection.ltr,
-  }) => Directionality(
-    textDirection: direction,
-    child: DrawkitTheme(
-      data: const DrawkitStyle(boil: 0),
-      child: Navigator(
-        onGenerateRoute: (settings) => PageRouteBuilder(
-          transitionDuration: Duration.zero,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              home(context),
-        ),
-      ),
-    ),
-  );
+  }) => harness.routeHost(home, direction: direction);
 
   group('DrawkitPopover', () {
     testWidgets('toggles open, and an outside tap folds it away', (
@@ -156,58 +130,6 @@ void main() {
             .first,
       );
       expect(node.flagsCollection.isChecked, CheckedState.isTrue);
-      semanticsHandle.dispose();
-    });
-  });
-
-  group('DrawkitAccordion', () {
-    Widget accordion({bool allowMultiple = true, Set<int> open = const {}}) =>
-        DrawkitAccordion(
-          allowMultiple: allowMultiple,
-          initiallyExpanded: open,
-          sections: const [
-            DrawkitAccordionSection(title: 'Pencils', child: Text('2B and HB')),
-            DrawkitAccordionSection(title: 'Paper', child: Text('A5 ruled')),
-          ],
-        );
-
-    testWidgets('a header unfolds and folds its body', (tester) async {
-      await tester.pumpWidget(host(accordion()));
-      expect(find.text('2B and HB'), findsNothing);
-
-      await tester.tap(find.text('Pencils'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('2B and HB'), findsOneWidget);
-
-      await tester.tap(find.text('Pencils'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('2B and HB'), findsNothing);
-    });
-
-    testWidgets('single-open mode closes the previous section', (tester) async {
-      await tester.pumpWidget(host(accordion(allowMultiple: false, open: {0})));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('2B and HB'), findsOneWidget);
-
-      await tester.tap(find.text('Paper'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('A5 ruled'), findsOneWidget);
-      expect(find.text('2B and HB'), findsNothing);
-    });
-
-    testWidgets('announce their expansion to semantics', (tester) async {
-      final semanticsHandle = tester.ensureSemantics();
-      await tester.pumpWidget(host(accordion(open: {1})));
-      await tester.pump(const Duration(milliseconds: 300));
-      final node = tester.getSemantics(
-        find
-            .ancestor(of: find.text('Paper'), matching: find.byType(Semantics))
-            .first,
-      );
-      expect(node.flagsCollection.isExpanded, Tristate.isTrue);
       semanticsHandle.dispose();
     });
   });

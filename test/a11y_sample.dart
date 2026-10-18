@@ -2,24 +2,12 @@ import 'package:drawkit/drawkit.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 Widget a11yHost(
   Widget child, {
   DrawkitPalette palette = DrawkitPalette.light,
-}) => Directionality(
-  textDirection: TextDirection.ltr,
-  child: DefaultTextStyle(
-    style: TextStyle(
-      color: palette.ink,
-      fontSize: 14,
-      height: 1.4,
-      decoration: TextDecoration.none,
-    ),
-    child: DrawkitTheme(
-      data: palette.style.copyWith(boil: 0),
-      child: ColoredBox(color: palette.paper, child: child),
-    ),
-  ),
-);
+}) => harness.a11yHost(child, palette: palette);
 
 Widget a11ySample({DrawkitPalette palette = DrawkitPalette.light}) => a11yHost(
   Padding(

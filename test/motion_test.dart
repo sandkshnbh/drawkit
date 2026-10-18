@@ -4,14 +4,11 @@ import 'package:drawkit/drawkit.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
-  Widget host(Widget child, {bool disableAnimations = false}) => Directionality(
-    textDirection: TextDirection.ltr,
-    child: MediaQuery(
-      data: MediaQueryData(disableAnimations: disableAnimations),
-      child: Center(child: child),
-    ),
-  );
+  Widget host(Widget child, {bool disableAnimations = false}) =>
+      harness.host(child, disableAnimations: disableAnimations);
 
   DrawkitSurface surface({int seed = 7}) => DrawkitSurface(
     seed: seed,

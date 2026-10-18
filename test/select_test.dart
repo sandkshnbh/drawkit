@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
   const fruits = [
     DrawkitSelectOption(value: 'apple', label: 'Apple'),
@@ -10,23 +12,7 @@ void main() {
     DrawkitSelectOption(value: 'cherry', label: 'Cherry'),
   ];
 
-  Widget host(Widget child) => WidgetsApp(
-    color: DrawkitPalette.light.paper,
-    debugShowCheckedModeBanner: false,
-    pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
-        PageRouteBuilder<T>(
-          settings: settings,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              builder(context),
-        ),
-    home: Directionality(
-      textDirection: TextDirection.ltr,
-      child: DrawkitTheme(
-        data: const DrawkitStyle(boil: 0),
-        child: Center(child: SizedBox(width: 260, child: child)),
-      ),
-    ),
-  );
+  Widget host(Widget child) => harness.host(child, app: true, width: 260);
 
   testWidgets('shows the placeholder until a value is chosen', (tester) async {
     await tester.pumpWidget(
@@ -135,7 +121,8 @@ void main() {
   });
 
   testWidgets('disposes focus node cleanly', (tester) async {
-    await tester.pumpWidget(
+    await harness.disposeSmoke(
+      tester,
       host(
         DrawkitSelect<String>(
           options: fruits,
@@ -144,7 +131,6 @@ void main() {
         ),
       ),
     );
-    await tester.pumpWidget(const SizedBox());
   });
 }
 

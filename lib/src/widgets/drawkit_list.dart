@@ -52,8 +52,8 @@ class _DrawkitListState extends State<DrawkitList> {
   @override
   void didUpdateWidget(DrawkitList oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.seed != null && widget.seed != oldWidget.seed) {
-      _seed = widget.seed!;
+    if (widget.seed != oldWidget.seed) {
+      _seed = widget.seed ?? randomSeed();
     }
   }
 

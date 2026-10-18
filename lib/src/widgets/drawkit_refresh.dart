@@ -22,6 +22,7 @@ class DrawkitRefresh extends StatefulWidget {
     required this.onRefresh,
     required this.child,
     this.threshold = 72,
+    this.refreshLabel = 'refreshing',
     this.style,
     this.seed,
     this.animate = true,
@@ -36,6 +37,9 @@ class DrawkitRefresh extends StatefulWidget {
 
   /// Pull distance in logical pixels that arms the refresh.
   final double threshold;
+
+  /// Announced while the refresh future is pending.
+  final String refreshLabel;
 
   final DrawkitStyle? style;
   final int? seed;
@@ -194,7 +198,7 @@ class _DrawkitRefreshState extends State<DrawkitRefresh>
                     child: _refreshing
                         ? Semantics(
                             liveRegion: true,
-                            label: 'refreshing',
+                            label: widget.refreshLabel,
                             child: ExcludeSemantics(child: indicator),
                           )
                         : ExcludeSemantics(child: indicator),

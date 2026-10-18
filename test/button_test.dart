@@ -5,13 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'harness.dart' as harness;
+
 void main() {
-  Widget host(Widget child) => Directionality(
-    textDirection: TextDirection.ltr,
-    child: Center(
-      child: DrawkitTheme(data: const DrawkitStyle(boil: 0), child: child),
-    ),
-  );
+  Widget host(Widget child) => harness.host(child);
 
   testWidgets('fires onPressed on tap', (tester) async {
     var taps = 0;
@@ -96,10 +93,9 @@ void main() {
   });
 
   testWidgets('disposes focus node and tickers cleanly', (tester) async {
-    await tester.pumpWidget(
+    await harness.disposeSmoke(
+      tester,
       host(DrawkitButton(onPressed: () {}, child: const Text('bye'))),
     );
-    await tester.pump(const Duration(milliseconds: 50));
-    await tester.pumpWidget(const SizedBox());
   });
 }

@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../engine/rough.dart';
@@ -19,7 +22,7 @@ class DrawkitTapTarget extends StatelessWidget {
     this.minWidth = drawkitMinTapTarget,
     this.minHeight = drawkitMinTapTarget,
     required this.child,
-  });
+  }) : assert(minWidth >= 0 && minHeight >= 0);
 
   final double minWidth;
   final double minHeight;
@@ -48,17 +51,20 @@ DrawkitLayer drawkitFocusRingRect({
   double radius = 10,
   double gapX = 1,
   double gapY = 1,
-}) => DrawkitLayer(
-  roughRoundedRect(
-    -gapX,
-    -gapY,
-    size.width + 2 * gapX,
-    size.height + 2 * gapY,
-    radius,
-    options,
-  ),
-  drawkitStroke(style, color: color, fallbackWidth: 1.5),
-);
+}) {
+  final shortest = math.min(size.width + 2 * gapX, size.height + 2 * gapY);
+  return DrawkitLayer(
+    roughRoundedRect(
+      -gapX,
+      -gapY,
+      size.width + 2 * gapX,
+      size.height + 2 * gapY,
+      clampDouble(radius, 0, math.max(0, shortest) / 2),
+      options,
+    ),
+    drawkitStroke(style, color: color, fallbackWidth: 1.5),
+  );
+}
 
 /// Circular variant of [drawkitFocusRingRect] for discs (radios, icon
 /// buttons): a second circle at `radius + gap`.

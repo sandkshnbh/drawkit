@@ -1,7 +1,7 @@
 # drawkit
 
 Animated hand-drawn UI for Flutter. Real widgets on top, seeded pen strokes
-behind, one shared boil clock — a Dart port of [drawably](https://github.com/dwhitedeveloper/drawably)
+behind, one shared boil clock — a Dart port of [drawably](https://github.com/danielwh2/drawably)
 with **zero dependencies beyond the Flutter SDK** (no Material, no Cupertino).
 
 ```dart

@@ -52,6 +52,7 @@ class DrawkitEmpty extends StatelessWidget {
 
     return Semantics(
       container: true,
+      liveRegion: true,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
