@@ -1,4 +1,4 @@
-## Unreleased
+## 0.1.0
 
 - **Arabic gallery** — the sample flips to Arabic when its RTL toggle is
   on. `example/lib/l10n.dart` holds the `demoArabic` switch that the

@@ -1,17 +1,109 @@
 # drawkit
 
+[![pub.dev](https://img.shields.io/pub/v/drawkit.svg)](https://pub.dev/packages/drawkit)
+[![likes](https://img.shields.io/pub/likes/drawkit)](https://pub.dev/packages/drawkit)
+[![license](https://img.shields.io/github/license/sandkshnbh/drawkit)](LICENSE)
+[![ci](https://github.com/sandkshnbh/drawkit/actions/workflows/ci.yml/badge.svg)](https://github.com/sandkshnbh/drawkit/actions/workflows/ci.yml)
+
 Animated hand-drawn UI for Flutter. Real widgets on top, seeded pen strokes
 behind, one shared boil clock — a Dart port of [drawably](https://github.com/danielwh2/drawably)
 with **zero dependencies beyond the Flutter SDK** (no Material, no Cupertino).
 
+![drawkit buttons](doc/images/gallery-buttons.png)
+
+## Install
+
+```sh
+flutter pub add drawkit
+```
+
+Or in `pubspec.yaml`:
+
+```yaml
+dependencies:
+  drawkit: ^0.1.0
+```
+
+## Quick start
+
+Wrap the subtree once with a theme, then drop controls anywhere. The sketch
+layer draws itself behind the real widget and never participates in hit
+testing.
+
 ```dart
 import 'package:drawkit/drawkit.dart';
+import 'package:flutter/widgets.dart';
 
-DrawkitButton(
-  onPressed: () => save(),
-  child: const Text('save'),
-)
+void main() => runApp(const Sketchbook());
+
+class Sketchbook extends StatefulWidget {
+  const Sketchbook({super.key});
+
+  @override
+  State<Sketchbook> createState() => _SketchbookState();
+}
+
+class _SketchbookState extends State<Sketchbook> {
+  bool _saved = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return DrawkitTheme(
+      data: DrawkitPalette.light.style,
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: DefaultTextStyle(
+          style: const TextStyle(
+            color: Color(0xFF18181B),
+            fontSize: 14,
+            height: 1.4,
+            decoration: TextDecoration.none,
+          ),
+          child: ColoredBox(
+            color: DrawkitPalette.light.paper,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DrawkitButton(
+                    onPressed: () => setState(() => _saved = !_saved),
+                    child: Text(_saved ? 'saved' : 'save'),
+                  ),
+                  const SizedBox(height: 16),
+                  DrawkitCheckbox(
+                    value: _saved,
+                    semanticLabel: 'ink saver',
+                    onChanged: (v) => setState(() => _saved = v),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 ```
+
+Dialogs, sheets, toasts, menus, and the command palette go through the usual
+`show*` functions (`showDrawkitDialog`, `showDrawkitSheet`,
+`showDrawkitToast`, `showDrawkitCommandPalette`, `showDrawkitDatePicker`).
+
+## Gallery
+
+The `example/` app exercises every widget — hover, press, focus (Tab),
+disabled states, live knobs for roughness / boil / seed, a light/dark
+palette, and an RTL switch that flips the whole gallery (and its copy) to
+Arabic.
+
+| Choices | Type & Ink |
+| --- | --- |
+| ![choices](doc/images/gallery-choices.png) | ![type](doc/images/gallery-type.png) |
+| **Cards & Tables** | **Dark palette** |
+| ![containers](doc/images/gallery-containers.png) | ![dark](doc/images/gallery-type-dark.png) |
+| **RTL + Arabic copy** | |
+| ![rtl](doc/images/gallery-buttons-rtl.png) | |
 
 ## How it works
 
@@ -51,10 +143,12 @@ DrawkitButton(
 | Actions | `DrawkitSegmentedButton`, `DrawkitSlider`, `DrawkitStepper`, `DrawkitSearchField`, `DrawkitIconButton`, `DrawkitFab`, `DrawkitFabMenu` + `DrawkitFabMenuItem` |
 | Feedback | `DrawkitDialog` + `showDrawkitDialog`, `DrawkitSheet` + `showDrawkitSheet`, `DrawkitToast` + `showDrawkitToast` + `DrawkitToastAction`, `DrawkitProgressBar`, `DrawkitSpinner`, `DrawkitSkeleton` |
 | Menus | `DrawkitMenu`, `DrawkitMenuItem`, `DrawkitPopover`, `DrawkitAccordion`, `showDrawkitCommandPalette`, `DrawkitDatePicker` + `showDrawkitDatePicker` |
-| Structure | `DrawkitAppBar`, `DrawkitNavRail` + `DrawkitNavDestination`, `DrawkitBottomNav`, `DrawkitFloatingNavBar`, `DrawkitBreadcrumb`, `DrawkitTable` |
+| Structure | `DrawkitAppBar`, `DrawkitNavRail` + `DrawkitNavDestination`, `DrawkitBottomNav`, `DrawkitFloatingNavBar`, `DrawkitBreadcrumb`, `DrawkitTable`, `DrawkitPanel` |
 | Content | `DrawkitHeading`, `DrawkitAvatar` + `DrawkitAvatarGroup`, `DrawkitFigure`, `DrawkitRating`, `DrawkitDoodle`, `DrawkitMarquee` |
 | States | `DrawkitEmpty`, `DrawkitRefresh` (`DrawkitInput`/`DrawkitTextarea` take `error` + `helper`) |
 | Motion | `DrawkitSketchIn`, `DrawkitStagger`, `DrawkitShake` |
+
+## Theming
 
 Theming runs through `DrawkitTheme` + `DrawkitStyle` (`seed`, `roughness`,
 `boil`, `strokeColor`, `fillColor`, `width`, `ink`, `palette`); brand
@@ -63,6 +157,18 @@ a dark preset — `DrawkitTheme(data: DrawkitPalette.dark.style, child: ...)`
 re-inks every control, and `drawkitReadableInk` follows the paper: darker on
 light, lighter on dark.
 
+```dart
+DrawkitTheme(
+  data: DrawkitPalette.dark.style.copyWith(roughness: 1.6, seed: 7),
+  child: content,
+)
+```
+
+The optional **DrawkitPen** typeface ships with the package — nothing loads
+it unless a style asks for `fontFamily: 'DrawkitPen'`.
+
+## Accessibility
+
 Every control meets the accessibility guidelines: touch boxes are at least
 48×48 (`DrawkitTapTarget`, `drawkitMinTapTarget`), tappable nodes carry
 labels and `onTap`, tone/state labels pass WCAG contrast on the paper
@@ -70,18 +176,12 @@ labels and `onTap`, tone/state labels pass WCAG contrast on the paper
 throughout. `test/a11y_test.dart` and the gallery-wide
 `example/test/a11y_gallery_test.dart` keep it that way.
 
-The optional **DrawkitPen** typeface ships with the package — nothing loads it
-unless a style asks for `fontFamily: 'DrawkitPen'`.
-
-## Try it
+## Try the gallery
 
 ```sh
 cd example
 flutter run -d chrome
 ```
-
-The gallery exercises every widget: hover, press, focus (Tab), disabled
-states, and the live knobs for roughness / boil / seed.
 
 ## Development
 
@@ -91,10 +191,10 @@ flutter test
 (cd example && flutter test && flutter build web)
 ```
 
-`flutter analyze` currently crashes on this checkout because the project path
-contains non-ASCII characters (LSP JSON error); use `dart analyze`, which is
-what CI runs too on ASCII paths.
+If your checkout path contains non-ASCII characters, `flutter analyze` can
+crash on an LSP JSON error; use `dart analyze`, which is what CI runs.
 
 ## License
 
-MIT. Ported from drawably (MIT) — see LICENSE for the full attribution note.
+MIT. Ported from drawably (MIT) — see [LICENSE](LICENSE) for the full
+attribution note, and [CHANGELOG.md](CHANGELOG.md) for release history.
